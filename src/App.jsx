@@ -288,13 +288,13 @@ function PersonSearch({ label, persons, selected, onChange, multi = false }) {
 const emptyFilm = () => ({
   id: uid(), datum: today(), nazev: "", zanry: [], rok: "", platforma: "",
   stopaz: "", reziserIds: [], herciIds: [],
-  hodnoceni: null, rewatch: false, ceskyFilm: false, doporuceni: false, imdbId: "",
+  hodnoceni: null, rewatch: false, ceskyFilm: false, doporuceni: false,
 });
 const emptySerial = () => ({
   id: uid(), nazev: "", zanry: [], rok: "", platforma: "",
   serie: "", pocetDilu: "", stav: "Sleduji",
   zacatekSledovani: today(), konecSledovani: "",
-  hodnoceni: null, herciIds: [], imdbId: "",
+  hodnoceni: null, herciIds: [],
 });
 const emptyOsoba = () => ({
   id: uid(), jmeno: "", narodnost: "", rokNarozeni: "", zijici: "Ano",
@@ -324,7 +324,6 @@ function FilmForm({ data, setData, herci, reziseri }) {
       <div style={{ gridColumn: "1/-1" }}>
         <RatingInput value={data.hodnoceni} onChange={v => u("hodnoceni", v)} />
       </div>
-      <TextInput label="IMDB ID" value={data.imdbId} onChange={v => u("imdbId", v)} placeholder="tt1234567" />
       <Field label="Příznaky">
         <CheckInput label="Rewatch" checked={data.rewatch} onChange={v => u("rewatch", v)} />
         <CheckInput label="Český film" checked={data.ceskyFilm} onChange={v => u("ceskyFilm", v)} />
@@ -357,7 +356,6 @@ function SerialForm({ data, setData, herci }) {
       <div style={{ gridColumn: "1/-1" }}>
         <RatingInput value={data.hodnoceni} onChange={v => u("hodnoceni", v)} />
       </div>
-      <TextInput label="IMDB ID" value={data.imdbId} onChange={v => u("imdbId", v)} placeholder="tt1234567" />
     </div>
   );
 }
@@ -392,18 +390,6 @@ function Badge({ children, color }) {
       background: color + "22", color, border: `1px solid ${color}44`,
       letterSpacing: "0.04em", textTransform: "uppercase",
     }}>{children}</span>
-  );
-}
-
-function ImdbLink({ imdbId }) {
-  if (!imdbId) return null;
-  return (
-    <a href={`https://www.imdb.com/title/${imdbId}/`} target="_blank" rel="noopener noreferrer"
-      style={{
-        padding: "2px 7px", borderRadius: 3, fontSize: 10, fontWeight: 800,
-        background: "#f5c51822", color: "#f5c518", border: "1px solid #f5c51844",
-        textDecoration: "none", letterSpacing: "0.05em",
-      }}>IMDB ↗</a>
   );
 }
 
@@ -451,7 +437,6 @@ function FilmCard({ film, herci, reziseri, onEdit, onDelete }) {
           {film.ceskyFilm && <Badge color={T.blue}>CZ</Badge>}
           {film.rewatch && <Badge color={T.purple}>↺ Rewatch</Badge>}
           {film.doporuceni && <Badge color={T.green}>Doporučení</Badge>}
-          <ImdbLink imdbId={film.imdbId} />
         </div>
         {(film.zanry ?? []).length > 0 && <div style={{ marginBottom: 6 }}><TagList items={film.zanry} /></div>}
         <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
@@ -483,7 +468,6 @@ function SerialCard({ serial, herci, onEdit, onDelete }) {
           {serial.rok && <span style={{ color: T.muted, fontSize: 12 }}>{serial.rok}</span>}
           {serial.platforma && <Badge color={T.gold}>{serial.platforma}</Badge>}
           {serial.stav && <Badge color={stavColor[serial.stav] ?? T.muted}>{serial.stav}</Badge>}
-          <ImdbLink imdbId={serial.imdbId} />
         </div>
         {(serial.zanry ?? []).length > 0 && <div style={{ marginBottom: 6 }}><TagList items={serial.zanry} /></div>}
         <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
