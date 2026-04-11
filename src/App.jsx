@@ -969,12 +969,179 @@ function Empty() {
   return <div style={{ textAlign: "center", color: T.muted, padding: "48px 0", fontSize: 13 }}>Žádné výsledky</div>;
 }
 
+// ─── BILANCE – KOMPONENTY ─────────────────────────────────────────────────────
+const MONTHS_CZ = ['Led','Úno','Bře','Dub','Kvě','Čer','Čvc','Srp','Zář','Říj','Lis','Pro'];
+
+function BarChart({ data, color = T.gold, height = 100 }) {
+  const max = Math.max(...data.map(d => d.value), 1);
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3 }}>
+      {data.map((d, i) => (
+        <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', minWidth: 0 }}>
+          {d.value > 0 && <div style={{ fontSize: 9, color: T.muted, marginBottom: 2 }}>{d.value}</div>}
+          <div style={{ width: '100%', background: d.value > 0 ? color : T.border, borderRadius: '3px 3px 0 0', height: `${Math.max(d.value / max * height, d.value > 0 ? 3 : 2)}px`, transition: 'height 0.3s' }} />
+          <div style={{ fontSize: 9, color: T.muted, marginTop: 4, textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' }}>{d.label}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function HBarChart({ data, color = T.gold, limit = 20 }) {
+  const visible = data.slice(0, limit);
+  const max = Math.max(...visible.map(d => d.value), 1);
+  return (
+    <div>
+      {visible.map((d, i) => (
+        <div key={i} style={{ marginBottom: 8 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
+            <span style={{ fontSize: 12, color: T.text }}>{d.label}</span>
+            <span style={{ fontSize: 12, color, fontWeight: 700 }}>{d.value}</span>
+          </div>
+          <div style={{ height: 5, background: T.border, borderRadius: 3, overflow: 'hidden' }}>
+            <div style={{ height: '100%', width: `${d.value / max * 100}%`, background: color, borderRadius: 3, transition: 'width 0.3s' }} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function BilStat({ label, value, sub, color = T.text }) {
+  return (
+    <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 8, padding: '16px 20px' }}>
+      <div style={{ fontSize: 10, color: T.muted, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>{label}</div>
+      <div style={{ fontSize: 30, fontWeight: 800, color, fontFamily: 'Cormorant Garamond, serif', lineHeight: 1 }}>{value}</div>
+      {sub && <div style={{ fontSize: 11, color: T.muted, marginTop: 5 }}>{sub}</div>}
+    </div>
+  );
+}
+
+function BilCard({ title, children }) {
+  return (
+    <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 8, padding: '18px 20px' }}>
+      <div style={{ fontSize: 10, color: T.muted, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 16 }}>{title}</div>
+      {children}
+    </div>
+  );
+}
+
+function BilanceFilmyTab({ filmy }) {
+  const currentYear = new Date().getFullYear();
+  const rated = filmy.filter(f => f.hodnoceni);
+  const avg = rated.length ? (rated.reduce((a, f) => a + f.hodnoceni, 0) / rated.length).toFixed(1) : '–';
+  const thisYear = filmy.filter(f => f.datum?.startsWith(String(currentYear)));
+
+  // Po letech
+  const byYear = {};
+  filmy.filter(f => f.datum).forEach(f => { const y = f.datum.slice(0,4); byYear[y] = (byYear[y]||0)+1; });
+  const byYearData = Object.keys(byYear).sort().map(y => ({ label: "'"+y.slice(2), value: byYear[y] }));
+
+  // Po měsících aktuálního roku
+  const monthData = MONTHS_CZ.map(l => ({ label: l, value: 0 }));
+  thisYear.forEach(f => { monthData[parseInt(f.datum.slice(5,7))-1].value++; });
+
+  // Platformy
+  const byPlat = {};
+  filmy.forEach(f => { if (f.platforma) byPlat[f.platforma] = (byPlat[f.platforma]||0)+1; });
+  const platData = Object.entries(byPlat).sort((a,b)=>b[1]-a[1]).map(([l,v])=>({label:l,value:v}));
+
+  // Hodnocení
+  const ratingData = Array.from({length:10},(_,i)=>({ label:String(i+1), value:0 }));
+  rated.forEach(f => { ratingData[f.hodnoceni-1].value++; });
+
+  // Rok výroby – dekády
+  const byDec = {};
+  filmy.filter(f=>f.rok).forEach(f => { const d = Math.floor(parseInt(f.rok)/10)*10; byDec[d]=(byDec[d]||0)+1; });
+  const decData = Object.keys(byDec).sort().map(d=>({ label:`${d}s`, value:byDec[d] }));
+
+  // Žánry aktuálního roku + český film
+  const byGenre = {};
+  thisYear.forEach(f => {
+    (f.zanry??[]).forEach(z => { byGenre[z]=(byGenre[z]||0)+1; });
+    if (f.ceskyFilm) byGenre['Český film']=(byGenre['Český film']||0)+1;
+  });
+  const genreData = Object.entries(byGenre).sort((a,b)=>b[1]-a[1]).map(([l,v])=>({label:l,value:v}));
+
+  return (
+    <div>
+      <div style={{ fontSize: 22, fontWeight: 700, color: T.text, fontFamily: 'Cormorant Garamond, serif', marginBottom: 4 }}>Bilance filmů</div>
+      <div style={{ fontSize: 13, color: T.muted, marginBottom: 24 }}>Celkový přehled sledování</div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 16 }}>
+        <BilStat label="Filmů celkem" value={filmy.length} />
+        <BilStat label="Průměrné hodnocení" value={avg} color={T.gold} sub={`z ${rated.length} hodnocených`} />
+        <BilStat label={`Zhlédnuto ${currentYear}`} value={thisYear.length} />
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        <BilCard title="Filmy po letech"><BarChart data={byYearData} color={T.gold} /></BilCard>
+        <BilCard title={`Měsíce ${currentYear}`}><BarChart data={monthData} color={T.blue} /></BilCard>
+        <BilCard title="Platformy"><HBarChart data={platData} color={T.purple} /></BilCard>
+        <BilCard title="Hodnocení"><BarChart data={ratingData} color={T.green} /></BilCard>
+        <BilCard title="Rok výroby (dekády)"><BarChart data={decData} color={T.orange} /></BilCard>
+        {genreData.length > 0 && <BilCard title={`Žánry ${currentYear}`}><HBarChart data={genreData} color={T.gold} /></BilCard>}
+      </div>
+    </div>
+  );
+}
+
+function BilanceSerialyTab({ serialy }) {
+  const currentYear = new Date().getFullYear();
+  const rated = serialy.filter(s => s.hodnoceni);
+  const avg = rated.length ? (rated.reduce((a, s) => a + s.hodnoceni, 0) / rated.length).toFixed(1) : '–';
+  const getDate = s => s.konecSledovani || s.zacatekSledovani || '';
+  const thisYear = serialy.filter(s => getDate(s).startsWith(String(currentYear)));
+
+  // Po letech
+  const byYear = {};
+  serialy.filter(s => getDate(s)).forEach(s => { const y = getDate(s).slice(0,4); byYear[y]=(byYear[y]||0)+1; });
+  const byYearData = Object.keys(byYear).sort().map(y=>({ label:"'"+y.slice(2), value:byYear[y] }));
+
+  // Po měsících aktuálního roku
+  const monthData = MONTHS_CZ.map(l=>({ label:l, value:0 }));
+  thisYear.forEach(s => { const d = getDate(s); if (d) monthData[parseInt(d.slice(5,7))-1].value++; });
+
+  // Platformy
+  const byPlat = {};
+  serialy.forEach(s => { if (s.platforma) byPlat[s.platforma]=(byPlat[s.platforma]||0)+1; });
+  const platData = Object.entries(byPlat).sort((a,b)=>b[1]-a[1]).map(([l,v])=>({label:l,value:v}));
+
+  // Hodnocení
+  const ratingData = Array.from({length:10},(_,i)=>({ label:String(i+1), value:0 }));
+  rated.forEach(s => { ratingData[s.hodnoceni-1].value++; });
+
+  // Rok výroby – dekády
+  const byDec = {};
+  serialy.filter(s=>s.rok).forEach(s => { const d=Math.floor(parseInt(s.rok)/10)*10; byDec[d]=(byDec[d]||0)+1; });
+  const decData = Object.keys(byDec).sort().map(d=>({ label:`${d}s`, value:byDec[d] }));
+
+  return (
+    <div>
+      <div style={{ fontSize: 22, fontWeight: 700, color: T.text, fontFamily: 'Cormorant Garamond, serif', marginBottom: 4 }}>Bilance seriálů</div>
+      <div style={{ fontSize: 13, color: T.muted, marginBottom: 24 }}>Celkový přehled sledování</div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 16 }}>
+        <BilStat label="Seriálů celkem" value={serialy.length} />
+        <BilStat label="Průměrné hodnocení" value={avg} color={T.gold} sub={`z ${rated.length} hodnocených`} />
+        <BilStat label={`Zhlédnuto ${currentYear}`} value={thisYear.length} />
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        <BilCard title="Seriály po letech"><BarChart data={byYearData} color={T.gold} /></BilCard>
+        <BilCard title={`Měsíce ${currentYear}`}><BarChart data={monthData} color={T.blue} /></BilCard>
+        <BilCard title="Platformy"><HBarChart data={platData} color={T.purple} /></BilCard>
+        <BilCard title="Hodnocení"><BarChart data={ratingData} color={T.green} /></BilCard>
+        <BilCard title="Rok výroby (dekády)"><BarChart data={decData} color={T.orange} /></BilCard>
+      </div>
+    </div>
+  );
+}
+
 // ─── APP ──────────────────────────────────────────────────────────────────────
 const TABS = [
   { id: "filmy", label: "Filmy" },
   { id: "serialy", label: "Seriály" },
   { id: "herci", label: "Herci" },
   { id: "reziseri", label: "Režiséři" },
+  { id: "bilance-filmy", label: "Bilance filmů" },
+  { id: "bilance-serialy", label: "Bilance seriálů" },
 ];
 
 export default function App() {
@@ -1021,11 +1188,11 @@ export default function App() {
             height: 52,
           }}>
             {t.label}
-            <span style={{
+            {counts[t.id] != null && <span style={{
               fontSize: 10, background: tab === t.id ? T.goldBg : T.elevated,
               color: tab === t.id ? T.gold : T.muted,
               padding: "1px 5px", borderRadius: 10,
-            }}>{counts[t.id]}</span>
+            }}>{counts[t.id]}</span>}
           </button>
         ))}
       </div>
@@ -1036,6 +1203,8 @@ export default function App() {
         {tab === "serialy" && <SerialyTab serialy={serialy} setSerialy={setSerialy} herci={herci} />}
         {tab === "herci" && <HerciTab herci={herci} setHerci={setHerci} filmy={filmy} serialy={serialy} />}
         {tab === "reziseri" && <ReziseriTab reziseri={reziseri} setReziseri={setReziseri} filmy={filmy} />}
+        {tab === "bilance-filmy" && <BilanceFilmyTab filmy={filmy} />}
+        {tab === "bilance-serialy" && <BilanceSerialyTab serialy={serialy} />}
       </div>
     </div>
   );
