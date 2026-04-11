@@ -1333,6 +1333,50 @@ const TABS = [
   { id: "watchlist", label: "Watchlist" },
 ];
 
+function ResetPasswordModal({ open, onDone }) {
+  const [password, setPassword] = useState("");
+  const [password2, setPassword2] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [done, setDone] = useState(false);
+
+  const save = async () => {
+    if (password.length < 6) { setError("Heslo musí mít alespoň 6 znaků."); return; }
+    if (password !== password2) { setError("Hesla se neshodují."); return; }
+    setLoading(true); setError("");
+    const { error: err } = await supabase.auth.updateUser({ password });
+    setLoading(false);
+    if (err) { setError(err.message); return; }
+    setDone(true);
+    setTimeout(onDone, 1500);
+  };
+
+  if (!open) return null;
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2000 }}>
+      <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 8, width: 340, padding: 28 }}>
+        <div style={{ fontSize: 16, fontWeight: 700, color: T.text, fontFamily: "Cormorant Garamond, serif", marginBottom: 20 }}>Nastavit nové heslo</div>
+        {done ? (
+          <div style={{ fontSize: 13, color: T.green, textAlign: "center", padding: "12px 0" }}>✓ Heslo bylo změněno.</div>
+        ) : (
+          <>
+            <div style={{ marginBottom: 12 }}>
+              <label style={{ fontSize: 10, color: T.muted, textTransform: "uppercase", letterSpacing: "0.1em", display: "block", marginBottom: 4 }}>Nové heslo</label>
+              <input type="password" value={password} onChange={e => setPassword(e.target.value)} style={inp} autoFocus />
+            </div>
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ fontSize: 10, color: T.muted, textTransform: "uppercase", letterSpacing: "0.1em", display: "block", marginBottom: 4 }}>Zopakovat heslo</label>
+              <input type="password" value={password2} onChange={e => setPassword2(e.target.value)} style={inp} onKeyDown={e => e.key === "Enter" && save()} />
+            </div>
+            {error && <div style={{ fontSize: 12, color: T.danger, marginBottom: 12 }}>{error}</div>}
+            <button onClick={save} style={{ ...btnPrimary, width: "100%" }} disabled={loading}>{loading ? "..." : "Uložit heslo"}</button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function LoginModal({ open, onClose }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -1379,6 +1423,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState(null);
   const [loginModal, setLoginModal] = useState(false);
+  const [resetModal, setResetModal] = useState(false);
   const [tab, setTab] = useState("filmy");
   const [darkMode, setDarkMode] = useLS("wl_theme_dark", true);
 
@@ -1394,7 +1439,10 @@ export default function App() {
 
     // Auth
     supabase.auth.getSession().then(({ data: { session } }) => setSession(session));
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, s) => {
+      setSession(s);
+      if (event === "PASSWORD_RECOVERY") setResetModal(true);
+    });
 
     // Fetch data
     Promise.all([
@@ -1503,6 +1551,7 @@ export default function App() {
       </div>
 
       <LoginModal open={loginModal} onClose={() => setLoginModal(false)} />
+      <ResetPasswordModal open={resetModal} onDone={() => setResetModal(false)} />
     </div>
   );
 }
