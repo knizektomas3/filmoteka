@@ -489,7 +489,7 @@ function SerialCard({ serial, herci, onEdit, onDelete }) {
 
 function OsobaDetailModal({ osoba, filmy, serialy, onClose }) {
   const osobaFilmy = filmy.filter(f =>
-    (f.herciIds ?? []).includes(osoba.id) || (f.reziserIds ?? []).includes(osoba.id)
+    !f.rewatch && ((f.herciIds ?? []).includes(osoba.id) || (f.reziserIds ?? []).includes(osoba.id))
   ).sort((a, b) => (b.rok || 0) - (a.rok || 0));
   const osobaSerialy = (serialy ?? []).filter(s =>
     (s.herciIds ?? []).includes(osoba.id)
