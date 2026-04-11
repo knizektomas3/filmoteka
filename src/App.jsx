@@ -593,13 +593,150 @@ function OsobaCard({ osoba, onEdit, onDelete, onDetail, filmCount }) {
   );
 }
 
+// ─── FILTRY ───────────────────────────────────────────────────────────────────
+const emptyFilmFilters  = () => ({ hodnoceniMin: null, platformy: [], zanry: [], rewatch: null, ceskyFilm: null, doporuceni: null, rokOd: "", rokDo: "" });
+const emptySerialFilters = () => ({ hodnoceniMin: null, platformy: [], zanry: [], stav: [], rokOd: "", rokDo: "" });
+
+function FilterPill({ label, active, onClick }) {
+  return (
+    <button onClick={onClick} style={{ padding: "3px 10px", borderRadius: 20, fontSize: 11, cursor: "pointer", border: `1px solid ${active ? T.gold : T.border}`, background: active ? T.gold : "transparent", color: active ? "#0b0b0d" : T.muted, fontWeight: active ? 600 : 400, whiteSpace: "nowrap" }}>
+      {label}
+    </button>
+  );
+}
+
+function FilmyFilters({ filters, setFilters, filmy }) {
+  const f = filters;
+  const set = (k, v) => setFilters(prev => ({ ...prev, [k]: v }));
+  const toggleArr = (k, v) => set(k, f[k].includes(v) ? f[k].filter(x => x !== v) : [...f[k], v]);
+
+  const usedPlatforms = [...new Set(filmy.map(x => x.platforma).filter(Boolean))].sort();
+  const usedZanry = [...new Set(filmy.flatMap(x => x.zanry ?? []))].sort();
+
+  return (
+    <div style={{ background: T.elevated, border: `1px solid ${T.border}`, borderRadius: 6, padding: "14px 16px", marginBottom: 16 }}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "12px 32px" }}>
+        <div>
+          <div style={{ fontSize: 10, color: T.muted, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>Hodnocení min.</div>
+          <div style={{ display: "flex", gap: 4 }}>
+            {[null,5,6,7,8,9].map(v => <FilterPill key={v ?? "vše"} label={v ? `${v}+` : "Vše"} active={f.hodnoceniMin === v} onClick={() => set("hodnoceniMin", v)} />)}
+          </div>
+        </div>
+        <div>
+          <div style={{ fontSize: 10, color: T.muted, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>Rok</div>
+          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+            <input value={f.rokOd} onChange={e => set("rokOd", e.target.value)} placeholder="od" style={{ ...inp, width: 60, padding: "4px 8px" }} />
+            <span style={{ color: T.muted, fontSize: 12 }}>–</span>
+            <input value={f.rokDo} onChange={e => set("rokDo", e.target.value)} placeholder="do" style={{ ...inp, width: 60, padding: "4px 8px" }} />
+          </div>
+        </div>
+        <div>
+          <div style={{ fontSize: 10, color: T.muted, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>Příznaky</div>
+          <div style={{ display: "flex", gap: 4 }}>
+            <FilterPill label="↺ Rewatch" active={f.rewatch === true} onClick={() => set("rewatch", f.rewatch === true ? null : true)} />
+            <FilterPill label="CZ film" active={f.ceskyFilm === true} onClick={() => set("ceskyFilm", f.ceskyFilm === true ? null : true)} />
+            <FilterPill label="Doporučil bych" active={f.doporuceni === true} onClick={() => set("doporuceni", f.doporuceni === true ? null : true)} />
+          </div>
+        </div>
+        {usedPlatforms.length > 0 && (
+          <div style={{ flexBasis: "100%" }}>
+            <div style={{ fontSize: 10, color: T.muted, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>Platforma</div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+              {usedPlatforms.map(p => <FilterPill key={p} label={p} active={f.platformy.includes(p)} onClick={() => toggleArr("platformy", p)} />)}
+            </div>
+          </div>
+        )}
+        {usedZanry.length > 0 && (
+          <div style={{ flexBasis: "100%" }}>
+            <div style={{ fontSize: 10, color: T.muted, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>Žánr</div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+              {usedZanry.map(z => <FilterPill key={z} label={z} active={f.zanry.includes(z)} onClick={() => toggleArr("zanry", z)} />)}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SerialyFilters({ filters, setFilters, serialy }) {
+  const f = filters;
+  const set = (k, v) => setFilters(prev => ({ ...prev, [k]: v }));
+  const toggleArr = (k, v) => set(k, f[k].includes(v) ? f[k].filter(x => x !== v) : [...f[k], v]);
+
+  const usedPlatforms = [...new Set(serialy.map(x => x.platforma).filter(Boolean))].sort();
+  const usedZanry = [...new Set(serialy.flatMap(x => x.zanry ?? []))].sort();
+
+  return (
+    <div style={{ background: T.elevated, border: `1px solid ${T.border}`, borderRadius: 6, padding: "14px 16px", marginBottom: 16 }}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "12px 32px" }}>
+        <div>
+          <div style={{ fontSize: 10, color: T.muted, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>Hodnocení min.</div>
+          <div style={{ display: "flex", gap: 4 }}>
+            {[null,5,6,7,8,9].map(v => <FilterPill key={v ?? "vše"} label={v ? `${v}+` : "Vše"} active={f.hodnoceniMin === v} onClick={() => set("hodnoceniMin", v)} />)}
+          </div>
+        </div>
+        <div>
+          <div style={{ fontSize: 10, color: T.muted, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>Rok</div>
+          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+            <input value={f.rokOd} onChange={e => set("rokOd", e.target.value)} placeholder="od" style={{ ...inp, width: 60, padding: "4px 8px" }} />
+            <span style={{ color: T.muted, fontSize: 12 }}>–</span>
+            <input value={f.rokDo} onChange={e => set("rokDo", e.target.value)} placeholder="do" style={{ ...inp, width: 60, padding: "4px 8px" }} />
+          </div>
+        </div>
+        <div>
+          <div style={{ fontSize: 10, color: T.muted, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>Stav</div>
+          <div style={{ display: "flex", gap: 4 }}>
+            {STAV_SERIALU.map(s => <FilterPill key={s} label={s} active={f.stav.includes(s)} onClick={() => toggleArr("stav", s)} />)}
+          </div>
+        </div>
+        {usedPlatforms.length > 0 && (
+          <div style={{ flexBasis: "100%" }}>
+            <div style={{ fontSize: 10, color: T.muted, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>Platforma</div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+              {usedPlatforms.map(p => <FilterPill key={p} label={p} active={f.platformy.includes(p)} onClick={() => toggleArr("platformy", p)} />)}
+            </div>
+          </div>
+        )}
+        {usedZanry.length > 0 && (
+          <div style={{ flexBasis: "100%" }}>
+            <div style={{ fontSize: 10, color: T.muted, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>Žánr</div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+              {usedZanry.map(z => <FilterPill key={z} label={z} active={f.zanry.includes(z)} onClick={() => toggleArr("zanry", z)} />)}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function countActiveFilters(f) {
+  return [
+    f.hodnoceniMin != null,
+    f.platformy?.length > 0,
+    f.zanry?.length > 0,
+    f.rewatch != null,
+    f.ceskyFilm != null,
+    f.doporuceni != null,
+    f.stav?.length > 0,
+    f.rokOd,
+    f.rokDo,
+  ].filter(Boolean).length;
+}
+
 // ─── ZÁHLAVÍ ZÁLOŽKY ──────────────────────────────────────────────────────────
-function TabHeader({ count, onAdd, q, setQ, addLabel }) {
+function TabHeader({ count, onAdd, q, setQ, addLabel, onToggleFilters, activeFilterCount }) {
   return (
     <div style={{ display: "flex", gap: 10, marginBottom: 20, alignItems: "center" }}>
       <input value={q} onChange={e => setQ(e.target.value)} placeholder="Vyhledat..." style={{ ...inp, maxWidth: 260 }} />
       <span style={{ color: T.muted, fontSize: 12, flexShrink: 0 }}>{count} záznamů</span>
       <div style={{ flex: 1 }} />
+      {onToggleFilters && (
+        <button onClick={onToggleFilters} style={{ ...btnSecondary, position: "relative", borderColor: activeFilterCount > 0 ? T.gold : T.border, color: activeFilterCount > 0 ? T.gold : T.muted }}>
+          Filtry {activeFilterCount > 0 && <span style={{ marginLeft: 4, background: T.gold, color: "#0b0b0d", borderRadius: 10, padding: "0 5px", fontSize: 10, fontWeight: 700 }}>{activeFilterCount}</span>}
+        </button>
+      )}
       <button onClick={onAdd} style={btnPrimary}>+ {addLabel}</button>
     </div>
   );
@@ -611,12 +748,23 @@ function FilmyTab({ filmy, setFilmy, herci, reziseri }) {
   const [modal, setModal] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(emptyFilm);
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState(emptyFilmFilters());
 
-  const filtered = useMemo(() =>
-    filmy.filter(f => f.nazev?.toLowerCase().includes(q.toLowerCase()))
-      .sort((a, b) => (b.datum ?? "").localeCompare(a.datum ?? "")),
-    [filmy, q]
-  );
+  const filtered = useMemo(() => {
+    const f = filters;
+    return filmy
+      .filter(x => !q || x.nazev?.toLowerCase().includes(q.toLowerCase()))
+      .filter(x => f.hodnoceniMin == null || (x.hodnoceni ?? 0) >= f.hodnoceniMin)
+      .filter(x => !f.platformy.length || f.platformy.includes(x.platforma))
+      .filter(x => !f.zanry.length || f.zanry.every(z => (x.zanry ?? []).includes(z)))
+      .filter(x => f.rewatch == null || x.rewatch === f.rewatch)
+      .filter(x => f.ceskyFilm == null || x.ceskyFilm === f.ceskyFilm)
+      .filter(x => f.doporuceni == null || x.doporuceni === f.doporuceni)
+      .filter(x => !f.rokOd || (x.rok ?? 0) >= parseInt(f.rokOd))
+      .filter(x => !f.rokDo || (x.rok ?? 9999) <= parseInt(f.rokDo))
+      .sort((a, b) => (b.datum ?? "").localeCompare(a.datum ?? ""));
+  }, [filmy, q, filters]);
 
   const openAdd = () => { setEditing(null); setForm(emptyFilm()); setModal(true); };
   const openEdit = f => { setEditing(f.id); setForm({ ...f }); setModal(true); };
@@ -627,10 +775,13 @@ function FilmyTab({ filmy, setFilmy, herci, reziseri }) {
     setModal(false);
   };
   const del = id => setFilmy(fs => fs.filter(f => f.id !== id));
+  const activeFilterCount = countActiveFilters(filters);
 
   return (
     <div>
-      <TabHeader count={filtered.length} onAdd={openAdd} q={q} setQ={setQ} addLabel="Přidat film" />
+      <TabHeader count={filtered.length} onAdd={openAdd} q={q} setQ={setQ} addLabel="Přidat film" onToggleFilters={() => setShowFilters(v => !v)} activeFilterCount={activeFilterCount} />
+      {showFilters && <FilmyFilters filters={filters} setFilters={setFilters} filmy={filmy} />}
+      {activeFilterCount > 0 && <button onClick={() => setFilters(emptyFilmFilters())} style={{ ...btnSecondary, fontSize: 11, marginBottom: 12, color: T.danger, borderColor: T.danger }}>× Zrušit filtry</button>}
       {filtered.map(f => <FilmCard key={f.id} film={f} herci={herci} reziseri={reziseri} onEdit={openEdit} onDelete={del} />)}
       {filtered.length === 0 && <Empty />}
       <Modal open={modal} title={editing ? "Upravit film" : "Přidat film"} onClose={() => setModal(false)} onSave={save} wide>
@@ -645,16 +796,25 @@ function SerialyTab({ serialy, setSerialy, herci }) {
   const [modal, setModal] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(emptySerial);
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState(emptySerialFilters());
 
-  const filtered = useMemo(() =>
-    serialy.filter(s => s.nazev?.toLowerCase().includes(q.toLowerCase()))
+  const filtered = useMemo(() => {
+    const f = filters;
+    return serialy
+      .filter(x => !q || x.nazev?.toLowerCase().includes(q.toLowerCase()))
+      .filter(x => f.hodnoceniMin == null || (x.hodnoceni ?? 0) >= f.hodnoceniMin)
+      .filter(x => !f.platformy.length || f.platformy.includes(x.platforma))
+      .filter(x => !f.zanry.length || f.zanry.every(z => (x.zanry ?? []).includes(z)))
+      .filter(x => !f.stav.length || f.stav.includes(x.stav))
+      .filter(x => !f.rokOd || (x.rok ?? 0) >= parseInt(f.rokOd))
+      .filter(x => !f.rokDo || (x.rok ?? 9999) <= parseInt(f.rokDo))
       .sort((a, b) => {
         const da = b.konecSledovani || b.zacatekSledovani || "";
         const db = a.konecSledovani || a.zacatekSledovani || "";
         return da.localeCompare(db);
-      }),
-    [serialy, q]
-  );
+      });
+  }, [serialy, q, filters]);
 
   const openAdd = () => { setEditing(null); setForm(emptySerial()); setModal(true); };
   const openEdit = s => { setEditing(s.id); setForm({ ...s }); setModal(true); };
@@ -665,10 +825,13 @@ function SerialyTab({ serialy, setSerialy, herci }) {
     setModal(false);
   };
   const del = id => setSerialy(ss => ss.filter(s => s.id !== id));
+  const activeFilterCount = countActiveFilters(filters);
 
   return (
     <div>
-      <TabHeader count={filtered.length} onAdd={openAdd} q={q} setQ={setQ} addLabel="Přidat seriál" />
+      <TabHeader count={filtered.length} onAdd={openAdd} q={q} setQ={setQ} addLabel="Přidat seriál" onToggleFilters={() => setShowFilters(v => !v)} activeFilterCount={activeFilterCount} />
+      {showFilters && <SerialyFilters filters={filters} setFilters={setFilters} serialy={serialy} />}
+      {activeFilterCount > 0 && <button onClick={() => setFilters(emptySerialFilters())} style={{ ...btnSecondary, fontSize: 11, marginBottom: 12, color: T.danger, borderColor: T.danger }}>× Zrušit filtry</button>}
       {filtered.map(s => <SerialCard key={s.id} serial={s} herci={herci} onEdit={openEdit} onDelete={del} />)}
       {filtered.length === 0 && <Empty />}
       <Modal open={modal} title={editing ? "Upravit seriál" : "Přidat seriál"} onClose={() => setModal(false)} onSave={save} wide>
