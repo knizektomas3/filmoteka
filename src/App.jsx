@@ -1,5 +1,17 @@
-import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback, useContext, createContext } from "react";
 import { supabase } from "./lib/supabase";
+
+const MobileCtx = createContext(false);
+const useMobile = () => useContext(MobileCtx);
+function useIsMobile() {
+  const [m, setM] = useState(() => window.innerWidth < 768);
+  useEffect(() => {
+    const h = () => setM(window.innerWidth < 768);
+    window.addEventListener("resize", h);
+    return () => window.removeEventListener("resize", h);
+  }, []);
+  return m;
+}
 
 // ─── KONSTANTY ────────────────────────────────────────────────────────────────
 const ZANRY = [
@@ -88,17 +100,19 @@ function applyTheme(dark) {
 
 // ─── PRIMITIVA ────────────────────────────────────────────────────────────────
 function Modal({ open, title, onClose, onSave, children, wide }) {
+  const isMobile = useMobile();
   if (!open) return null;
   return (
     <div style={{
       position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)",
-      display: "flex", alignItems: "center", justifyContent: "center",
-      zIndex: 1000, padding: 20,
+      display: "flex", alignItems: isMobile ? "flex-end" : "center", justifyContent: "center",
+      zIndex: 1000, padding: isMobile ? 0 : 20,
     }}>
       <div style={{
         background: T.surface, border: `1px solid ${T.border}`,
-        borderRadius: 8, width: wide ? 740 : 520,
-        maxWidth: "100%", maxHeight: "92vh",
+        borderRadius: isMobile ? "12px 12px 0 0" : 8,
+        width: isMobile ? "100%" : (wide ? 740 : 520),
+        maxWidth: "100%", maxHeight: isMobile ? "92vh" : "92vh",
         display: "flex", flexDirection: "column",
       }}>
         <div style={{
@@ -438,6 +452,7 @@ let cardStyle = {
 };
 
 function FilmCard({ film, herci, reziseri, onEdit, onDelete, isAdmin }) {
+  const isMobile = useMobile();
   const [hover, setHover] = useState(false);
   const filmReziseri = reziseri.filter(r => (film.reziserIds ?? []).includes(r.id));
   const filmHerci = herci.filter(h => (film.herciIds ?? []).includes(h.id));
@@ -466,9 +481,9 @@ function FilmCard({ film, herci, reziseri, onEdit, onDelete, isAdmin }) {
           {filmHerci.length > 0 && <span style={{ fontSize: 12, color: T.muted }}>👤 {filmHerci.map(h => h.jmeno).join(", ")}</span>}
         </div>
       </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginLeft: 14, flexShrink: 0 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: isMobile ? 6 : 10, marginLeft: isMobile ? 8 : 14, flexShrink: 0 }}>
         <Rating value={film.hodnoceni} />
-        {isAdmin && <button onClick={() => onEdit(film)} style={btnSecondary}>Upravit</button>}
+        {isAdmin && !isMobile && <button onClick={() => onEdit(film)} style={btnSecondary}>Upravit</button>}
         {isAdmin && <button onClick={() => onDelete(film.id)} style={btnDanger}>✕</button>}
       </div>
     </div>
@@ -476,6 +491,7 @@ function FilmCard({ film, herci, reziseri, onEdit, onDelete, isAdmin }) {
 }
 
 function SerialCard({ serial, herci, onEdit, onDelete, isAdmin }) {
+  const isMobile = useMobile();
   const [hover, setHover] = useState(false);
   const stavColor = { Dokoukáno: T.green, Sleduji: T.gold, Nedokončeno: T.orange, Plánuji: "#95a5a6" };
   const serialHerci = herci.filter(h => (serial.herciIds ?? []).includes(h.id));
@@ -515,7 +531,7 @@ function SerialCard({ serial, herci, onEdit, onDelete, isAdmin }) {
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginLeft: 14, flexShrink: 0 }}>
         <Rating value={serial.hodnoceni} />
-        {isAdmin && <button onClick={() => onEdit(serial)} style={btnSecondary}>Upravit</button>}
+        {isAdmin && !isMobile && <button onClick={() => onEdit(serial)} style={btnSecondary}>Upravit</button>}
         {isAdmin && <button onClick={() => onDelete(serial.id)} style={btnDanger}>✕</button>}
       </div>
     </div>
@@ -532,10 +548,11 @@ function OsobaDetailModal({ osoba, filmy, serialy, onClose }) {
 
   const total = osobaFilmy.length + osobaSerialy.length;
 
+  const isMobile = useMobile();
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 }}
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", display: "flex", alignItems: isMobile ? "flex-end" : "center", justifyContent: "center", zIndex: 1000, padding: isMobile ? 0 : 20 }}
       onClick={e => e.target === e.currentTarget && onClose()}>
-      <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 8, width: 600, maxWidth: "100%", maxHeight: "92vh", display: "flex", flexDirection: "column" }}>
+      <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: isMobile ? "12px 12px 0 0" : 8, width: isMobile ? "100%" : 600, maxWidth: "100%", maxHeight: "92vh", display: "flex", flexDirection: "column" }}>
         <div style={{ padding: "14px 20px", borderBottom: `1px solid ${T.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
             <span style={{ fontSize: 16, fontWeight: 700, color: T.text, fontFamily: "Cormorant Garamond, serif" }}>{osoba.jmeno}</span>
@@ -1102,6 +1119,7 @@ function BilCard({ title, children }) {
 }
 
 function BilanceFilmyTab({ filmy }) {
+  const isMobile = useMobile();
   const currentYear = new Date().getFullYear();
   const rated = filmy.filter(f => f.hodnoceni);
   const avg = rated.length ? (rated.reduce((a, f) => a + f.hodnoceni, 0) / rated.length).toFixed(1) : '–';
@@ -1142,12 +1160,12 @@ function BilanceFilmyTab({ filmy }) {
     <div>
       <div style={{ fontSize: 22, fontWeight: 700, color: T.text, fontFamily: 'Cormorant Garamond, serif', marginBottom: 4 }}>Bilance filmů</div>
       <div style={{ fontSize: 13, color: T.muted, marginBottom: 24 }}>Celkový přehled sledování</div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(3, 1fr)', gap: 12, marginBottom: 16 }}>
         <BilStat label="Filmů celkem" value={filmy.length} />
         <BilStat label="Průměrné hodnocení" value={avg} color={T.gold} sub={`z ${rated.length} hodnocených`} />
         <BilStat label={`Zhlédnuto ${currentYear}`} value={thisYear.length} />
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12 }}>
         <BilCard title="Filmy po letech"><BarChart data={byYearData} color={T.gold} /></BilCard>
         <BilCard title={`Měsíce ${currentYear}`}><BarChart data={monthData} color={T.blue} /></BilCard>
         <BilCard title="Platformy"><HBarChart data={platData} color={T.purple} /></BilCard>
@@ -1160,6 +1178,7 @@ function BilanceFilmyTab({ filmy }) {
 }
 
 function BilanceSerialyTab({ serialy }) {
+  const isMobile = useMobile();
   const currentYear = new Date().getFullYear();
   const finished = serialy.filter(s => s.konecSledovani);
   const rated = finished.filter(s => s.hodnoceni);
@@ -1193,12 +1212,12 @@ function BilanceSerialyTab({ serialy }) {
     <div>
       <div style={{ fontSize: 22, fontWeight: 700, color: T.text, fontFamily: 'Cormorant Garamond, serif', marginBottom: 4 }}>Bilance seriálů</div>
       <div style={{ fontSize: 13, color: T.muted, marginBottom: 24 }}>Celkový přehled sledování</div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(3, 1fr)', gap: 12, marginBottom: 16 }}>
         <BilStat label="Dosledováno celkem" value={finished.length} sub={`z ${serialy.length} v databázi`} />
         <BilStat label="Průměrné hodnocení" value={avg} color={T.gold} sub={`z ${rated.length} hodnocených`} />
         <BilStat label={`Zhlédnuto ${currentYear}`} value={thisYear.length} />
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12 }}>
         <BilCard title="Seriály po letech"><BarChart data={byYearData} color={T.gold} /></BilCard>
         <BilCard title={`Měsíce ${currentYear}`}><BarChart data={monthData} color={T.blue} /></BilCard>
         <BilCard title="Platformy"><HBarChart data={platData} color={T.purple} /></BilCard>
@@ -1467,55 +1486,53 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, []);
 
+  const isMobile = useIsMobile();
   const isAdmin = !!session;
   const counts = { filmy: filmy.length, serialy: serialy.length, herci: herci.length, reziseri: reziseri.length, watchlist: watchlist.length };
 
-return (
+  return (
+    <MobileCtx.Provider value={isMobile}>
     <div style={{ background: T.bg, minHeight: "100vh", color: T.text, fontFamily: "DM Sans, sans-serif", fontSize: 13 }}>
       {/* Navigace */}
-      <div style={{
-        borderBottom: `1px solid ${T.border}`, background: T.surface,
-        padding: "0 24px", display: "flex", alignItems: "stretch",
-        position: "sticky", top: 0, zIndex: 100,
-      }}>
-        <div style={{
-          fontFamily: "Cormorant Garamond, serif", fontSize: 19, fontWeight: 700,
-          color: T.gold, letterSpacing: "0.12em", display: "flex", alignItems: "center",
-          paddingRight: 20, marginRight: 8, borderRight: `1px solid ${T.border}`,
-        }}>
-          FILMOTÉKA
+      <div style={{ borderBottom: `1px solid ${T.border}`, background: T.surface, position: "sticky", top: 0, zIndex: 100 }}>
+        {/* Logo + akce */}
+        <div style={{ padding: "0 16px", display: "flex", alignItems: "center", height: isMobile ? 46 : 52, gap: 4 }}>
+          <div style={{ fontFamily: "Cormorant Garamond, serif", fontSize: isMobile ? 16 : 19, fontWeight: 700, color: T.gold, letterSpacing: "0.12em", flexShrink: 0 }}>
+            FILMOTÉKA
+          </div>
+          <div style={{ flex: 1 }} />
+          <button onClick={() => setDarkMode(d => !d)} title={darkMode ? "Světlý režim" : "Tmavý režim"}
+            style={{ background: "none", border: "none", cursor: "pointer", color: T.muted, fontSize: 17, padding: "0 6px", display: "flex", alignItems: "center" }}
+          >{darkMode ? "☀️" : "🌙"}</button>
+          {isAdmin
+            ? <button onClick={() => supabase.auth.signOut()} style={{ background: "none", border: "none", cursor: "pointer", color: T.muted, fontSize: 11, padding: "0 8px", display: "flex", alignItems: "center" }}>Odhlásit</button>
+            : <button onClick={() => setLoginModal(true)} style={{ background: "none", border: "none", cursor: "pointer", color: T.muted, fontSize: 11, padding: "0 8px", display: "flex", alignItems: "center" }}>Přihlásit</button>
+          }
         </div>
-        {TABS.map(t => (
-          <button key={t.id} onClick={() => setTab(t.id)} style={{
-            background: "none", border: "none", cursor: "pointer",
-            padding: "0 14px", fontSize: 11, fontWeight: 600, letterSpacing: "0.08em",
-            color: tab === t.id ? T.gold : T.muted,
-            borderBottom: tab === t.id ? `2px solid ${T.gold}` : "2px solid transparent",
-            textTransform: "uppercase", display: "flex", alignItems: "center", gap: 6,
-            height: 52,
-          }}>
-            {t.label}
-            {counts[t.id] != null && counts[t.id] > 0 && <span style={{
-              fontSize: 10, background: tab === t.id ? T.goldBg : T.elevated,
+        {/* Taby — scrollovatelné */}
+        <div style={{ display: "flex", overflowX: "auto", scrollbarWidth: "none", borderTop: `1px solid ${T.border}`, padding: "0 8px" }}>
+          {TABS.map(t => (
+            <button key={t.id} onClick={() => setTab(t.id)} style={{
+              background: "none", border: "none", cursor: "pointer", flexShrink: 0,
+              padding: isMobile ? "0 10px" : "0 14px",
+              fontSize: isMobile ? 10 : 11, fontWeight: 600, letterSpacing: "0.06em",
               color: tab === t.id ? T.gold : T.muted,
-              padding: "1px 5px", borderRadius: 10,
-            }}>{counts[t.id]}</span>}
-          </button>
-        ))}
-        <div style={{ flex: 1 }} />
-        <button
-          onClick={() => setDarkMode(d => !d)}
-          title={darkMode ? "Světlý režim" : "Tmavý režim"}
-          style={{ background: "none", border: "none", cursor: "pointer", color: T.muted, fontSize: 18, padding: "0 8px", display: "flex", alignItems: "center" }}
-        >{darkMode ? "☀️" : "🌙"}</button>
-        {isAdmin
-          ? <button onClick={() => supabase.auth.signOut()} style={{ background: "none", border: "none", cursor: "pointer", color: T.muted, fontSize: 11, padding: "0 10px", display: "flex", alignItems: "center" }}>Odhlásit</button>
-          : <button onClick={() => setLoginModal(true)} style={{ background: "none", border: "none", cursor: "pointer", color: T.muted, fontSize: 11, padding: "0 10px", display: "flex", alignItems: "center" }}>Přihlásit</button>
-        }
+              borderBottom: tab === t.id ? `2px solid ${T.gold}` : "2px solid transparent",
+              textTransform: "uppercase", display: "flex", alignItems: "center", gap: 5,
+              height: isMobile ? 38 : 44, whiteSpace: "nowrap",
+            }}>
+              {t.label}
+              {counts[t.id] != null && counts[t.id] > 0 && <span style={{
+                fontSize: 9, background: tab === t.id ? T.goldBg : T.elevated,
+                color: tab === t.id ? T.gold : T.muted, padding: "1px 5px", borderRadius: 10,
+              }}>{counts[t.id]}</span>}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Obsah */}
-      <div style={{ maxWidth: 980, margin: "0 auto", padding: "28px 24px" }}>
+      <div style={{ maxWidth: 980, margin: "0 auto", padding: isMobile ? "14px 12px" : "28px 24px" }}>
         {loading ? (
           <div style={{ textAlign: "center", color: T.muted, padding: "80px 0", fontSize: 14 }}>Načítám...</div>
         ) : (
@@ -1534,5 +1551,6 @@ return (
       <LoginModal open={loginModal} onClose={() => setLoginModal(false)} />
       <ResetPasswordModal open={resetModal} onDone={() => setResetModal(false)} />
     </div>
+    </MobileCtx.Provider>
   );
 }
