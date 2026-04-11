@@ -1086,23 +1086,23 @@ function BilanceFilmyTab({ filmy }) {
 
 function BilanceSerialyTab({ serialy }) {
   const currentYear = new Date().getFullYear();
-  const rated = serialy.filter(s => s.hodnoceni);
+  const finished = serialy.filter(s => s.konecSledovani);
+  const rated = finished.filter(s => s.hodnoceni);
   const avg = rated.length ? (rated.reduce((a, s) => a + s.hodnoceni, 0) / rated.length).toFixed(1) : '–';
-  const getDate = s => s.konecSledovani || s.zacatekSledovani || '';
-  const thisYear = serialy.filter(s => getDate(s).startsWith(String(currentYear)));
+  const thisYear = finished.filter(s => s.konecSledovani.startsWith(String(currentYear)));
 
   // Po letech
   const byYear = {};
-  serialy.filter(s => getDate(s)).forEach(s => { const y = getDate(s).slice(0,4); byYear[y]=(byYear[y]||0)+1; });
+  finished.forEach(s => { const y = s.konecSledovani.slice(0,4); byYear[y]=(byYear[y]||0)+1; });
   const byYearData = Object.keys(byYear).sort().map(y=>({ label:"'"+y.slice(2), value:byYear[y] }));
 
   // Po měsících aktuálního roku
   const monthData = MONTHS_CZ.map(l=>({ label:l, value:0 }));
-  thisYear.forEach(s => { const d = getDate(s); if (d) monthData[parseInt(d.slice(5,7))-1].value++; });
+  thisYear.forEach(s => { monthData[parseInt(s.konecSledovani.slice(5,7))-1].value++; });
 
   // Platformy
   const byPlat = {};
-  serialy.forEach(s => { if (s.platforma) byPlat[s.platforma]=(byPlat[s.platforma]||0)+1; });
+  finished.forEach(s => { if (s.platforma) byPlat[s.platforma]=(byPlat[s.platforma]||0)+1; });
   const platData = Object.entries(byPlat).sort((a,b)=>b[1]-a[1]).map(([l,v])=>({label:l,value:v}));
 
   // Hodnocení
@@ -1111,7 +1111,7 @@ function BilanceSerialyTab({ serialy }) {
 
   // Rok výroby – dekády
   const byDec = {};
-  serialy.filter(s=>s.rok).forEach(s => { const d=Math.floor(parseInt(s.rok)/10)*10; byDec[d]=(byDec[d]||0)+1; });
+  finished.filter(s=>s.rok).forEach(s => { const d=Math.floor(parseInt(s.rok)/10)*10; byDec[d]=(byDec[d]||0)+1; });
   const decData = Object.keys(byDec).sort().map(d=>({ label:`${d}s`, value:byDec[d] }));
 
   return (
@@ -1119,7 +1119,7 @@ function BilanceSerialyTab({ serialy }) {
       <div style={{ fontSize: 22, fontWeight: 700, color: T.text, fontFamily: 'Cormorant Garamond, serif', marginBottom: 4 }}>Bilance seriálů</div>
       <div style={{ fontSize: 13, color: T.muted, marginBottom: 24 }}>Celkový přehled sledování</div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 16 }}>
-        <BilStat label="Seriálů celkem" value={serialy.length} />
+        <BilStat label="Dosledováno celkem" value={finished.length} sub={`z ${serialy.length} v databázi`} />
         <BilStat label="Průměrné hodnocení" value={avg} color={T.gold} sub={`z ${rated.length} hodnocených`} />
         <BilStat label={`Zhlédnuto ${currentYear}`} value={thisYear.length} />
       </div>
