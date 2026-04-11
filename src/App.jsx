@@ -42,47 +42,48 @@ const today = () => new Date().toISOString().slice(0, 10);
 const fmtDate = (s) => { if (!s) return ""; const [y, m, d] = s.split("-"); return `${d}.${m}.${y}`; };
 
 // ─── TÉMA ─────────────────────────────────────────────────────────────────────
-const T = {
-  bg: "#0b0b0d",
-  surface: "#131316",
-  elevated: "#1a1a1e",
-  border: "#22222a",
-  borderHover: "#33333c",
-  gold: "#c9a227",
-  goldBg: "#c9a22718",
-  text: "#e4ddd0",
-  muted: "#6a6560",
-  dimmer: "#3a3730",
-  danger: "#b03a2e",
-  blue: "#2980b9",
-  purple: "#8e44ad",
-  green: "#27ae60",
-  orange: "#e67e22",
+const TDark = {
+  bg: "#0b0b0d", surface: "#131316", elevated: "#1a1a1e",
+  border: "#22222a", borderHover: "#33333c",
+  gold: "#c9a227", goldBg: "#c9a22718",
+  text: "#e4ddd0", muted: "#6a6560", dimmer: "#3a3730",
+  danger: "#b03a2e", blue: "#2980b9", purple: "#8e44ad", green: "#27ae60", orange: "#e67e22",
 };
+const TLight = {
+  bg: "#f5f0e8", surface: "#fffdf8", elevated: "#ede8de",
+  border: "#d8cfc0", borderHover: "#c4b8a4",
+  gold: "#9a7420", goldBg: "#9a742218",
+  text: "#1a1208", muted: "#7a6855", dimmer: "#b0a090",
+  danger: "#b03a2e", blue: "#1a6896", purple: "#6b2f8a", green: "#1a7a3a", orange: "#b8600e",
+};
+let T = { ...TDark };
 
-const inp = {
-  background: T.elevated,
-  border: `1px solid ${T.border}`,
-  color: T.text,
-  borderRadius: 4,
-  padding: "7px 10px",
-  fontSize: 13,
-  width: "100%",
-  outline: "none",
-  boxSizing: "border-box",
-  fontFamily: "inherit",
+let inp = {
+  background: T.elevated, border: `1px solid ${T.border}`, color: T.text,
+  borderRadius: 4, padding: "7px 10px", fontSize: 13, width: "100%",
+  outline: "none", boxSizing: "border-box", fontFamily: "inherit",
 };
-const btnPrimary = {
+let btnPrimary = {
   padding: "7px 18px", borderRadius: 4, border: "none", cursor: "pointer",
   fontSize: 12, fontWeight: 700, background: T.gold, color: "#0b0b0d",
   letterSpacing: "0.05em", textTransform: "uppercase",
 };
-const btnSecondary = {
+let btnSecondary = {
   padding: "6px 12px", borderRadius: 4, cursor: "pointer",
   fontSize: 11, fontWeight: 500, background: "transparent",
   border: `1px solid ${T.border}`, color: T.muted,
 };
-const btnDanger = { ...btnSecondary, color: T.danger + "bb", borderColor: T.danger + "44" };
+let btnDanger = { ...btnSecondary, color: T.danger + "bb", borderColor: T.danger + "44" };
+
+function applyTheme(dark) {
+  Object.assign(T, dark ? TDark : TLight);
+  Object.assign(inp, { background: T.elevated, border: `1px solid ${T.border}`, color: T.text });
+  Object.assign(btnPrimary, { background: T.gold, color: dark ? "#0b0b0d" : "#fff8f0" });
+  Object.assign(btnSecondary, { border: `1px solid ${T.border}`, color: T.muted });
+  Object.assign(btnDanger, { ...btnSecondary, color: T.danger + "bb", borderColor: T.danger + "44" });
+  Object.assign(cardStyle, { background: T.surface, border: `1px solid ${T.border}` });
+  document.body.style.background = T.bg;
+}
 
 // ─── PRIMITIVA ────────────────────────────────────────────────────────────────
 function Modal({ open, title, onClose, onSave, children, wide }) {
@@ -428,7 +429,7 @@ function TagList({ items }) {
 }
 
 // ─── KARTY ────────────────────────────────────────────────────────────────────
-const cardStyle = {
+let cardStyle = {
   background: T.surface, border: `1px solid ${T.border}`,
   borderRadius: 6, padding: "13px 16px", marginBottom: 8,
   display: "flex", justifyContent: "space-between", alignItems: "flex-start",
@@ -747,23 +748,37 @@ function countActiveFilters(f) {
 }
 
 // ─── ZÁHLAVÍ ZÁLOŽKY ──────────────────────────────────────────────────────────
-function TabHeader({ count, onAdd, q, setQ, addLabel, onToggleFilters, activeFilterCount }) {
+function TabHeader({ count, onAdd, q, setQ, addLabel, onToggleFilters, activeFilterCount, sortOptions, sort, setSort }) {
   return (
-    <div style={{ display: "flex", gap: 10, marginBottom: 20, alignItems: "center" }}>
-      <input value={q} onChange={e => setQ(e.target.value)} placeholder="Vyhledat..." style={{ ...inp, maxWidth: 260 }} />
+    <div style={{ display: "flex", gap: 10, marginBottom: 20, alignItems: "center", flexWrap: "wrap" }}>
+      <input value={q} onChange={e => setQ(e.target.value)} placeholder="Vyhledat..." style={{ ...inp, maxWidth: 240 }} />
       <span style={{ color: T.muted, fontSize: 12, flexShrink: 0 }}>{count} záznamů</span>
+      {sortOptions && (
+        <select value={sort} onChange={e => setSort(e.target.value)} style={{ ...inp, width: "auto", padding: "6px 10px", cursor: "pointer" }}>
+          {sortOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+        </select>
+      )}
       <div style={{ flex: 1 }} />
       {onToggleFilters && (
         <button onClick={onToggleFilters} style={{ ...btnSecondary, position: "relative", borderColor: activeFilterCount > 0 ? T.gold : T.border, color: activeFilterCount > 0 ? T.gold : T.muted }}>
           Filtry {activeFilterCount > 0 && <span style={{ marginLeft: 4, background: T.gold, color: "#0b0b0d", borderRadius: 10, padding: "0 5px", fontSize: 10, fontWeight: 700 }}>{activeFilterCount}</span>}
         </button>
       )}
-      <button onClick={onAdd} style={btnPrimary}>+ {addLabel}</button>
+      {onAdd && <button onClick={onAdd} style={btnPrimary}>+ {addLabel}</button>}
     </div>
   );
 }
 
 // ─── ZÁLOŽKY ──────────────────────────────────────────────────────────────────
+const FILM_SORT_OPTS = [
+  { value: "datum-desc", label: "Datum zhlédnutí ↓" },
+  { value: "datum-asc", label: "Datum zhlédnutí ↑" },
+  { value: "hodnoceni-desc", label: "Hodnocení ↓" },
+  { value: "nazev-asc", label: "Název A–Z" },
+  { value: "rok-desc", label: "Rok výroby ↓" },
+  { value: "rok-asc", label: "Rok výroby ↑" },
+];
+
 function FilmyTab({ filmy, setFilmy, herci, reziseri }) {
   const [q, setQ] = useState("");
   const [modal, setModal] = useState(false);
@@ -771,10 +786,11 @@ function FilmyTab({ filmy, setFilmy, herci, reziseri }) {
   const [form, setForm] = useState(emptyFilm);
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState(emptyFilmFilters());
+  const [sort, setSort] = useState("datum-desc");
 
   const filtered = useMemo(() => {
     const f = filters;
-    return filmy
+    const list = filmy
       .filter(x => !q || x.nazev?.toLowerCase().includes(q.toLowerCase()))
       .filter(x => f.hodnoceniMin == null || (x.hodnoceni ?? 0) >= f.hodnoceniMin)
       .filter(x => !f.platformy.length || f.platformy.includes(x.platforma))
@@ -783,9 +799,18 @@ function FilmyTab({ filmy, setFilmy, herci, reziseri }) {
       .filter(x => f.ceskyFilm == null || x.ceskyFilm === f.ceskyFilm)
       .filter(x => f.doporuceni == null || x.doporuceni === f.doporuceni)
       .filter(x => !f.rokOd || (x.rok ?? 0) >= parseInt(f.rokOd))
-      .filter(x => !f.rokDo || (x.rok ?? 9999) <= parseInt(f.rokDo))
-      .sort((a, b) => (b.datum ?? "").localeCompare(a.datum ?? ""));
-  }, [filmy, q, filters]);
+      .filter(x => !f.rokDo || (x.rok ?? 9999) <= parseInt(f.rokDo));
+    list.sort((a, b) => {
+      if (sort === "datum-desc") return (b.datum ?? "").localeCompare(a.datum ?? "");
+      if (sort === "datum-asc") return (a.datum ?? "").localeCompare(b.datum ?? "");
+      if (sort === "hodnoceni-desc") return (b.hodnoceni ?? 0) - (a.hodnoceni ?? 0);
+      if (sort === "nazev-asc") return (a.nazev ?? "").localeCompare(b.nazev ?? "", "cs");
+      if (sort === "rok-desc") return (parseInt(b.rok) || 0) - (parseInt(a.rok) || 0);
+      if (sort === "rok-asc") return (parseInt(a.rok) || 0) - (parseInt(b.rok) || 0);
+      return 0;
+    });
+    return list;
+  }, [filmy, q, filters, sort]);
 
   const openAdd = () => { setEditing(null); setForm(emptyFilm()); setModal(true); };
   const openEdit = f => { setEditing(f.id); setForm({ ...f }); setModal(true); };
@@ -800,7 +825,7 @@ function FilmyTab({ filmy, setFilmy, herci, reziseri }) {
 
   return (
     <div>
-      <TabHeader count={filtered.length} onAdd={openAdd} q={q} setQ={setQ} addLabel="Přidat film" onToggleFilters={() => setShowFilters(v => !v)} activeFilterCount={activeFilterCount} />
+      <TabHeader count={filtered.length} onAdd={openAdd} q={q} setQ={setQ} addLabel="Přidat film" onToggleFilters={() => setShowFilters(v => !v)} activeFilterCount={activeFilterCount} sortOptions={FILM_SORT_OPTS} sort={sort} setSort={setSort} />
       {showFilters && <FilmyFilters filters={filters} setFilters={setFilters} filmy={filmy} />}
       {activeFilterCount > 0 && <button onClick={() => setFilters(emptyFilmFilters())} style={{ ...btnSecondary, fontSize: 11, marginBottom: 12, color: T.danger, borderColor: T.danger }}>× Zrušit filtry</button>}
       {filtered.map(f => <FilmCard key={f.id} film={f} herci={herci} reziseri={reziseri} onEdit={openEdit} onDelete={del} />)}
@@ -812,6 +837,15 @@ function FilmyTab({ filmy, setFilmy, herci, reziseri }) {
   );
 }
 
+const SERIAL_SORT_OPTS = [
+  { value: "datum-desc", label: "Datum sledování ↓" },
+  { value: "datum-asc", label: "Datum sledování ↑" },
+  { value: "hodnoceni-desc", label: "Hodnocení ↓" },
+  { value: "nazev-asc", label: "Název A–Z" },
+  { value: "rok-desc", label: "Rok výroby ↓" },
+  { value: "rok-asc", label: "Rok výroby ↑" },
+];
+
 function SerialyTab({ serialy, setSerialy, herci }) {
   const [q, setQ] = useState("");
   const [modal, setModal] = useState(false);
@@ -819,23 +853,29 @@ function SerialyTab({ serialy, setSerialy, herci }) {
   const [form, setForm] = useState(emptySerial);
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState(emptySerialFilters());
+  const [sort, setSort] = useState("datum-desc");
 
   const filtered = useMemo(() => {
     const f = filters;
-    return serialy
+    const list = serialy
       .filter(x => !q || x.nazev?.toLowerCase().includes(q.toLowerCase()))
       .filter(x => f.hodnoceniMin == null || (x.hodnoceni ?? 0) >= f.hodnoceniMin)
       .filter(x => !f.platformy.length || f.platformy.includes(x.platforma))
       .filter(x => !f.zanry.length || f.zanry.every(z => (x.zanry ?? []).includes(z)))
       .filter(x => !f.stav.length || f.stav.includes(x.stav))
       .filter(x => !f.rokOd || (x.rok ?? 0) >= parseInt(f.rokOd))
-      .filter(x => !f.rokDo || (x.rok ?? 9999) <= parseInt(f.rokDo))
-      .sort((a, b) => {
-        const da = b.konecSledovani || b.zacatekSledovani || "";
-        const db = a.konecSledovani || a.zacatekSledovani || "";
-        return da.localeCompare(db);
-      });
-  }, [serialy, q, filters]);
+      .filter(x => !f.rokDo || (x.rok ?? 9999) <= parseInt(f.rokDo));
+    list.sort((a, b) => {
+      if (sort === "datum-desc") { const da = b.konecSledovani||b.zacatekSledovani||""; const db = a.konecSledovani||a.zacatekSledovani||""; return da.localeCompare(db); }
+      if (sort === "datum-asc") { const da = a.konecSledovani||a.zacatekSledovani||""; const db = b.konecSledovani||b.zacatekSledovani||""; return da.localeCompare(db); }
+      if (sort === "hodnoceni-desc") return (b.hodnoceni ?? 0) - (a.hodnoceni ?? 0);
+      if (sort === "nazev-asc") return (a.nazev ?? "").localeCompare(b.nazev ?? "", "cs");
+      if (sort === "rok-desc") return (parseInt(b.rok) || 0) - (parseInt(a.rok) || 0);
+      if (sort === "rok-asc") return (parseInt(a.rok) || 0) - (parseInt(b.rok) || 0);
+      return 0;
+    });
+    return list;
+  }, [serialy, q, filters, sort]);
 
   const openAdd = () => { setEditing(null); setForm(emptySerial()); setModal(true); };
   const openEdit = s => { setEditing(s.id); setForm({ ...s }); setModal(true); };
@@ -850,7 +890,7 @@ function SerialyTab({ serialy, setSerialy, herci }) {
 
   return (
     <div>
-      <TabHeader count={filtered.length} onAdd={openAdd} q={q} setQ={setQ} addLabel="Přidat seriál" onToggleFilters={() => setShowFilters(v => !v)} activeFilterCount={activeFilterCount} />
+      <TabHeader count={filtered.length} onAdd={openAdd} q={q} setQ={setQ} addLabel="Přidat seriál" onToggleFilters={() => setShowFilters(v => !v)} activeFilterCount={activeFilterCount} sortOptions={SERIAL_SORT_OPTS} sort={sort} setSort={setSort} />
       {showFilters && <SerialyFilters filters={filters} setFilters={setFilters} serialy={serialy} />}
       {activeFilterCount > 0 && <button onClick={() => setFilters(emptySerialFilters())} style={{ ...btnSecondary, fontSize: 11, marginBottom: 12, color: T.danger, borderColor: T.danger }}>× Zrušit filtry</button>}
       {filtered.map(s => <SerialCard key={s.id} serial={s} herci={herci} onEdit={openEdit} onDelete={del} />)}
@@ -1134,6 +1174,109 @@ function BilanceSerialyTab({ serialy }) {
   );
 }
 
+// ─── WATCHLIST ────────────────────────────────────────────────────────────────
+const emptyWatchItem = () => ({ id: uid(), typ: "film", nazev: "", platforma: "", rok: "", zanry: [], poznamka: "" });
+
+function WatchlistTab({ watchlist, setWatchlist }) {
+  const [q, setQ] = useState("");
+  const [modal, setModal] = useState(false);
+  const [editing, setEditing] = useState(null);
+  const [form, setForm] = useState(emptyWatchItem());
+
+  const filtered = useMemo(() =>
+    watchlist.filter(x => !q || x.nazev?.toLowerCase().includes(q.toLowerCase())),
+    [watchlist, q]
+  );
+
+  const byPlatform = useMemo(() => {
+    const groups = {};
+    filtered.forEach(x => {
+      const k = x.platforma || "Bez platformy";
+      if (!groups[k]) groups[k] = [];
+      groups[k].push(x);
+    });
+    return Object.entries(groups).sort((a, b) => b[1].length - a[1].length);
+  }, [filtered]);
+
+  const openAdd = () => { setEditing(null); setForm(emptyWatchItem()); setModal(true); };
+  const openEdit = item => { setEditing(item.id); setForm({ ...item }); setModal(true); };
+  const save = () => {
+    if (!form.nazev?.trim()) return;
+    if (editing) setWatchlist(w => w.map(x => x.id === editing ? form : x));
+    else setWatchlist(w => [form, ...w]);
+    setModal(false);
+  };
+  const del = id => setWatchlist(w => w.filter(x => x.id !== id));
+  const u = (k, v) => setForm(d => ({ ...d, [k]: v }));
+
+  return (
+    <div>
+      <TabHeader count={filtered.length} onAdd={openAdd} q={q} setQ={setQ} addLabel="Přidat" />
+
+      {/* Přehled platforem */}
+      {watchlist.length > 0 && (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 24 }}>
+          {Object.entries((() => { const m = {}; watchlist.forEach(x => { const k = x.platforma||"Bez platformy"; m[k]=(m[k]||0)+1; }); return m; })()).sort((a,b) => b[1]-a[1]).map(([plat, cnt]) => (
+            <div key={plat} style={{ background: T.elevated, border: `1px solid ${T.border}`, borderRadius: 8, padding: "10px 16px", display: "flex", flexDirection: "column", alignItems: "center", minWidth: 80 }}>
+              <div style={{ fontSize: 22, fontWeight: 800, color: T.gold, fontFamily: "Cormorant Garamond, serif", lineHeight: 1 }}>{cnt}</div>
+              <div style={{ fontSize: 11, color: T.muted, marginTop: 3, textAlign: "center" }}>{plat}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {byPlatform.length === 0 && <Empty />}
+
+      {byPlatform.map(([plat, items]) => (
+        <div key={plat} style={{ marginBottom: 28 }}>
+          <div style={{ fontSize: 10, color: T.muted, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10, display: "flex", alignItems: "center", gap: 8 }}>
+            {plat}
+            <span style={{ background: T.elevated, border: `1px solid ${T.border}`, borderRadius: 10, padding: "0 6px", fontSize: 10, color: T.gold }}>{items.length}</span>
+          </div>
+          {items.map(item => (
+            <div key={item.id} style={{ ...cardStyle, borderColor: T.border }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 4, flexWrap: "wrap" }}>
+                  <span style={{ fontSize: 15, fontWeight: 600, color: T.text, fontFamily: "Cormorant Garamond, serif" }}>{item.nazev}</span>
+                  {item.rok && <span style={{ color: T.muted, fontSize: 12 }}>{item.rok}</span>}
+                  <Badge color={item.typ === "serial" ? T.blue : T.purple}>{item.typ === "serial" ? "Seriál" : "Film"}</Badge>
+                </div>
+                {(item.zanry ?? []).length > 0 && <div style={{ marginBottom: 4 }}><TagList items={item.zanry} /></div>}
+                {item.poznamka && <div style={{ fontSize: 12, color: T.muted, fontStyle: "italic" }}>{item.poznamka}</div>}
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: 14, flexShrink: 0 }}>
+                <button onClick={() => openEdit(item)} style={btnSecondary}>Upravit</button>
+                <button onClick={() => del(item.id)} style={btnDanger}>✕</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      ))}
+
+      <Modal open={modal} title={editing ? "Upravit položku" : "Přidat do watchlistu"} onClose={() => setModal(false)} onSave={save}>
+        <div style={{ display: "grid", gap: "0 20px" }}>
+          <TextInput label="Název" value={form.nazev} onChange={v => u("nazev", v)} placeholder="Název filmu / seriálu" />
+          <Field label="Typ">
+            <div style={{ display: "flex", gap: 6 }}>
+              {["film","serial"].map(t => (
+                <button key={t} onClick={() => u("typ", t)} style={{ ...btnSecondary, borderColor: form.typ === t ? T.gold : T.border, color: form.typ === t ? T.gold : T.muted }}>
+                  {t === "film" ? "Film" : "Seriál"}
+                </button>
+              ))}
+            </div>
+          </Field>
+          <SelectInput label="Platforma" value={form.platforma} onChange={v => u("platforma", v)} options={PLATFORMY} />
+          <TextInput label="Rok" value={form.rok} onChange={v => u("rok", v)} placeholder="2024" />
+          <GenreSelector value={form.zanry} onChange={v => u("zanry", v)} />
+          <Field label="Poznámka">
+            <input value={form.poznamka ?? ""} onChange={e => u("poznamka", e.target.value)} placeholder="Proč chceš vidět..." style={inp} />
+          </Field>
+        </div>
+      </Modal>
+    </div>
+  );
+}
+
 // ─── APP ──────────────────────────────────────────────────────────────────────
 const TABS = [
   { id: "filmy", label: "Filmy" },
@@ -1142,6 +1285,7 @@ const TABS = [
   { id: "reziseri", label: "Režiséři" },
   { id: "bilance-filmy", label: "Bilance filmů" },
   { id: "bilance-serialy", label: "Bilance seriálů" },
+  { id: "watchlist", label: "Watchlist" },
 ];
 
 export default function App() {
@@ -1149,7 +1293,12 @@ export default function App() {
   const [serialy, setSerialy] = useLS("wl_serialy", []);
   const [herci, setHerci] = useLS("wl_herci", []);
   const [reziseri, setReziseri] = useLS("wl_reziseri", []);
+  const [watchlist, setWatchlist] = useLS("wl_watchlist", []);
   const [tab, setTab] = useState("filmy");
+  const [darkMode, setDarkMode] = useLS("wl_theme_dark", true);
+
+  // Apply theme synchronously before render so all children see correct T
+  applyTheme(darkMode);
 
   useEffect(() => {
     const link = document.createElement("link");
@@ -1160,27 +1309,27 @@ export default function App() {
     document.body.style.background = T.bg;
   }, []);
 
-  const counts = { filmy: filmy.length, serialy: serialy.length, herci: herci.length, reziseri: reziseri.length };
+  const counts = { filmy: filmy.length, serialy: serialy.length, herci: herci.length, reziseri: reziseri.length, watchlist: watchlist.length };
 
   return (
     <div style={{ background: T.bg, minHeight: "100vh", color: T.text, fontFamily: "DM Sans, sans-serif", fontSize: 13 }}>
       {/* Navigace */}
       <div style={{
         borderBottom: `1px solid ${T.border}`, background: T.surface,
-        padding: "0 32px", display: "flex", alignItems: "stretch",
+        padding: "0 24px", display: "flex", alignItems: "stretch",
         position: "sticky", top: 0, zIndex: 100,
       }}>
         <div style={{
           fontFamily: "Cormorant Garamond, serif", fontSize: 19, fontWeight: 700,
           color: T.gold, letterSpacing: "0.12em", display: "flex", alignItems: "center",
-          paddingRight: 28, marginRight: 8, borderRight: `1px solid ${T.border}`,
+          paddingRight: 20, marginRight: 8, borderRight: `1px solid ${T.border}`,
         }}>
           FILMOTÉKA
         </div>
         {TABS.map(t => (
           <button key={t.id} onClick={() => setTab(t.id)} style={{
             background: "none", border: "none", cursor: "pointer",
-            padding: "0 18px",
+            padding: "0 14px",
             fontSize: 11, fontWeight: 600, letterSpacing: "0.08em",
             color: tab === t.id ? T.gold : T.muted,
             borderBottom: tab === t.id ? `2px solid ${T.gold}` : "2px solid transparent",
@@ -1188,13 +1337,19 @@ export default function App() {
             height: 52,
           }}>
             {t.label}
-            {counts[t.id] != null && <span style={{
+            {counts[t.id] != null && counts[t.id] > 0 && <span style={{
               fontSize: 10, background: tab === t.id ? T.goldBg : T.elevated,
               color: tab === t.id ? T.gold : T.muted,
               padding: "1px 5px", borderRadius: 10,
             }}>{counts[t.id]}</span>}
           </button>
         ))}
+        <div style={{ flex: 1 }} />
+        <button
+          onClick={() => setDarkMode(d => !d)}
+          title={darkMode ? "Přepnout na světlý režim" : "Přepnout na tmavý režim"}
+          style={{ background: "none", border: "none", cursor: "pointer", color: T.muted, fontSize: 18, padding: "0 8px", display: "flex", alignItems: "center" }}
+        >{darkMode ? "☀️" : "🌙"}</button>
       </div>
 
       {/* Obsah */}
@@ -1205,6 +1360,7 @@ export default function App() {
         {tab === "reziseri" && <ReziseriTab reziseri={reziseri} setReziseri={setReziseri} filmy={filmy} />}
         {tab === "bilance-filmy" && <BilanceFilmyTab filmy={filmy} />}
         {tab === "bilance-serialy" && <BilanceSerialyTab serialy={serialy} />}
+        {tab === "watchlist" && <WatchlistTab watchlist={watchlist} setWatchlist={setWatchlist} />}
       </div>
     </div>
   );
