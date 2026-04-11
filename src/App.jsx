@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { supabase } from "./lib/supabase";
 
 // ─── KONSTANTY ────────────────────────────────────────────────────────────────
 const ZANRY = [
@@ -436,7 +437,7 @@ let cardStyle = {
   transition: "border-color 0.15s",
 };
 
-function FilmCard({ film, herci, reziseri, onEdit, onDelete }) {
+function FilmCard({ film, herci, reziseri, onEdit, onDelete, isAdmin }) {
   const [hover, setHover] = useState(false);
   const filmReziseri = reziseri.filter(r => (film.reziserIds ?? []).includes(r.id));
   const filmHerci = herci.filter(h => (film.herciIds ?? []).includes(h.id));
@@ -467,14 +468,14 @@ function FilmCard({ film, herci, reziseri, onEdit, onDelete }) {
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginLeft: 14, flexShrink: 0 }}>
         <Rating value={film.hodnoceni} />
-        <button onClick={() => onEdit(film)} style={btnSecondary}>Upravit</button>
-        <button onClick={() => onDelete(film.id)} style={btnDanger}>✕</button>
+        {isAdmin && <button onClick={() => onEdit(film)} style={btnSecondary}>Upravit</button>}
+        {isAdmin && <button onClick={() => onDelete(film.id)} style={btnDanger}>✕</button>}
       </div>
     </div>
   );
 }
 
-function SerialCard({ serial, herci, onEdit, onDelete }) {
+function SerialCard({ serial, herci, onEdit, onDelete, isAdmin }) {
   const [hover, setHover] = useState(false);
   const stavColor = { Dokoukáno: T.green, Sleduji: T.gold, Nedokončeno: T.orange, Plánuji: "#95a5a6" };
   const serialHerci = herci.filter(h => (serial.herciIds ?? []).includes(h.id));
@@ -514,8 +515,8 @@ function SerialCard({ serial, herci, onEdit, onDelete }) {
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginLeft: 14, flexShrink: 0 }}>
         <Rating value={serial.hodnoceni} />
-        <button onClick={() => onEdit(serial)} style={btnSecondary}>Upravit</button>
-        <button onClick={() => onDelete(serial.id)} style={btnDanger}>✕</button>
+        {isAdmin && <button onClick={() => onEdit(serial)} style={btnSecondary}>Upravit</button>}
+        {isAdmin && <button onClick={() => onDelete(serial.id)} style={btnDanger}>✕</button>}
       </div>
     </div>
   );
@@ -592,7 +593,7 @@ function OsobaDetailModal({ osoba, filmy, serialy, onClose }) {
   );
 }
 
-function OsobaCard({ osoba, onEdit, onDelete, onDetail, filmCount }) {
+function OsobaCard({ osoba, onEdit, onDelete, onDetail, filmCount, isAdmin }) {
   const [hover, setHover] = useState(false);
   return (
     <div style={{ ...cardStyle, borderColor: hover ? T.borderHover : T.border, alignItems: "center", cursor: "pointer" }}
@@ -607,10 +608,12 @@ function OsobaCard({ osoba, onEdit, onDelete, onDetail, filmCount }) {
         {osoba.neoblibeny && <Badge color={T.danger}>✕ Neoblíbený</Badge>}
         {filmCount != null && filmCount > 0 && <span style={{ fontSize: 11, color: T.muted, marginLeft: 4 }}>{filmCount} {filmCount === 1 ? "záznam" : filmCount < 5 ? "záznamy" : "záznamů"}</span>}
       </div>
-      <div style={{ display: "flex", gap: 8, flexShrink: 0, marginLeft: 12 }} onClick={e => e.stopPropagation()}>
-        <button onClick={() => onEdit(osoba)} style={btnSecondary}>Upravit</button>
-        <button onClick={() => onDelete(osoba.id)} style={btnDanger}>✕</button>
-      </div>
+      {isAdmin && (
+        <div style={{ display: "flex", gap: 8, flexShrink: 0, marginLeft: 12 }} onClick={e => e.stopPropagation()}>
+          <button onClick={() => onEdit(osoba)} style={btnSecondary}>Upravit</button>
+          <button onClick={() => onDelete(osoba.id)} style={btnDanger}>✕</button>
+        </div>
+      )}
     </div>
   );
 }
@@ -779,7 +782,7 @@ const FILM_SORT_OPTS = [
   { value: "rok-asc", label: "Rok výroby ↑" },
 ];
 
-function FilmyTab({ filmy, setFilmy, herci, reziseri }) {
+function FilmyTab({ filmy, setFilmy, herci, reziseri, isAdmin }) {
   const [q, setQ] = useState("");
   const [modal, setModal] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -814,21 +817,29 @@ function FilmyTab({ filmy, setFilmy, herci, reziseri }) {
 
   const openAdd = () => { setEditing(null); setForm(emptyFilm()); setModal(true); };
   const openEdit = f => { setEditing(f.id); setForm({ ...f }); setModal(true); };
-  const save = () => {
+  const save = async () => {
     if (!form.nazev?.trim()) return;
-    if (editing) setFilmy(fs => fs.map(f => f.id === editing ? form : f));
-    else setFilmy(fs => [form, ...fs]);
+    if (editing) {
+      await supabase.from("filmy").update(form).eq("id", form.id);
+      setFilmy(fs => fs.map(f => f.id === editing ? form : f));
+    } else {
+      await supabase.from("filmy").insert(form);
+      setFilmy(fs => [form, ...fs]);
+    }
     setModal(false);
   };
-  const del = id => setFilmy(fs => fs.filter(f => f.id !== id));
+  const del = async id => {
+    await supabase.from("filmy").delete().eq("id", id);
+    setFilmy(fs => fs.filter(f => f.id !== id));
+  };
   const activeFilterCount = countActiveFilters(filters);
 
   return (
     <div>
-      <TabHeader count={filtered.length} onAdd={openAdd} q={q} setQ={setQ} addLabel="Přidat film" onToggleFilters={() => setShowFilters(v => !v)} activeFilterCount={activeFilterCount} sortOptions={FILM_SORT_OPTS} sort={sort} setSort={setSort} />
+      <TabHeader count={filtered.length} onAdd={isAdmin ? openAdd : null} q={q} setQ={setQ} addLabel="Přidat film" onToggleFilters={() => setShowFilters(v => !v)} activeFilterCount={activeFilterCount} sortOptions={FILM_SORT_OPTS} sort={sort} setSort={setSort} />
       {showFilters && <FilmyFilters filters={filters} setFilters={setFilters} filmy={filmy} />}
       {activeFilterCount > 0 && <button onClick={() => setFilters(emptyFilmFilters())} style={{ ...btnSecondary, fontSize: 11, marginBottom: 12, color: T.danger, borderColor: T.danger }}>× Zrušit filtry</button>}
-      {filtered.map(f => <FilmCard key={f.id} film={f} herci={herci} reziseri={reziseri} onEdit={openEdit} onDelete={del} />)}
+      {filtered.map(f => <FilmCard key={f.id} film={f} herci={herci} reziseri={reziseri} onEdit={openEdit} onDelete={del} isAdmin={isAdmin} />)}
       {filtered.length === 0 && <Empty />}
       <Modal open={modal} title={editing ? "Upravit film" : "Přidat film"} onClose={() => setModal(false)} onSave={save} wide>
         <FilmForm data={form} setData={setForm} herci={herci} reziseri={reziseri} />
@@ -846,7 +857,7 @@ const SERIAL_SORT_OPTS = [
   { value: "rok-asc", label: "Rok výroby ↑" },
 ];
 
-function SerialyTab({ serialy, setSerialy, herci }) {
+function SerialyTab({ serialy, setSerialy, herci, isAdmin }) {
   const [q, setQ] = useState("");
   const [modal, setModal] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -879,21 +890,29 @@ function SerialyTab({ serialy, setSerialy, herci }) {
 
   const openAdd = () => { setEditing(null); setForm(emptySerial()); setModal(true); };
   const openEdit = s => { setEditing(s.id); setForm({ ...s }); setModal(true); };
-  const save = () => {
+  const save = async () => {
     if (!form.nazev?.trim()) return;
-    if (editing) setSerialy(ss => ss.map(s => s.id === editing ? form : s));
-    else setSerialy(ss => [form, ...ss]);
+    if (editing) {
+      await supabase.from("serialy").update(form).eq("id", form.id);
+      setSerialy(ss => ss.map(s => s.id === editing ? form : s));
+    } else {
+      await supabase.from("serialy").insert(form);
+      setSerialy(ss => [form, ...ss]);
+    }
     setModal(false);
   };
-  const del = id => setSerialy(ss => ss.filter(s => s.id !== id));
+  const del = async id => {
+    await supabase.from("serialy").delete().eq("id", id);
+    setSerialy(ss => ss.filter(s => s.id !== id));
+  };
   const activeFilterCount = countActiveFilters(filters);
 
   return (
     <div>
-      <TabHeader count={filtered.length} onAdd={openAdd} q={q} setQ={setQ} addLabel="Přidat seriál" onToggleFilters={() => setShowFilters(v => !v)} activeFilterCount={activeFilterCount} sortOptions={SERIAL_SORT_OPTS} sort={sort} setSort={setSort} />
+      <TabHeader count={filtered.length} onAdd={isAdmin ? openAdd : null} q={q} setQ={setQ} addLabel="Přidat seriál" onToggleFilters={() => setShowFilters(v => !v)} activeFilterCount={activeFilterCount} sortOptions={SERIAL_SORT_OPTS} sort={sort} setSort={setSort} />
       {showFilters && <SerialyFilters filters={filters} setFilters={setFilters} serialy={serialy} />}
       {activeFilterCount > 0 && <button onClick={() => setFilters(emptySerialFilters())} style={{ ...btnSecondary, fontSize: 11, marginBottom: 12, color: T.danger, borderColor: T.danger }}>× Zrušit filtry</button>}
-      {filtered.map(s => <SerialCard key={s.id} serial={s} herci={herci} onEdit={openEdit} onDelete={del} />)}
+      {filtered.map(s => <SerialCard key={s.id} serial={s} herci={herci} onEdit={openEdit} onDelete={del} isAdmin={isAdmin} />)}
       {filtered.length === 0 && <Empty />}
       <Modal open={modal} title={editing ? "Upravit seriál" : "Přidat seriál"} onClose={() => setModal(false)} onSave={save} wide>
         <SerialForm data={form} setData={setForm} herci={herci} />
@@ -902,7 +921,7 @@ function SerialyTab({ serialy, setSerialy, herci }) {
   );
 }
 
-function HerciTab({ herci, setHerci, filmy, serialy }) {
+function HerciTab({ herci, setHerci, filmy, serialy, isAdmin }) {
   const [q, setQ] = useState("");
   const [modal, setModal] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -928,23 +947,31 @@ function HerciTab({ herci, setHerci, filmy, serialy }) {
 
   const openAdd = () => { setEditing(null); setForm(emptyOsoba()); setModal(true); };
   const openEdit = h => { setEditing(h.id); setForm({ ...h }); setModal(true); };
-  const save = () => {
+  const save = async () => {
     if (!form.jmeno?.trim()) return;
-    if (editing) setHerci(hs => hs.map(h => h.id === editing ? form : h));
-    else setHerci(hs => [...hs, form]);
+    if (editing) {
+      await supabase.from("herci").update(form).eq("id", form.id);
+      setHerci(hs => hs.map(h => h.id === editing ? form : h));
+    } else {
+      await supabase.from("herci").insert(form);
+      setHerci(hs => [...hs, form]);
+    }
     setModal(false);
   };
-  const del = id => setHerci(hs => hs.filter(h => h.id !== id));
+  const del = async id => {
+    await supabase.from("herci").delete().eq("id", id);
+    setHerci(hs => hs.filter(h => h.id !== id));
+  };
 
   return (
     <div>
-      <TabHeader count={filtered.length} onAdd={openAdd} q={q} setQ={setQ} addLabel="Přidat herce" />
+      <TabHeader count={filtered.length} onAdd={isAdmin ? openAdd : null} q={q} setQ={setQ} addLabel="Přidat herce" />
       <div style={{ display: "flex", gap: 6, marginBottom: 14 }}>
         {[{k: null, l: "Všichni"}, {k: "oblibeny", l: "★ Oblíbení"}, {k: "neoblibeny", l: "✕ Neoblíbení"}, {k: "mrtvy", l: "† Po smrti"}].map(({ k, l }) => (
           <FilterPill key={l} label={l} active={osobaFilter === k} onClick={() => setOsobaFilter(k)} />
         ))}
       </div>
-      {filtered.map(h => <OsobaCard key={h.id} osoba={h} onEdit={openEdit} onDelete={del} onDetail={setDetail} filmCount={countMap[h.id] ?? 0} />)}
+      {filtered.map(h => <OsobaCard key={h.id} osoba={h} onEdit={openEdit} onDelete={del} onDetail={setDetail} filmCount={countMap[h.id] ?? 0} isAdmin={isAdmin} />)}
       {filtered.length === 0 && <Empty />}
       <Modal open={modal} title={editing ? "Upravit herce" : "Přidat herce"} onClose={() => setModal(false)} onSave={save}>
         <OsobaForm data={form} setData={setForm} showNeoblibeny />
@@ -954,7 +981,7 @@ function HerciTab({ herci, setHerci, filmy, serialy }) {
   );
 }
 
-function ReziseriTab({ reziseri, setReziseri, filmy }) {
+function ReziseriTab({ reziseri, setReziseri, filmy, isAdmin }) {
   const [q, setQ] = useState("");
   const [modal, setModal] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -979,23 +1006,31 @@ function ReziseriTab({ reziseri, setReziseri, filmy }) {
 
   const openAdd = () => { setEditing(null); setForm(emptyOsoba()); setModal(true); };
   const openEdit = r => { setEditing(r.id); setForm({ ...r }); setModal(true); };
-  const save = () => {
+  const save = async () => {
     if (!form.jmeno?.trim()) return;
-    if (editing) setReziseri(rs => rs.map(r => r.id === editing ? form : r));
-    else setReziseri(rs => [...rs, form]);
+    if (editing) {
+      await supabase.from("reziseri").update(form).eq("id", form.id);
+      setReziseri(rs => rs.map(r => r.id === editing ? form : r));
+    } else {
+      await supabase.from("reziseri").insert(form);
+      setReziseri(rs => [...rs, form]);
+    }
     setModal(false);
   };
-  const del = id => setReziseri(rs => rs.filter(r => r.id !== id));
+  const del = async id => {
+    await supabase.from("reziseri").delete().eq("id", id);
+    setReziseri(rs => rs.filter(r => r.id !== id));
+  };
 
   return (
     <div>
-      <TabHeader count={filtered.length} onAdd={openAdd} q={q} setQ={setQ} addLabel="Přidat režiséra" />
+      <TabHeader count={filtered.length} onAdd={isAdmin ? openAdd : null} q={q} setQ={setQ} addLabel="Přidat režiséra" />
       <div style={{ display: "flex", gap: 6, marginBottom: 14 }}>
         {[{k: null, l: "Všichni"}, {k: "oblibeny", l: "★ Oblíbení"}, {k: "mrtvy", l: "† Po smrti"}].map(({ k, l }) => (
           <FilterPill key={l} label={l} active={osobaFilter === k} onClick={() => setOsobaFilter(k)} />
         ))}
       </div>
-      {filtered.map(r => <OsobaCard key={r.id} osoba={r} onEdit={openEdit} onDelete={del} onDetail={setDetail} filmCount={countMap[r.id] ?? 0} />)}
+      {filtered.map(r => <OsobaCard key={r.id} osoba={r} onEdit={openEdit} onDelete={del} onDetail={setDetail} filmCount={countMap[r.id] ?? 0} isAdmin={isAdmin} />)}
       {filtered.length === 0 && <Empty />}
       <Modal open={modal} title={editing ? "Upravit režiséra" : "Přidat režiséra"} onClose={() => setModal(false)} onSave={save}>
         <OsobaForm data={form} setData={setForm} />
@@ -1177,7 +1212,7 @@ function BilanceSerialyTab({ serialy }) {
 // ─── WATCHLIST ────────────────────────────────────────────────────────────────
 const emptyWatchItem = () => ({ id: uid(), typ: "film", nazev: "", platforma: "", rok: "", zanry: [], poznamka: "" });
 
-function WatchlistTab({ watchlist, setWatchlist }) {
+function WatchlistTab({ watchlist, setWatchlist, isAdmin }) {
   const [q, setQ] = useState("");
   const [modal, setModal] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -1200,18 +1235,26 @@ function WatchlistTab({ watchlist, setWatchlist }) {
 
   const openAdd = () => { setEditing(null); setForm(emptyWatchItem()); setModal(true); };
   const openEdit = item => { setEditing(item.id); setForm({ ...item }); setModal(true); };
-  const save = () => {
+  const save = async () => {
     if (!form.nazev?.trim()) return;
-    if (editing) setWatchlist(w => w.map(x => x.id === editing ? form : x));
-    else setWatchlist(w => [form, ...w]);
+    if (editing) {
+      await supabase.from("watchlist").update(form).eq("id", form.id);
+      setWatchlist(w => w.map(x => x.id === editing ? form : x));
+    } else {
+      await supabase.from("watchlist").insert(form);
+      setWatchlist(w => [form, ...w]);
+    }
     setModal(false);
   };
-  const del = id => setWatchlist(w => w.filter(x => x.id !== id));
+  const del = async id => {
+    await supabase.from("watchlist").delete().eq("id", id);
+    setWatchlist(w => w.filter(x => x.id !== id));
+  };
   const u = (k, v) => setForm(d => ({ ...d, [k]: v }));
 
   return (
     <div>
-      <TabHeader count={filtered.length} onAdd={openAdd} q={q} setQ={setQ} addLabel="Přidat" />
+      <TabHeader count={filtered.length} onAdd={isAdmin ? openAdd : null} q={q} setQ={setQ} addLabel="Přidat" />
 
       {/* Přehled platforem */}
       {watchlist.length > 0 && (
@@ -1244,10 +1287,12 @@ function WatchlistTab({ watchlist, setWatchlist }) {
                 {(item.zanry ?? []).length > 0 && <div style={{ marginBottom: 4 }}><TagList items={item.zanry} /></div>}
                 {item.poznamka && <div style={{ fontSize: 12, color: T.muted, fontStyle: "italic" }}>{item.poznamka}</div>}
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: 14, flexShrink: 0 }}>
-                <button onClick={() => openEdit(item)} style={btnSecondary}>Upravit</button>
-                <button onClick={() => del(item.id)} style={btnDanger}>✕</button>
-              </div>
+              {isAdmin && (
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: 14, flexShrink: 0 }}>
+                  <button onClick={() => openEdit(item)} style={btnSecondary}>Upravit</button>
+                  <button onClick={() => del(item.id)} style={btnDanger}>✕</button>
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -1288,16 +1333,55 @@ const TABS = [
   { id: "watchlist", label: "Watchlist" },
 ];
 
+function LoginModal({ open, onClose }) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const login = async () => {
+    setLoading(true); setError("");
+    const { error: err } = await supabase.auth.signInWithPassword({ email, password });
+    setLoading(false);
+    if (err) setError("Nesprávný e-mail nebo heslo.");
+    else onClose();
+  };
+
+  if (!open) return null;
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>
+      <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 8, width: 340, padding: 28 }}>
+        <div style={{ fontSize: 16, fontWeight: 700, color: T.text, fontFamily: "Cormorant Garamond, serif", marginBottom: 20 }}>Přihlásit se</div>
+        <div style={{ marginBottom: 12 }}>
+          <label style={{ fontSize: 10, color: T.muted, textTransform: "uppercase", letterSpacing: "0.1em", display: "block", marginBottom: 4 }}>E-mail</label>
+          <input type="email" value={email} onChange={e => setEmail(e.target.value)} style={inp} onKeyDown={e => e.key === "Enter" && login()} />
+        </div>
+        <div style={{ marginBottom: 16 }}>
+          <label style={{ fontSize: 10, color: T.muted, textTransform: "uppercase", letterSpacing: "0.1em", display: "block", marginBottom: 4 }}>Heslo</label>
+          <input type="password" value={password} onChange={e => setPassword(e.target.value)} style={inp} onKeyDown={e => e.key === "Enter" && login()} />
+        </div>
+        {error && <div style={{ fontSize: 12, color: T.danger, marginBottom: 12 }}>{error}</div>}
+        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+          <button onClick={onClose} style={btnSecondary}>Zrušit</button>
+          <button onClick={login} style={btnPrimary} disabled={loading}>{loading ? "..." : "Přihlásit"}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
-  const [filmy, setFilmy] = useLS("wl_filmy", []);
-  const [serialy, setSerialy] = useLS("wl_serialy", []);
-  const [herci, setHerci] = useLS("wl_herci", []);
-  const [reziseri, setReziseri] = useLS("wl_reziseri", []);
-  const [watchlist, setWatchlist] = useLS("wl_watchlist", []);
+  const [filmy, setFilmy] = useState([]);
+  const [serialy, setSerialy] = useState([]);
+  const [herci, setHerci] = useState([]);
+  const [reziseri, setReziseri] = useState([]);
+  const [watchlist, setWatchlist] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [session, setSession] = useState(null);
+  const [loginModal, setLoginModal] = useState(false);
   const [tab, setTab] = useState("filmy");
   const [darkMode, setDarkMode] = useLS("wl_theme_dark", true);
 
-  // Apply theme synchronously before render so all children see correct T
   applyTheme(darkMode);
 
   useEffect(() => {
@@ -1307,9 +1391,50 @@ export default function App() {
     document.head.appendChild(link);
     document.body.style.margin = "0";
     document.body.style.background = T.bg;
+
+    // Auth
+    supabase.auth.getSession().then(({ data: { session } }) => setSession(session));
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
+
+    // Fetch data
+    Promise.all([
+      supabase.from("herci").select("*"),
+      supabase.from("reziseri").select("*"),
+      supabase.from("filmy").select("*"),
+      supabase.from("serialy").select("*"),
+      supabase.from("watchlist").select("*"),
+    ]).then(([h, r, f, s, w]) => {
+      setHerci(h.data ?? []);
+      setReziseri(r.data ?? []);
+      setFilmy(f.data ?? []);
+      setSerialy(s.data ?? []);
+      setWatchlist(w.data ?? []);
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
+  const isAdmin = !!session;
   const counts = { filmy: filmy.length, serialy: serialy.length, herci: herci.length, reziseri: reziseri.length, watchlist: watchlist.length };
+
+  // Migration from localStorage to Supabase (one-time, only for admin)
+  const migrate = async () => {
+    if (!window.confirm("Nahrát data z localStorage do Supabase? Existující záznamy se nepřepíší.")) return;
+    const tables = { herci: "herci", reziseri: "reziseri", wl_filmy: "filmy", wl_serialy: "serialy", wl_watchlist: "watchlist" };
+    const lsKeys = { herci: "wl_herci", reziseri: "wl_reziseri", filmy: "wl_filmy", serialy: "wl_serialy", watchlist: "wl_watchlist" };
+    let total = 0;
+    for (const [table, lsKey] of Object.entries(lsKeys)) {
+      const raw = localStorage.getItem(lsKey);
+      if (!raw) continue;
+      const items = JSON.parse(raw);
+      if (!items.length) continue;
+      const { error } = await supabase.from(table).upsert(items, { onConflict: "id", ignoreDuplicates: true });
+      if (!error) total += items.length;
+    }
+    alert(`Hotovo! Přeneseno ${total} záznamů.`);
+    window.location.reload();
+  };
 
   return (
     <div style={{ background: T.bg, minHeight: "100vh", color: T.text, fontFamily: "DM Sans, sans-serif", fontSize: 13 }}>
@@ -1329,8 +1454,7 @@ export default function App() {
         {TABS.map(t => (
           <button key={t.id} onClick={() => setTab(t.id)} style={{
             background: "none", border: "none", cursor: "pointer",
-            padding: "0 14px",
-            fontSize: 11, fontWeight: 600, letterSpacing: "0.08em",
+            padding: "0 14px", fontSize: 11, fontWeight: 600, letterSpacing: "0.08em",
             color: tab === t.id ? T.gold : T.muted,
             borderBottom: tab === t.id ? `2px solid ${T.gold}` : "2px solid transparent",
             textTransform: "uppercase", display: "flex", alignItems: "center", gap: 6,
@@ -1345,23 +1469,40 @@ export default function App() {
           </button>
         ))}
         <div style={{ flex: 1 }} />
+        {isAdmin && (
+          <button onClick={migrate} title="Migrovat data z localStorage" style={{ background: "none", border: "none", cursor: "pointer", color: T.muted, fontSize: 11, padding: "0 10px", display: "flex", alignItems: "center" }}>
+            ↑ Migrovat
+          </button>
+        )}
         <button
           onClick={() => setDarkMode(d => !d)}
-          title={darkMode ? "Přepnout na světlý režim" : "Přepnout na tmavý režim"}
+          title={darkMode ? "Světlý režim" : "Tmavý režim"}
           style={{ background: "none", border: "none", cursor: "pointer", color: T.muted, fontSize: 18, padding: "0 8px", display: "flex", alignItems: "center" }}
         >{darkMode ? "☀️" : "🌙"}</button>
+        {isAdmin
+          ? <button onClick={() => supabase.auth.signOut()} style={{ background: "none", border: "none", cursor: "pointer", color: T.muted, fontSize: 11, padding: "0 10px", display: "flex", alignItems: "center" }}>Odhlásit</button>
+          : <button onClick={() => setLoginModal(true)} style={{ background: "none", border: "none", cursor: "pointer", color: T.muted, fontSize: 11, padding: "0 10px", display: "flex", alignItems: "center" }}>Přihlásit</button>
+        }
       </div>
 
       {/* Obsah */}
       <div style={{ maxWidth: 980, margin: "0 auto", padding: "28px 24px" }}>
-        {tab === "filmy" && <FilmyTab filmy={filmy} setFilmy={setFilmy} herci={herci} reziseri={reziseri} />}
-        {tab === "serialy" && <SerialyTab serialy={serialy} setSerialy={setSerialy} herci={herci} />}
-        {tab === "herci" && <HerciTab herci={herci} setHerci={setHerci} filmy={filmy} serialy={serialy} />}
-        {tab === "reziseri" && <ReziseriTab reziseri={reziseri} setReziseri={setReziseri} filmy={filmy} />}
-        {tab === "bilance-filmy" && <BilanceFilmyTab filmy={filmy} />}
-        {tab === "bilance-serialy" && <BilanceSerialyTab serialy={serialy} />}
-        {tab === "watchlist" && <WatchlistTab watchlist={watchlist} setWatchlist={setWatchlist} />}
+        {loading ? (
+          <div style={{ textAlign: "center", color: T.muted, padding: "80px 0", fontSize: 14 }}>Načítám...</div>
+        ) : (
+          <>
+            {tab === "filmy" && <FilmyTab filmy={filmy} setFilmy={setFilmy} herci={herci} reziseri={reziseri} isAdmin={isAdmin} />}
+            {tab === "serialy" && <SerialyTab serialy={serialy} setSerialy={setSerialy} herci={herci} isAdmin={isAdmin} />}
+            {tab === "herci" && <HerciTab herci={herci} setHerci={setHerci} filmy={filmy} serialy={serialy} isAdmin={isAdmin} />}
+            {tab === "reziseri" && <ReziseriTab reziseri={reziseri} setReziseri={setReziseri} filmy={filmy} isAdmin={isAdmin} />}
+            {tab === "bilance-filmy" && <BilanceFilmyTab filmy={filmy} />}
+            {tab === "bilance-serialy" && <BilanceSerialyTab serialy={serialy} />}
+            {tab === "watchlist" && <WatchlistTab watchlist={watchlist} setWatchlist={setWatchlist} isAdmin={isAdmin} />}
+          </>
+        )}
       </div>
+
+      <LoginModal open={loginModal} onClose={() => setLoginModal(false)} />
     </div>
   );
 }
