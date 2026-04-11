@@ -287,7 +287,7 @@ function PersonSearch({ label, persons, selected, onChange, multi = false }) {
 // ─── FORMY ────────────────────────────────────────────────────────────────────
 const emptyFilm = () => ({
   id: uid(), datum: today(), nazev: "", zanry: [], rok: "", platforma: "",
-  stopaz: "", reziserId: null, herciIds: [],
+  stopaz: "", reziserIds: [], herciIds: [],
   hodnoceni: null, rewatch: false, ceskyFilm: false, doporuceni: false, imdbId: "",
 });
 const emptySerial = () => ({
@@ -316,7 +316,7 @@ function FilmForm({ data, setData, herci, reziseri }) {
         <GenreSelector value={data.zanry} onChange={v => u("zanry", v)} />
       </div>
       <div style={{ gridColumn: "1/-1" }}>
-        <PersonSearch label="Režisér" persons={reziseri} selected={data.reziserId} onChange={v => u("reziserId", v)} />
+        <PersonSearch label="Režisér" persons={reziseri} selected={data.reziserIds} onChange={v => u("reziserIds", v)} multi />
       </div>
       <div style={{ gridColumn: "1/-1" }}>
         <PersonSearch label="Herci" persons={herci} selected={data.herciIds} onChange={v => u("herciIds", v)} multi />
@@ -438,7 +438,7 @@ const cardStyle = {
 
 function FilmCard({ film, herci, reziseri, onEdit, onDelete }) {
   const [hover, setHover] = useState(false);
-  const reziser = reziseri.find(r => r.id === film.reziserId);
+  const filmReziseri = reziseri.filter(r => (film.reziserIds ?? []).includes(r.id));
   const filmHerci = herci.filter(h => (film.herciIds ?? []).includes(h.id));
   return (
     <div style={{ ...cardStyle, borderColor: hover ? T.borderHover : T.border }}
@@ -455,7 +455,7 @@ function FilmCard({ film, herci, reziseri, onEdit, onDelete }) {
         </div>
         {(film.zanry ?? []).length > 0 && <div style={{ marginBottom: 6 }}><TagList items={film.zanry} /></div>}
         <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
-          {reziser && <span style={{ fontSize: 12, color: T.muted }}>🎬 {reziser.jmeno}</span>}
+          {filmReziseri.length > 0 && <span style={{ fontSize: 12, color: T.muted }}>🎬 {filmReziseri.map(r => r.jmeno).join(", ")}</span>}
           {filmHerci.length > 0 && <span style={{ fontSize: 12, color: T.muted }}>👤 {filmHerci.map(h => h.jmeno).join(", ")}</span>}
           {film.stopaz && <span style={{ fontSize: 12, color: T.muted }}>{film.stopaz} min</span>}
           {film.datum && <span style={{ fontSize: 12, color: T.muted }}>{film.datum}</span>}
@@ -659,7 +659,7 @@ function ReziseriTab({ reziseri, setReziseri, filmy }) {
 
   const countMap = useMemo(() => {
     const m = {};
-    filmy.forEach(f => { if (f.reziserId) m[f.reziserId] = (m[f.reziserId] ?? 0) + 1; });
+    filmy.forEach(f => (f.reziserIds ?? []).forEach(id => { m[id] = (m[id] ?? 0) + 1; }));
     return m;
   }, [filmy]);
 
