@@ -487,11 +487,83 @@ function SerialCard({ serial, herci, onEdit, onDelete }) {
   );
 }
 
-function OsobaCard({ osoba, onEdit, onDelete, filmCount }) {
+function OsobaDetailModal({ osoba, filmy, serialy, onClose }) {
+  const osobaFilmy = filmy.filter(f =>
+    (f.herciIds ?? []).includes(osoba.id) || (f.reziserIds ?? []).includes(osoba.id)
+  ).sort((a, b) => (b.rok || 0) - (a.rok || 0));
+  const osobaSerialy = (serialy ?? []).filter(s =>
+    (s.herciIds ?? []).includes(osoba.id)
+  ).sort((a, b) => (b.rok || 0) - (a.rok || 0));
+
+  const total = osobaFilmy.length + osobaSerialy.length;
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 }}
+      onClick={e => e.target === e.currentTarget && onClose()}>
+      <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 8, width: 600, maxWidth: "100%", maxHeight: "92vh", display: "flex", flexDirection: "column" }}>
+        <div style={{ padding: "14px 20px", borderBottom: `1px solid ${T.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div>
+            <span style={{ fontSize: 16, fontWeight: 700, color: T.text, fontFamily: "Cormorant Garamond, serif" }}>{osoba.jmeno}</span>
+            <span style={{ fontSize: 12, color: T.muted, marginLeft: 10 }}>
+              {osoba.narodnost}{osoba.rokNarozeni ? ` · *${osoba.rokNarozeni}` : ""}
+              {osoba.zijici === "Ne" ? " · †" : ""}
+            </span>
+          </div>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: T.muted, cursor: "pointer", fontSize: 20, lineHeight: 1, padding: "0 4px" }}>×</button>
+        </div>
+        <div style={{ padding: "16px 20px", overflowY: "auto", flex: 1 }}>
+          {total === 0 && <div style={{ color: T.muted, fontSize: 13, textAlign: "center", padding: "32px 0" }}>Žádné záznamy</div>}
+
+          {osobaFilmy.length > 0 && (
+            <>
+              <div style={{ fontSize: 10, color: T.muted, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10 }}>Filmy ({osobaFilmy.length})</div>
+              {osobaFilmy.map(f => (
+                <div key={f.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "7px 0", borderBottom: `1px solid ${T.border}` }}>
+                  <div>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: T.text, fontFamily: "Cormorant Garamond, serif" }}>{f.nazev}</span>
+                    {f.zanry?.length > 0 && <span style={{ fontSize: 11, color: T.muted, marginLeft: 8 }}>{f.zanry.join(", ")}</span>}
+                  </div>
+                  <div style={{ display: "flex", gap: 10, alignItems: "center", flexShrink: 0, marginLeft: 12 }}>
+                    {f.rok && <span style={{ fontSize: 12, color: T.muted }}>{f.rok}</span>}
+                    {f.hodnoceni && <span style={{ fontSize: 13, fontWeight: 700, color: f.hodnoceni >= 8 ? T.green : f.hodnoceni >= 6 ? T.gold : f.hodnoceni >= 4 ? T.orange : T.danger }}>{f.hodnoceni}/10</span>}
+                  </div>
+                </div>
+              ))}
+            </>
+          )}
+
+          {osobaSerialy.length > 0 && (
+            <>
+              <div style={{ fontSize: 10, color: T.muted, textTransform: "uppercase", letterSpacing: "0.1em", marginTop: osobaFilmy.length > 0 ? 20 : 0, marginBottom: 10 }}>Seriály ({osobaSerialy.length})</div>
+              {osobaSerialy.map(s => (
+                <div key={s.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "7px 0", borderBottom: `1px solid ${T.border}` }}>
+                  <div>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: T.text, fontFamily: "Cormorant Garamond, serif" }}>{s.nazev}</span>
+                    {s.zanry?.length > 0 && <span style={{ fontSize: 11, color: T.muted, marginLeft: 8 }}>{s.zanry.join(", ")}</span>}
+                  </div>
+                  <div style={{ display: "flex", gap: 10, alignItems: "center", flexShrink: 0, marginLeft: 12 }}>
+                    {s.rok && <span style={{ fontSize: 12, color: T.muted }}>{s.rok}</span>}
+                    {s.hodnoceni && <span style={{ fontSize: 13, fontWeight: 700, color: s.hodnoceni >= 8 ? T.green : s.hodnoceni >= 6 ? T.gold : s.hodnoceni >= 4 ? T.orange : T.danger }}>{s.hodnoceni}/10</span>}
+                  </div>
+                </div>
+              ))}
+            </>
+          )}
+        </div>
+        <div style={{ padding: "10px 20px", borderTop: `1px solid ${T.border}`, display: "flex", justifyContent: "flex-end" }}>
+          <button onClick={onClose} style={btnSecondary}>Zavřít</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function OsobaCard({ osoba, onEdit, onDelete, onDetail, filmCount }) {
   const [hover, setHover] = useState(false);
   return (
-    <div style={{ ...cardStyle, borderColor: hover ? T.borderHover : T.border, alignItems: "center" }}
-      onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
+    <div style={{ ...cardStyle, borderColor: hover ? T.borderHover : T.border, alignItems: "center", cursor: "pointer" }}
+      onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
+      onClick={() => filmCount > 0 && onDetail(osoba)}>
       <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", flex: 1 }}>
         <span style={{ fontSize: 14, fontWeight: 600, color: T.text, fontFamily: "Cormorant Garamond, serif" }}>{osoba.jmeno}</span>
         {osoba.narodnost && <span style={{ fontSize: 12, color: T.muted }}>{osoba.narodnost}</span>}
@@ -501,7 +573,7 @@ function OsobaCard({ osoba, onEdit, onDelete, filmCount }) {
         {osoba.neoblibeny && <Badge color={T.danger}>✕ Neoblíbený</Badge>}
         {filmCount != null && filmCount > 0 && <span style={{ fontSize: 11, color: T.muted, marginLeft: 4 }}>{filmCount} {filmCount === 1 ? "záznam" : filmCount < 5 ? "záznamy" : "záznamů"}</span>}
       </div>
-      <div style={{ display: "flex", gap: 8, flexShrink: 0, marginLeft: 12 }}>
+      <div style={{ display: "flex", gap: 8, flexShrink: 0, marginLeft: 12 }} onClick={e => e.stopPropagation()}>
         <button onClick={() => onEdit(osoba)} style={btnSecondary}>Upravit</button>
         <button onClick={() => onDelete(osoba.id)} style={btnDanger}>✕</button>
       </div>
@@ -599,6 +671,7 @@ function HerciTab({ herci, setHerci, filmy, serialy }) {
   const [modal, setModal] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(emptyOsoba);
+  const [detail, setDetail] = useState(null);
 
   const countMap = useMemo(() => {
     const m = {};
@@ -626,11 +699,12 @@ function HerciTab({ herci, setHerci, filmy, serialy }) {
   return (
     <div>
       <TabHeader count={filtered.length} onAdd={openAdd} q={q} setQ={setQ} addLabel="Přidat herce" />
-      {filtered.map(h => <OsobaCard key={h.id} osoba={h} onEdit={openEdit} onDelete={del} filmCount={countMap[h.id] ?? 0} />)}
+      {filtered.map(h => <OsobaCard key={h.id} osoba={h} onEdit={openEdit} onDelete={del} onDetail={setDetail} filmCount={countMap[h.id] ?? 0} />)}
       {filtered.length === 0 && <Empty />}
       <Modal open={modal} title={editing ? "Upravit herce" : "Přidat herce"} onClose={() => setModal(false)} onSave={save}>
         <OsobaForm data={form} setData={setForm} showNeoblibeny />
       </Modal>
+      {detail && <OsobaDetailModal osoba={detail} filmy={filmy} serialy={serialy} onClose={() => setDetail(null)} />}
     </div>
   );
 }
@@ -640,6 +714,7 @@ function ReziseriTab({ reziseri, setReziseri, filmy }) {
   const [modal, setModal] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(emptyOsoba);
+  const [detail, setDetail] = useState(null);
 
   const countMap = useMemo(() => {
     const m = {};
@@ -666,11 +741,12 @@ function ReziseriTab({ reziseri, setReziseri, filmy }) {
   return (
     <div>
       <TabHeader count={filtered.length} onAdd={openAdd} q={q} setQ={setQ} addLabel="Přidat režiséra" />
-      {filtered.map(r => <OsobaCard key={r.id} osoba={r} onEdit={openEdit} onDelete={del} filmCount={countMap[r.id] ?? 0} />)}
+      {filtered.map(r => <OsobaCard key={r.id} osoba={r} onEdit={openEdit} onDelete={del} onDetail={setDetail} filmCount={countMap[r.id] ?? 0} />)}
       {filtered.length === 0 && <Empty />}
       <Modal open={modal} title={editing ? "Upravit režiséra" : "Přidat režiséra"} onClose={() => setModal(false)} onSave={save}>
         <OsobaForm data={form} setData={setForm} />
       </Modal>
+      {detail && <OsobaDetailModal osoba={detail} filmy={filmy} onClose={() => setDetail(null)} />}
     </div>
   );
 }
