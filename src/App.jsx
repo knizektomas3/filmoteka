@@ -39,6 +39,7 @@ function useLS(key, init) {
 }
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 const today = () => new Date().toISOString().slice(0, 10);
+const fmtDate = (s) => { if (!s) return ""; const [y, m, d] = s.split("-"); return `${d}.${m}.${y}`; };
 
 // ─── TÉMA ─────────────────────────────────────────────────────────────────────
 const T = {
@@ -455,7 +456,7 @@ function FilmCard({ film, herci, reziseri, onEdit, onDelete }) {
           {filmReziseri.length > 0 && <span style={{ fontSize: 12, color: T.muted }}>🎬 {filmReziseri.map(r => r.jmeno).join(", ")}</span>}
           {filmHerci.length > 0 && <span style={{ fontSize: 12, color: T.muted }}>👤 {filmHerci.map(h => h.jmeno).join(", ")}</span>}
           {film.stopaz && <span style={{ fontSize: 12, color: T.muted }}>{film.stopaz} min</span>}
-          {film.datum && <span style={{ fontSize: 12, color: T.muted }}>{film.datum}</span>}
+          {film.datum && <span style={{ fontSize: 12, color: T.muted }}>{fmtDate(film.datum)}</span>}
         </div>
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginLeft: 14, flexShrink: 0 }}>
@@ -486,8 +487,8 @@ function SerialCard({ serial, herci, onEdit, onDelete }) {
           {serialHerci.length > 0 && <span style={{ fontSize: 12, color: T.muted }}>👤 {serialHerci.map(h => h.jmeno).join(", ")}</span>}
           {serial.serie && (Array.isArray(serial.serie) ? serial.serie.length > 0 : serial.serie) && <span style={{ fontSize: 12, color: T.muted }}>Série: {Array.isArray(serial.serie) ? serial.serie.join(", ") : serial.serie}</span>}
           {serial.pocetDilu && <span style={{ fontSize: 12, color: T.muted }}>{serial.pocetDilu} dílů</span>}
-          {serial.zacatekSledovani && <span style={{ fontSize: 12, color: T.muted }}>Zahájeno: {serial.zacatekSledovani}</span>}
-          {serial.konecSledovani && <span style={{ fontSize: 12, color: T.muted }}>Dosledováno: {serial.konecSledovani}</span>}
+          {serial.zacatekSledovani && <span style={{ fontSize: 12, color: T.muted }}>Zahájeno: {fmtDate(serial.zacatekSledovani)}</span>}
+          {serial.konecSledovani && <span style={{ fontSize: 12, color: T.muted }}>Dosledováno: {fmtDate(serial.konecSledovani)}</span>}
         </div>
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginLeft: 14, flexShrink: 0 }}>
