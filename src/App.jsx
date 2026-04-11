@@ -442,6 +442,12 @@ function FilmCard({ film, herci, reziseri, onEdit, onDelete }) {
   return (
     <div style={{ ...cardStyle, borderColor: hover ? T.borderHover : T.border }}
       onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
+      {film.datum && (
+        <div style={{ flexShrink: 0, marginRight: 14, textAlign: "center", minWidth: 44 }}>
+          <div style={{ fontSize: 18, fontWeight: 800, color: T.gold, lineHeight: 1, fontFamily: "Cormorant Garamond, serif" }}>{fmtDate(film.datum).slice(0, 2)}</div>
+          <div style={{ fontSize: 10, color: T.muted, marginTop: 1 }}>{fmtDate(film.datum).slice(3, 5)}.{fmtDate(film.datum).slice(6)}</div>
+        </div>
+      )}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 6, flexWrap: "wrap" }}>
           <span style={{ fontSize: 15, fontWeight: 600, color: T.text, fontFamily: "Cormorant Garamond, serif" }}>{film.nazev}</span>
@@ -456,7 +462,6 @@ function FilmCard({ film, herci, reziseri, onEdit, onDelete }) {
           {filmReziseri.length > 0 && <span style={{ fontSize: 12, color: T.muted }}>🎬 {filmReziseri.map(r => r.jmeno).join(", ")}</span>}
           {filmHerci.length > 0 && <span style={{ fontSize: 12, color: T.muted }}>👤 {filmHerci.map(h => h.jmeno).join(", ")}</span>}
           {film.stopaz && <span style={{ fontSize: 12, color: T.muted }}>{film.stopaz} min</span>}
-          {film.datum && <span style={{ fontSize: 12, color: T.muted }}>{fmtDate(film.datum)}</span>}
         </div>
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginLeft: 14, flexShrink: 0 }}>
