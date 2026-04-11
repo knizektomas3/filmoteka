@@ -444,8 +444,8 @@ function FilmCard({ film, herci, reziseri, onEdit, onDelete }) {
       onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
       {film.datum && (
         <div style={{ flexShrink: 0, marginRight: 14, textAlign: "center", minWidth: 44 }}>
-          <div style={{ fontSize: 18, fontWeight: 800, color: T.gold, lineHeight: 1, fontFamily: "Cormorant Garamond, serif" }}>{fmtDate(film.datum).slice(0, 2)}</div>
-          <div style={{ fontSize: 10, color: T.muted, marginTop: 1 }}>{fmtDate(film.datum).slice(3, 5)}.{fmtDate(film.datum).slice(6)}</div>
+          <div style={{ fontSize: 18, fontWeight: 800, color: T.gold, lineHeight: 1, fontFamily: "Cormorant Garamond, serif" }}>{fmtDate(film.datum).slice(0, 5)}</div>
+          <div style={{ fontSize: 10, color: T.muted, marginTop: 1 }}>{fmtDate(film.datum).slice(6)}</div>
         </div>
       )}
       <div style={{ flex: 1, minWidth: 0 }}>
