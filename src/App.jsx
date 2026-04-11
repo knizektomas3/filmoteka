@@ -480,6 +480,23 @@ function SerialCard({ serial, herci, onEdit, onDelete }) {
   return (
     <div style={{ ...cardStyle, borderColor: hover ? T.borderHover : T.border }}
       onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
+      {(serial.zacatekSledovani || serial.konecSledovani) && (
+        <div style={{ flexShrink: 0, marginRight: 14, textAlign: "center", minWidth: 54 }}>
+          {serial.zacatekSledovani && (
+            <>
+              <div style={{ fontSize: 15, fontWeight: 800, color: T.gold, lineHeight: 1, fontFamily: "Cormorant Garamond, serif" }}>{fmtDate(serial.zacatekSledovani).slice(0, 5)}</div>
+              <div style={{ fontSize: 10, color: T.muted, marginTop: 1 }}>{fmtDate(serial.zacatekSledovani).slice(6)}</div>
+            </>
+          )}
+          {serial.konecSledovani && (
+            <>
+              <div style={{ fontSize: 10, color: T.dimmer, margin: "4px 0 2px" }}>—</div>
+              <div style={{ fontSize: 15, fontWeight: 800, color: T.gold, lineHeight: 1, fontFamily: "Cormorant Garamond, serif" }}>{fmtDate(serial.konecSledovani).slice(0, 5)}</div>
+              <div style={{ fontSize: 10, color: T.muted, marginTop: 1 }}>{fmtDate(serial.konecSledovani).slice(6)}</div>
+            </>
+          )}
+        </div>
+      )}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 6, flexWrap: "wrap" }}>
           <span style={{ fontSize: 15, fontWeight: 600, color: T.text, fontFamily: "Cormorant Garamond, serif" }}>{serial.nazev}</span>
@@ -492,8 +509,6 @@ function SerialCard({ serial, herci, onEdit, onDelete }) {
           {serialHerci.length > 0 && <span style={{ fontSize: 12, color: T.muted }}>👤 {serialHerci.map(h => h.jmeno).join(", ")}</span>}
           {serial.serie && (Array.isArray(serial.serie) ? serial.serie.length > 0 : serial.serie) && <span style={{ fontSize: 12, color: T.muted }}>Série: {Array.isArray(serial.serie) ? serial.serie.join(", ") : serial.serie}</span>}
           {serial.pocetDilu && <span style={{ fontSize: 12, color: T.muted }}>{serial.pocetDilu} dílů</span>}
-          {serial.zacatekSledovani && <span style={{ fontSize: 12, color: T.muted }}>Zahájeno: {fmtDate(serial.zacatekSledovani)}</span>}
-          {serial.konecSledovani && <span style={{ fontSize: 12, color: T.muted }}>Dosledováno: {fmtDate(serial.konecSledovani)}</span>}
         </div>
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginLeft: 14, flexShrink: 0 }}>
