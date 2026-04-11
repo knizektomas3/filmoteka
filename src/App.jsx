@@ -855,10 +855,14 @@ function HerciTab({ herci, setHerci, filmy, serialy }) {
     return m;
   }, [filmy, serialy]);
 
+  const [osobaFilter, setOsobaFilter] = useState(null); // null | 'oblibeny' | 'neoblibeny' | 'mrtvy'
+
   const filtered = useMemo(() =>
-    herci.filter(h => h.jmeno?.toLowerCase().includes(q.toLowerCase()))
+    herci
+      .filter(h => h.jmeno?.toLowerCase().includes(q.toLowerCase()))
+      .filter(h => osobaFilter === 'oblibeny' ? h.oblibeny : osobaFilter === 'neoblibeny' ? h.neoblibeny : osobaFilter === 'mrtvy' ? h.zijici === 'Ne' : true)
       .sort((a, b) => a.jmeno.localeCompare(b.jmeno, "cs")),
-    [herci, q]
+    [herci, q, osobaFilter]
   );
 
   const openAdd = () => { setEditing(null); setForm(emptyOsoba()); setModal(true); };
@@ -874,6 +878,11 @@ function HerciTab({ herci, setHerci, filmy, serialy }) {
   return (
     <div>
       <TabHeader count={filtered.length} onAdd={openAdd} q={q} setQ={setQ} addLabel="Přidat herce" />
+      <div style={{ display: "flex", gap: 6, marginBottom: 14 }}>
+        {[{k: null, l: "Všichni"}, {k: "oblibeny", l: "★ Oblíbení"}, {k: "neoblibeny", l: "✕ Neoblíbení"}, {k: "mrtvy", l: "† Po smrti"}].map(({ k, l }) => (
+          <FilterPill key={l} label={l} active={osobaFilter === k} onClick={() => setOsobaFilter(k)} />
+        ))}
+      </div>
       {filtered.map(h => <OsobaCard key={h.id} osoba={h} onEdit={openEdit} onDelete={del} onDetail={setDetail} filmCount={countMap[h.id] ?? 0} />)}
       {filtered.length === 0 && <Empty />}
       <Modal open={modal} title={editing ? "Upravit herce" : "Přidat herce"} onClose={() => setModal(false)} onSave={save}>
@@ -897,10 +906,14 @@ function ReziseriTab({ reziseri, setReziseri, filmy }) {
     return m;
   }, [filmy]);
 
+  const [osobaFilter, setOsobaFilter] = useState(null);
+
   const filtered = useMemo(() =>
-    reziseri.filter(r => r.jmeno?.toLowerCase().includes(q.toLowerCase()))
+    reziseri
+      .filter(r => r.jmeno?.toLowerCase().includes(q.toLowerCase()))
+      .filter(r => osobaFilter === 'oblibeny' ? r.oblibeny : osobaFilter === 'mrtvy' ? r.zijici === 'Ne' : true)
       .sort((a, b) => a.jmeno.localeCompare(b.jmeno, "cs")),
-    [reziseri, q]
+    [reziseri, q, osobaFilter]
   );
 
   const openAdd = () => { setEditing(null); setForm(emptyOsoba()); setModal(true); };
@@ -916,6 +929,11 @@ function ReziseriTab({ reziseri, setReziseri, filmy }) {
   return (
     <div>
       <TabHeader count={filtered.length} onAdd={openAdd} q={q} setQ={setQ} addLabel="Přidat režiséra" />
+      <div style={{ display: "flex", gap: 6, marginBottom: 14 }}>
+        {[{k: null, l: "Všichni"}, {k: "oblibeny", l: "★ Oblíbení"}, {k: "mrtvy", l: "† Po smrti"}].map(({ k, l }) => (
+          <FilterPill key={l} label={l} active={osobaFilter === k} onClick={() => setOsobaFilter(k)} />
+        ))}
+      </div>
       {filtered.map(r => <OsobaCard key={r.id} osoba={r} onEdit={openEdit} onDelete={del} onDetail={setDetail} filmCount={countMap[r.id] ?? 0} />)}
       {filtered.length === 0 && <Empty />}
       <Modal open={modal} title={editing ? "Upravit režiséra" : "Přidat režiséra"} onClose={() => setModal(false)} onSave={save}>
