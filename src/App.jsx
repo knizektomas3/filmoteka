@@ -1470,25 +1470,7 @@ export default function App() {
   const isAdmin = !!session;
   const counts = { filmy: filmy.length, serialy: serialy.length, herci: herci.length, reziseri: reziseri.length, watchlist: watchlist.length };
 
-  // Migration from localStorage to Supabase (one-time, only for admin)
-  const migrate = async () => {
-    if (!window.confirm("Nahrát data z localStorage do Supabase? Existující záznamy se nepřepíší.")) return;
-    const tables = { herci: "herci", reziseri: "reziseri", wl_filmy: "filmy", wl_serialy: "serialy", wl_watchlist: "watchlist" };
-    const lsKeys = { herci: "wl_herci", reziseri: "wl_reziseri", filmy: "wl_filmy", serialy: "wl_serialy", watchlist: "wl_watchlist" };
-    let total = 0;
-    for (const [table, lsKey] of Object.entries(lsKeys)) {
-      const raw = localStorage.getItem(lsKey);
-      if (!raw) continue;
-      const items = JSON.parse(raw);
-      if (!items.length) continue;
-      const { error } = await supabase.from(table).upsert(items, { onConflict: "id", ignoreDuplicates: true });
-      if (!error) total += items.length;
-    }
-    alert(`Hotovo! Přeneseno ${total} záznamů.`);
-    window.location.reload();
-  };
-
-  return (
+return (
     <div style={{ background: T.bg, minHeight: "100vh", color: T.text, fontFamily: "DM Sans, sans-serif", fontSize: 13 }}>
       {/* Navigace */}
       <div style={{
@@ -1521,11 +1503,6 @@ export default function App() {
           </button>
         ))}
         <div style={{ flex: 1 }} />
-        {isAdmin && (
-          <button onClick={migrate} title="Migrovat data z localStorage" style={{ background: "none", border: "none", cursor: "pointer", color: T.muted, fontSize: 11, padding: "0 10px", display: "flex", alignItems: "center" }}>
-            ↑ Migrovat
-          </button>
-        )}
         <button
           onClick={() => setDarkMode(d => !d)}
           title={darkMode ? "Světlý režim" : "Tmavý režim"}
