@@ -459,9 +459,9 @@ function FilmCard({ film, herci, reziseri, onEdit, onDelete }) {
         </div>
         {(film.zanry ?? []).length > 0 && <div style={{ marginBottom: 6 }}><TagList items={film.zanry} /></div>}
         <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
+          {film.stopaz && <span style={{ fontSize: 12, color: T.muted }}>{film.stopaz} min</span>}
           {filmReziseri.length > 0 && <span style={{ fontSize: 12, color: T.muted }}>🎬 {filmReziseri.map(r => r.jmeno).join(", ")}</span>}
           {filmHerci.length > 0 && <span style={{ fontSize: 12, color: T.muted }}>👤 {filmHerci.map(h => h.jmeno).join(", ")}</span>}
-          {film.stopaz && <span style={{ fontSize: 12, color: T.muted }}>{film.stopaz} min</span>}
         </div>
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginLeft: 14, flexShrink: 0 }}>
@@ -506,9 +506,9 @@ function SerialCard({ serial, herci, onEdit, onDelete }) {
         </div>
         {(serial.zanry ?? []).length > 0 && <div style={{ marginBottom: 6 }}><TagList items={serial.zanry} /></div>}
         <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
-          {serialHerci.length > 0 && <span style={{ fontSize: 12, color: T.muted }}>👤 {serialHerci.map(h => h.jmeno).join(", ")}</span>}
           {serial.serie && (Array.isArray(serial.serie) ? serial.serie.length > 0 : serial.serie) && <span style={{ fontSize: 12, color: T.muted }}>Série: {Array.isArray(serial.serie) ? serial.serie.join(", ") : serial.serie}</span>}
           {serial.pocetDilu && <span style={{ fontSize: 12, color: T.muted }}>{serial.pocetDilu} dílů</span>}
+          {serialHerci.length > 0 && <span style={{ fontSize: 12, color: T.muted }}>👤 {serialHerci.map(h => h.jmeno).join(", ")}</span>}
         </div>
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginLeft: 14, flexShrink: 0 }}>
