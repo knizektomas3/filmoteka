@@ -327,7 +327,7 @@ function FilmForm({ data, setData, herci, reziseri }) {
       <Field label="Příznaky">
         <CheckInput label="Rewatch" checked={data.rewatch} onChange={v => u("rewatch", v)} />
         <CheckInput label="Český film" checked={data.ceskyFilm} onChange={v => u("ceskyFilm", v)} />
-        <CheckInput label="Doporučení od přítele" checked={data.doporuceni} onChange={v => u("doporuceni", v)} />
+        <CheckInput label="Doporučil bych" checked={data.doporuceni} onChange={v => u("doporuceni", v)} />
       </Field>
     </div>
   );
@@ -436,7 +436,7 @@ function FilmCard({ film, herci, reziseri, onEdit, onDelete }) {
           {film.platforma && <Badge color={T.goldBg ? T.gold : T.muted}>{film.platforma}</Badge>}
           {film.ceskyFilm && <Badge color={T.blue}>CZ</Badge>}
           {film.rewatch && <Badge color={T.purple}>↺ Rewatch</Badge>}
-          {film.doporuceni && <Badge color={T.green}>Doporučení</Badge>}
+          {film.doporuceni && <Badge color={T.green}>Doporučil bych</Badge>}
         </div>
         {(film.zanry ?? []).length > 0 && <div style={{ marginBottom: 6 }}><TagList items={film.zanry} /></div>}
         <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
