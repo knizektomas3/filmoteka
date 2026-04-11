@@ -1423,7 +1423,11 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState(null);
   const [loginModal, setLoginModal] = useState(false);
-  const [resetModal, setResetModal] = useState(false);
+  const [resetModal, setResetModal] = useState(() => {
+    const h = window.location.hash;
+    const q = window.location.search;
+    return h.includes("type=recovery") || q.includes("type=recovery");
+  });
   const [tab, setTab] = useState("filmy");
   const [darkMode, setDarkMode] = useLS("wl_theme_dark", true);
 
