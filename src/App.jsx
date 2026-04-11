@@ -675,7 +675,7 @@ function HerciTab({ herci, setHerci, filmy, serialy }) {
 
   const countMap = useMemo(() => {
     const m = {};
-    filmy.forEach(f => (f.herciIds ?? []).forEach(id => { m[id] = (m[id] ?? 0) + 1; }));
+    filmy.filter(f => !f.rewatch).forEach(f => (f.herciIds ?? []).forEach(id => { m[id] = (m[id] ?? 0) + 1; }));
     serialy.forEach(s => (s.herciIds ?? []).forEach(id => { m[id] = (m[id] ?? 0) + 1; }));
     return m;
   }, [filmy, serialy]);
@@ -718,7 +718,7 @@ function ReziseriTab({ reziseri, setReziseri, filmy }) {
 
   const countMap = useMemo(() => {
     const m = {};
-    filmy.forEach(f => (f.reziserIds ?? []).forEach(id => { m[id] = (m[id] ?? 0) + 1; }));
+    filmy.filter(f => !f.rewatch).forEach(f => (f.reziserIds ?? []).forEach(id => { m[id] = (m[id] ?? 0) + 1; }));
     return m;
   }, [filmy]);
 
