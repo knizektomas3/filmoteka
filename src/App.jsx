@@ -50,11 +50,11 @@ const TDark = {
   danger: "#b03a2e", blue: "#2980b9", purple: "#8e44ad", green: "#27ae60", orange: "#e67e22",
 };
 const TLight = {
-  bg: "#f5f0e8", surface: "#fffdf8", elevated: "#ede8de",
-  border: "#d8cfc0", borderHover: "#c4b8a4",
-  gold: "#9a7420", goldBg: "#9a742218",
-  text: "#1a1208", muted: "#7a6855", dimmer: "#b0a090",
-  danger: "#b03a2e", blue: "#1a6896", purple: "#6b2f8a", green: "#1a7a3a", orange: "#b8600e",
+  bg: "#eee8dc", surface: "#faf6ef", elevated: "#e0d8c8",
+  border: "#bfb49f", borderHover: "#a89880",
+  gold: "#7a5c10", goldBg: "#7a5c1020",
+  text: "#120d04", muted: "#5a4a35", dimmer: "#8a7a65",
+  danger: "#921f1f", blue: "#0f5280", purple: "#581e78", green: "#145e2a", orange: "#954a00",
 };
 let T = { ...TDark };
 
