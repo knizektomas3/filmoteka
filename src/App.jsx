@@ -13,6 +13,7 @@ const PLATFORMY = [
   "MUBI","Letní kino","Canal+",
 ];
 const STAV_SERIALU = ["Sleduji","Dokoukáno","Nedokončeno","Plánuji"];
+const SERIE = ["První","Druhá","Třetí","Čtvrtá","Pátá","Šestá","Sedmá","Osmá"];
 const NARODNOSTI = [
   "USA","Velká Británie","Francie","Německo","Itálie","Španělsko",
   "Česká republika","Slovensko","Japonsko","Jižní Korea","Austrálie",
@@ -292,7 +293,7 @@ const emptyFilm = () => ({
 });
 const emptySerial = () => ({
   id: uid(), nazev: "", zanry: [], rok: "", platforma: "",
-  serie: "", pocetDilu: "", stav: "Sleduji",
+  serie: [], pocetDilu: "", stav: "Sleduji",
   zacatekSledovani: today(), konecSledovani: "",
   hodnoceni: null, herciIds: [],
 });
@@ -344,7 +345,18 @@ function SerialForm({ data, setData, herci }) {
       <SelectInput label="Platforma" value={data.platforma} onChange={v => u("platforma", v)} options={PLATFORMY} />
       <TextInput label="Začátek sledování" value={data.zacatekSledovani} onChange={v => u("zacatekSledovani", v)} type="date" />
       <TextInput label="Konec sledování" value={data.konecSledovani} onChange={v => u("konecSledovani", v)} type="date" />
-      <TextInput label="Série (např. První, Druhá)" value={data.serie} onChange={v => u("serie", v)} placeholder="První" />
+      <Field label="Série">
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+          {SERIE.map(s => {
+            const val = Array.isArray(data.serie) ? data.serie : (data.serie ? data.serie.split(",").map(x => x.trim()).filter(Boolean) : []);
+            const active = val.includes(s);
+            const toggle = () => { const next = active ? val.filter(x => x !== s) : [...val, s]; u("serie", next); };
+            return (
+              <button key={s} onClick={toggle} style={{ padding: "3px 9px", borderRadius: 20, fontSize: 12, cursor: "pointer", border: `1px solid ${active ? T.gold : T.border}`, background: active ? T.gold : "transparent", color: active ? "#0b0b0d" : T.muted, fontWeight: active ? 600 : 400 }}>{s}</button>
+            );
+          })}
+        </div>
+      </Field>
       <TextInput label="Počet dílů" value={data.pocetDilu} onChange={v => u("pocetDilu", v)} type="number" />
       <SelectInput label="Stav" value={data.stav} onChange={v => u("stav", v)} options={STAV_SERIALU} />
       <div style={{ gridColumn: "1/-1" }}>
@@ -472,7 +484,7 @@ function SerialCard({ serial, herci, onEdit, onDelete }) {
         {(serial.zanry ?? []).length > 0 && <div style={{ marginBottom: 6 }}><TagList items={serial.zanry} /></div>}
         <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
           {serialHerci.length > 0 && <span style={{ fontSize: 12, color: T.muted }}>👤 {serialHerci.map(h => h.jmeno).join(", ")}</span>}
-          {serial.serie && <span style={{ fontSize: 12, color: T.muted }}>Série: {serial.serie}</span>}
+          {serial.serie && (Array.isArray(serial.serie) ? serial.serie.length > 0 : serial.serie) && <span style={{ fontSize: 12, color: T.muted }}>Série: {Array.isArray(serial.serie) ? serial.serie.join(", ") : serial.serie}</span>}
           {serial.pocetDilu && <span style={{ fontSize: 12, color: T.muted }}>{serial.pocetDilu} dílů</span>}
           {serial.zacatekSledovani && <span style={{ fontSize: 12, color: T.muted }}>Zahájeno: {serial.zacatekSledovani}</span>}
           {serial.konecSledovani && <span style={{ fontSize: 12, color: T.muted }}>Dosledováno: {serial.konecSledovani}</span>}
