@@ -21,9 +21,9 @@ const ZANRY = [
   "Stand-up","Thriller","Válečný","Western",
 ];
 const PLATFORMY = [
-  "Netflix","HBO Max","SkyShowtime","Disney+","Prime Video",
-  "Kino","Kino - IMAX","KVIFF TV","Oneplay","Apple TV+",
-  "MUBI","Letní kino","Canal+","Edisonline",
+  "Apple TV+","Canal+","Disney+","Edisonline","HBO Max",
+  "Kino","Kino - IMAX","KVIFF TV","Letní kino","MUBI",
+  "Netflix","Oneplay","Prime Video","SkyShowtime",
 ];
 const STAV_SERIALU = ["Sleduji","Dokoukáno","Nedokončeno","Plánuji"];
 const SERIE = ["První","Druhá","Třetí","Čtvrtá","Pátá","Šestá","Sedmá","Osmá"];
