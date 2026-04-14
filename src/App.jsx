@@ -23,7 +23,7 @@ const ZANRY = [
 const PLATFORMY = [
   "Netflix","HBO Max","SkyShowtime","Disney+","Prime Video",
   "Kino","Kino - IMAX","KVIFF TV","Oneplay","Apple TV+",
-  "MUBI","Letní kino","Canal+",
+  "MUBI","Letní kino","Canal+","Edisonline",
 ];
 const STAV_SERIALU = ["Sleduji","Dokoukáno","Nedokončeno","Plánuji"];
 const SERIE = ["První","Druhá","Třetí","Čtvrtá","Pátá","Šestá","Sedmá","Osmá"];
@@ -538,7 +538,7 @@ function SerialCard({ serial, herci, onEdit, onDelete, isAdmin }) {
   );
 }
 
-function OsobaDetailModal({ osoba, filmy, serialy, onClose }) {
+function OsobaDetailModal({ osoba, filmy, serialy, onClose, onToggle, showNeoblibeny = false }) {
   const osobaFilmy = filmy.filter(f =>
     !f.rewatch && ((f.herciIds ?? []).includes(osoba.id) || (f.reziserIds ?? []).includes(osoba.id))
   ).sort((a, b) => (b.rok || 0) - (a.rok || 0));
@@ -549,6 +549,21 @@ function OsobaDetailModal({ osoba, filmy, serialy, onClose }) {
   const total = osobaFilmy.length + osobaSerialy.length;
 
   const isMobile = useMobile();
+
+  const toggleBtn = (label, active, color, field) => (
+    <button
+      onClick={() => onToggle && onToggle(osoba.id, field, !active)}
+      style={{
+        padding: "5px 12px", borderRadius: 4, cursor: "pointer",
+        fontSize: 12, fontWeight: 600, border: `1px solid`,
+        borderColor: active ? color : T.border,
+        background: active ? color + "22" : "transparent",
+        color: active ? color : T.muted,
+        transition: "all 0.15s",
+      }}
+    >{label}</button>
+  );
+
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", display: "flex", alignItems: isMobile ? "flex-end" : "center", justifyContent: "center", zIndex: 1000, padding: isMobile ? 0 : 20 }}
       onClick={e => e.target === e.currentTarget && onClose()}>
@@ -563,6 +578,13 @@ function OsobaDetailModal({ osoba, filmy, serialy, onClose }) {
           </div>
           <button onClick={onClose} style={{ background: "none", border: "none", color: T.muted, cursor: "pointer", fontSize: 20, lineHeight: 1, padding: "0 4px" }}>×</button>
         </div>
+        {onToggle && (
+          <div style={{ padding: "10px 20px", borderBottom: `1px solid ${T.border}`, display: "flex", gap: 8, flexWrap: "wrap" }}>
+            {toggleBtn("★ Oblíbený", osoba.oblibeny, T.gold, "oblibeny")}
+            {showNeoblibeny && toggleBtn("✕ Neoblíbený", osoba.neoblibeny, T.danger, "neoblibeny")}
+            {toggleBtn("† Po smrti", osoba.zijici === "Ne", T.muted, "zijici")}
+          </div>
+        )}
         <div style={{ padding: "16px 20px", overflowY: "auto", flex: 1 }}>
           {total === 0 && <div style={{ color: T.muted, fontSize: 13, textAlign: "center", padding: "32px 0" }}>Žádné záznamy</div>}
 
@@ -615,7 +637,7 @@ function OsobaCard({ osoba, onEdit, onDelete, onDetail, filmCount, isAdmin }) {
   return (
     <div style={{ ...cardStyle, borderColor: hover ? T.borderHover : T.border, alignItems: "center", cursor: "pointer" }}
       onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
-      onClick={() => filmCount > 0 && onDetail(osoba)}>
+      onClick={() => onDetail(osoba)}>
       <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", flex: 1 }}>
         <span style={{ fontSize: 14, fontWeight: 600, color: T.text, fontFamily: "Cormorant Garamond, serif" }}>{osoba.jmeno}</span>
         {osoba.narodnost && <span style={{ fontSize: 12, color: T.muted }}>{osoba.narodnost}</span>}
@@ -980,6 +1002,13 @@ function HerciTab({ herci, setHerci, filmy, serialy, isAdmin }) {
     setHerci(hs => hs.filter(h => h.id !== id));
   };
 
+  const handleToggle = async (id, field, value) => {
+    const update = field === "zijici" ? { zijici: value ? "Ne" : "Ano" } : { [field]: value };
+    await supabase.from("herci").update(update).eq("id", id);
+    setHerci(hs => hs.map(h => h.id === id ? { ...h, ...update } : h));
+    setDetail(d => d && d.id === id ? { ...d, ...update } : d);
+  };
+
   return (
     <div>
       <TabHeader count={filtered.length} onAdd={isAdmin ? openAdd : null} q={q} setQ={setQ} addLabel="Přidat herce" />
@@ -993,7 +1022,7 @@ function HerciTab({ herci, setHerci, filmy, serialy, isAdmin }) {
       <Modal open={modal} title={editing ? "Upravit herce" : "Přidat herce"} onClose={() => setModal(false)} onSave={save}>
         <OsobaForm data={form} setData={setForm} showNeoblibeny />
       </Modal>
-      {detail && <OsobaDetailModal osoba={detail} filmy={filmy} serialy={serialy} onClose={() => setDetail(null)} />}
+      {detail && <OsobaDetailModal osoba={detail} filmy={filmy} serialy={serialy} onClose={() => setDetail(null)} onToggle={handleToggle} showNeoblibeny />}
     </div>
   );
 }
@@ -1039,6 +1068,13 @@ function ReziseriTab({ reziseri, setReziseri, filmy, isAdmin }) {
     setReziseri(rs => rs.filter(r => r.id !== id));
   };
 
+  const handleToggle = async (id, field, value) => {
+    const update = field === "zijici" ? { zijici: value ? "Ne" : "Ano" } : { [field]: value };
+    await supabase.from("reziseri").update(update).eq("id", id);
+    setReziseri(rs => rs.map(r => r.id === id ? { ...r, ...update } : r));
+    setDetail(d => d && d.id === id ? { ...d, ...update } : d);
+  };
+
   return (
     <div>
       <TabHeader count={filtered.length} onAdd={isAdmin ? openAdd : null} q={q} setQ={setQ} addLabel="Přidat režiséra" />
@@ -1052,7 +1088,7 @@ function ReziseriTab({ reziseri, setReziseri, filmy, isAdmin }) {
       <Modal open={modal} title={editing ? "Upravit režiséra" : "Přidat režiséra"} onClose={() => setModal(false)} onSave={save}>
         <OsobaForm data={form} setData={setForm} />
       </Modal>
-      {detail && <OsobaDetailModal osoba={detail} filmy={filmy} onClose={() => setDetail(null)} />}
+      {detail && <OsobaDetailModal osoba={detail} filmy={filmy} onClose={() => setDetail(null)} onToggle={handleToggle} />}
     </div>
   );
 }
