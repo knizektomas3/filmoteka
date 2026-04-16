@@ -54,6 +54,22 @@ const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 
 const today = () => new Date().toISOString().slice(0, 10);
 const fmtDate = (s) => { if (!s) return ""; const [y, m, d] = s.split("-"); return `${d}.${m}.${y}`; };
 
+const TMDB_KEY = import.meta.env.VITE_TMDB_API_KEY;
+async function fetchTmdbCeskyNazev(nazev, rok, typ = "movie") {
+  if (!TMDB_KEY || !nazev) return null;
+  const endpoint = typ === "tv" ? "search/tv" : "search/movie";
+  const yearParam = typ === "tv" ? (rok ? `&first_air_date_year=${rok}` : "") : (rok ? `&year=${rok}` : "");
+  try {
+    const res = await fetch(`https://api.themoviedb.org/3/${endpoint}?api_key=${TMDB_KEY}&query=${encodeURIComponent(nazev)}${yearParam}&language=cs`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    const item = data.results?.[0];
+    if (!item) return null;
+    const nazevCs = typ === "tv" ? item.name : item.title;
+    return nazevCs && nazevCs !== nazev ? nazevCs : null;
+  } catch { return null; }
+}
+
 // ─── TÉMA ─────────────────────────────────────────────────────────────────────
 const TDark = {
   bg: "#0b0b0d", surface: "#131316", elevated: "#1a1a1e",
@@ -309,7 +325,7 @@ const emptyFilm = () => ({
   hodnoceni: null, rewatch: false, ceskyFilm: false, doporuceni: false,
 });
 const emptySerial = () => ({
-  id: uid(), nazev: "", zanry: [], rok: "", platforma: "",
+  id: uid(), nazev: "", ceskyNazev: "", zanry: [], rok: "", platforma: "",
   serie: [], pocetDilu: "", stav: "Sleduji",
   zacatekSledovani: today(), konecSledovani: "",
   hodnoceni: null, herciIds: [],
@@ -321,13 +337,27 @@ const emptyOsoba = () => ({
 
 function FilmForm({ data, setData, herci, reziseri }) {
   const u = (k, v) => setData(d => ({ ...d, [k]: v }));
+  const [tmdbLoading, setTmdbLoading] = useState(false);
+  const nacistZTmdb = async () => {
+    setTmdbLoading(true);
+    const nazev = await fetchTmdbCeskyNazev(data.nazev, data.rok, "movie");
+    if (nazev) u("ceskyNazev", nazev);
+    setTmdbLoading(false);
+  };
   return (
     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 20px" }}>
       <div style={{ gridColumn: "1/-1" }}>
         <TextInput label="Originální název *" value={data.nazev} onChange={v => u("nazev", v)} />
       </div>
       <div style={{ gridColumn: "1/-1" }}>
-        <TextInput label="Český název" value={data.ceskyNazev} onChange={v => u("ceskyNazev", v)} />
+        <div style={{ display: "flex", gap: 8, alignItems: "flex-end" }}>
+          <div style={{ flex: 1 }}>
+            <TextInput label="Český název" value={data.ceskyNazev} onChange={v => u("ceskyNazev", v)} />
+          </div>
+          <button onClick={nacistZTmdb} disabled={tmdbLoading || !data.nazev} style={{ ...btnSecondary, marginBottom: 12, whiteSpace: "nowrap", opacity: (!data.nazev || tmdbLoading) ? 0.5 : 1 }}>
+            {tmdbLoading ? "…" : "Načíst z TMDB"}
+          </button>
+        </div>
       </div>
       <TextInput label="Datum zhlédnutí" value={data.datum} onChange={v => u("datum", v)} type="date" />
       <TextInput label="Rok vydání" value={data.rok} onChange={v => u("rok", v)} type="number" placeholder="2024" />
@@ -356,10 +386,27 @@ function FilmForm({ data, setData, herci, reziseri }) {
 
 function SerialForm({ data, setData, herci }) {
   const u = (k, v) => setData(d => ({ ...d, [k]: v }));
+  const [tmdbLoading, setTmdbLoading] = useState(false);
+  const nacistZTmdb = async () => {
+    setTmdbLoading(true);
+    const nazev = await fetchTmdbCeskyNazev(data.nazev, data.rok, "tv");
+    if (nazev) u("ceskyNazev", nazev);
+    setTmdbLoading(false);
+  };
   return (
     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 20px" }}>
       <div style={{ gridColumn: "1/-1" }}>
-        <TextInput label="Název *" value={data.nazev} onChange={v => u("nazev", v)} />
+        <TextInput label="Originální název *" value={data.nazev} onChange={v => u("nazev", v)} />
+      </div>
+      <div style={{ gridColumn: "1/-1" }}>
+        <div style={{ display: "flex", gap: 8, alignItems: "flex-end" }}>
+          <div style={{ flex: 1 }}>
+            <TextInput label="Český název" value={data.ceskyNazev} onChange={v => u("ceskyNazev", v)} />
+          </div>
+          <button onClick={nacistZTmdb} disabled={tmdbLoading || !data.nazev} style={{ ...btnSecondary, marginBottom: 12, whiteSpace: "nowrap", opacity: (!data.nazev || tmdbLoading) ? 0.5 : 1 }}>
+            {tmdbLoading ? "…" : "Načíst z TMDB"}
+          </button>
+        </div>
       </div>
       <TextInput label="Rok vydání" value={data.rok} onChange={v => u("rok", v)} type="number" placeholder="2024" />
       <SelectInput label="Platforma" value={data.platforma} onChange={v => u("platforma", v)} options={PLATFORMY} />
@@ -522,6 +569,7 @@ function SerialCard({ serial, herci, onEdit, onDelete, isAdmin }) {
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 6, flexWrap: "wrap" }}>
           <a href={`https://www.imdb.com/find/?q=${encodeURIComponent(serial.nazev)}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: 15, fontWeight: 600, color: T.text, fontFamily: "Cormorant Garamond, serif", textDecoration: "none" }} onMouseEnter={e => e.target.style.color=T.gold} onMouseLeave={e => e.target.style.color=T.text}>{serial.nazev}</a>
+          {serial.ceskyNazev && <span style={{ fontSize: 12, color: T.muted, fontStyle: "italic" }}>{serial.ceskyNazev}</span>}
           {serial.rok && <span style={{ color: T.muted, fontSize: 12 }}>{serial.rok}</span>}
           {serial.platforma && <Badge color={T.gold}>{serial.platforma}</Badge>}
           {serial.stav && <Badge color={stavColor[serial.stav] ?? T.muted}>{serial.stav}</Badge>}
@@ -833,6 +881,22 @@ function FilmyTab({ filmy, setFilmy, herci, reziseri, isAdmin }) {
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState(emptyFilmFilters());
   const [sort, setSort] = useState("datum-desc");
+  const [bulkLoading, setBulkLoading] = useState(false);
+
+  const doplnitCeskeNazvy = async () => {
+    const chybejici = filmy.filter(f => !f.ceskyNazev);
+    if (!chybejici.length) return;
+    setBulkLoading(true);
+    for (const film of chybejici) {
+      const nazev = await fetchTmdbCeskyNazev(film.nazev, film.rok, "movie");
+      if (nazev) {
+        await supabase.from("filmy").update({ ceskyNazev: nazev }).eq("id", film.id);
+        setFilmy(fs => fs.map(f => f.id === film.id ? { ...f, ceskyNazev: nazev } : f));
+      }
+      await new Promise(r => setTimeout(r, 260)); // TMDB rate limit
+    }
+    setBulkLoading(false);
+  };
 
   const filtered = useMemo(() => {
     const f = filters;
@@ -882,6 +946,7 @@ function FilmyTab({ filmy, setFilmy, herci, reziseri, isAdmin }) {
       <TabHeader count={filtered.length} onAdd={isAdmin ? openAdd : null} q={q} setQ={setQ} addLabel="Přidat film" onToggleFilters={() => setShowFilters(v => !v)} activeFilterCount={activeFilterCount} sortOptions={FILM_SORT_OPTS} sort={sort} setSort={setSort} />
       {showFilters && <FilmyFilters filters={filters} setFilters={setFilters} filmy={filmy} />}
       {activeFilterCount > 0 && <button onClick={() => setFilters(emptyFilmFilters())} style={{ ...btnSecondary, fontSize: 11, marginBottom: 12, color: T.danger, borderColor: T.danger }}>× Zrušit filtry</button>}
+      {isAdmin && <button onClick={doplnitCeskeNazvy} disabled={bulkLoading} style={{ ...btnSecondary, fontSize: 11, marginBottom: 12, marginLeft: activeFilterCount > 0 ? 8 : 0, opacity: bulkLoading ? 0.6 : 1 }}>{bulkLoading ? "Doplňuji…" : `Doplnit české názvy (${filmy.filter(f => !f.ceskyNazev).length})`}</button>}
       {filtered.map(f => <FilmCard key={f.id} film={f} herci={herci} reziseri={reziseri} onEdit={openEdit} onDelete={del} isAdmin={isAdmin} />)}
       {filtered.length === 0 && <Empty />}
       <Modal open={modal} title={editing ? "Upravit film" : "Přidat film"} onClose={() => setModal(false)} onSave={save} wide>
@@ -908,6 +973,22 @@ function SerialyTab({ serialy, setSerialy, herci, isAdmin }) {
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState(emptySerialFilters());
   const [sort, setSort] = useState("datum-desc");
+  const [bulkLoading, setBulkLoading] = useState(false);
+
+  const doplnitCeskeNazvy = async () => {
+    const chybejici = serialy.filter(s => !s.ceskyNazev);
+    if (!chybejici.length) return;
+    setBulkLoading(true);
+    for (const serial of chybejici) {
+      const nazev = await fetchTmdbCeskyNazev(serial.nazev, serial.rok, "tv");
+      if (nazev) {
+        await supabase.from("serialy").update({ ceskyNazev: nazev }).eq("id", serial.id);
+        setSerialy(ss => ss.map(s => s.id === serial.id ? { ...s, ceskyNazev: nazev } : s));
+      }
+      await new Promise(r => setTimeout(r, 260)); // TMDB rate limit
+    }
+    setBulkLoading(false);
+  };
 
   const filtered = useMemo(() => {
     const f = filters;
@@ -955,6 +1036,7 @@ function SerialyTab({ serialy, setSerialy, herci, isAdmin }) {
       <TabHeader count={filtered.length} onAdd={isAdmin ? openAdd : null} q={q} setQ={setQ} addLabel="Přidat seriál" onToggleFilters={() => setShowFilters(v => !v)} activeFilterCount={activeFilterCount} sortOptions={SERIAL_SORT_OPTS} sort={sort} setSort={setSort} />
       {showFilters && <SerialyFilters filters={filters} setFilters={setFilters} serialy={serialy} />}
       {activeFilterCount > 0 && <button onClick={() => setFilters(emptySerialFilters())} style={{ ...btnSecondary, fontSize: 11, marginBottom: 12, color: T.danger, borderColor: T.danger }}>× Zrušit filtry</button>}
+      {isAdmin && <button onClick={doplnitCeskeNazvy} disabled={bulkLoading} style={{ ...btnSecondary, fontSize: 11, marginBottom: 12, marginLeft: activeFilterCount > 0 ? 8 : 0, opacity: bulkLoading ? 0.6 : 1 }}>{bulkLoading ? "Doplňuji…" : `Doplnit české názvy (${serialy.filter(s => !s.ceskyNazev).length})`}</button>}
       {filtered.map(s => <SerialCard key={s.id} serial={s} herci={herci} onEdit={openEdit} onDelete={del} isAdmin={isAdmin} />)}
       {filtered.length === 0 && <Empty />}
       <Modal open={modal} title={editing ? "Upravit seriál" : "Přidat seriál"} onClose={() => setModal(false)} onSave={save} wide>
