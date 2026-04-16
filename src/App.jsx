@@ -717,8 +717,8 @@ function OsobaCard({ osoba, onEdit, onDelete, onDetail, filmCount, isAdmin }) {
 }
 
 // ─── FILTRY ───────────────────────────────────────────────────────────────────
-const emptyFilmFilters  = () => ({ hodnoceniMin: null, platformy: [], zanry: [], rewatch: null, ceskyFilm: null, doporuceni: null, rokOd: "", rokDo: "" });
-const emptySerialFilters = () => ({ hodnoceniMin: null, platformy: [], zanry: [], stav: [], rokOd: "", rokDo: "" });
+const emptyFilmFilters  = () => ({ hodnoceniMin: null, platformy: [], zanry: [], rewatch: null, ceskyFilm: null, doporuceni: null, rokOd: "", rokDo: "", bezCeskehoNazvu: false });
+const emptySerialFilters = () => ({ hodnoceniMin: null, platformy: [], zanry: [], stav: [], rokOd: "", rokDo: "", bezCeskehoNazvu: false });
 
 function FilterPill({ label, active, onClick }) {
   return (
@@ -759,6 +759,7 @@ function FilmyFilters({ filters, setFilters, filmy }) {
             <FilterPill label="↺ Rewatch" active={f.rewatch === true} onClick={() => set("rewatch", f.rewatch === true ? null : true)} />
             <FilterPill label="CZ film" active={f.ceskyFilm === true} onClick={() => set("ceskyFilm", f.ceskyFilm === true ? null : true)} />
             <FilterPill label="Doporučil bych" active={f.doporuceni === true} onClick={() => set("doporuceni", f.doporuceni === true ? null : true)} />
+            <FilterPill label="Bez CZ názvu" active={f.bezCeskehoNazvu === true} onClick={() => set("bezCeskehoNazvu", !f.bezCeskehoNazvu)} />
           </div>
         </div>
         {usedPlatforms.length > 0 && (
@@ -813,6 +814,12 @@ function SerialyFilters({ filters, setFilters, serialy }) {
             {STAV_SERIALU.map(s => <FilterPill key={s} label={s} active={f.stav.includes(s)} onClick={() => toggleArr("stav", s)} />)}
           </div>
         </div>
+        <div>
+          <div style={{ fontSize: 10, color: T.muted, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>Příznaky</div>
+          <div style={{ display: "flex", gap: 4 }}>
+            <FilterPill label="Bez CZ názvu" active={f.bezCeskehoNazvu === true} onClick={() => set("bezCeskehoNazvu", !f.bezCeskehoNazvu)} />
+          </div>
+        </div>
         {usedPlatforms.length > 0 && (
           <div style={{ flexBasis: "100%" }}>
             <div style={{ fontSize: 10, color: T.muted, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>Platforma</div>
@@ -845,6 +852,7 @@ function countActiveFilters(f) {
     f.stav?.length > 0,
     f.rokOd,
     f.rokDo,
+    f.bezCeskehoNazvu,
   ].filter(Boolean).length;
 }
 
@@ -916,7 +924,8 @@ function FilmyTab({ filmy, setFilmy, herci, reziseri, isAdmin }) {
       .filter(x => f.ceskyFilm == null || x.ceskyFilm === f.ceskyFilm)
       .filter(x => f.doporuceni == null || x.doporuceni === f.doporuceni)
       .filter(x => !f.rokOd || (x.rok ?? 0) >= parseInt(f.rokOd))
-      .filter(x => !f.rokDo || (x.rok ?? 9999) <= parseInt(f.rokDo));
+      .filter(x => !f.rokDo || (x.rok ?? 9999) <= parseInt(f.rokDo))
+      .filter(x => !f.bezCeskehoNazvu || !x.ceskyNazev);
     list.sort((a, b) => {
       if (sort === "datum-desc") { const d = (b.datum ?? "").localeCompare(a.datum ?? ""); return d !== 0 ? d : (b.id ?? "").localeCompare(a.id ?? ""); }
       if (sort === "datum-asc") { const d = (a.datum ?? "").localeCompare(b.datum ?? ""); return d !== 0 ? d : (b.id ?? "").localeCompare(a.id ?? ""); }
@@ -1010,7 +1019,8 @@ function SerialyTab({ serialy, setSerialy, herci, isAdmin }) {
       .filter(x => !f.zanry.length || f.zanry.every(z => (x.zanry ?? []).includes(z)))
       .filter(x => !f.stav.length || f.stav.includes(x.stav))
       .filter(x => !f.rokOd || (x.rok ?? 0) >= parseInt(f.rokOd))
-      .filter(x => !f.rokDo || (x.rok ?? 9999) <= parseInt(f.rokDo));
+      .filter(x => !f.rokDo || (x.rok ?? 9999) <= parseInt(f.rokDo))
+      .filter(x => !f.bezCeskehoNazvu || !x.ceskyNazev);
     list.sort((a, b) => {
       if (sort === "datum-desc") { const da = b.konecSledovani||b.zacatekSledovani||""; const db = a.konecSledovani||a.zacatekSledovani||""; const d = da.localeCompare(db); return d !== 0 ? d : (b.id ?? "").localeCompare(a.id ?? ""); }
       if (sort === "datum-asc") { const da = a.konecSledovani||a.zacatekSledovani||""; const db = b.konecSledovani||b.zacatekSledovani||""; const d = da.localeCompare(db); return d !== 0 ? d : (b.id ?? "").localeCompare(a.id ?? ""); }
