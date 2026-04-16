@@ -66,8 +66,9 @@ async function fetchTmdbCeskyNazev(nazev, rok, typ = "movie") {
     const item = data.results?.[0];
     if (!item) return null;
     const nazevCs = typ === "tv" ? item.name : item.title;
-    return nazevCs && nazevCs !== nazev ? nazevCs : null;
-  } catch { return null; }
+    console.log(`TMDB [${typ}] "${nazev}" → "${nazevCs}"`);
+    return nazevCs || null;
+  } catch (e) { console.error("TMDB error:", e); return null; }
 }
 
 // ─── TÉMA ─────────────────────────────────────────────────────────────────────
