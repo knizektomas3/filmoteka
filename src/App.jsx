@@ -523,16 +523,16 @@ function FilmCard({ film, herci, reziseri, onEdit, onDelete, isAdmin }) {
         </div>
       )}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 6, flexWrap: "wrap" }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+        <div style={{ marginBottom: 6 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
             <a href={`https://www.imdb.com/find/?q=${encodeURIComponent(film.nazev)}${film.rok ? `+${film.rok}` : ''}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: 15, fontWeight: 600, color: T.text, fontFamily: "Cormorant Garamond, serif", textDecoration: "none" }} onMouseEnter={e => e.target.style.color=T.gold} onMouseLeave={e => e.target.style.color=T.text}>{film.nazev}</a>
-            {film.ceskyNazev && <span style={{ fontSize: 12, color: T.muted, fontStyle: "italic" }}>({film.ceskyNazev})</span>}
+            {film.rok && <span style={{ color: T.muted, fontSize: 12 }}>{film.rok}</span>}
+            {film.platforma && <Badge color={T.goldBg ? T.gold : T.muted}>{film.platforma}</Badge>}
+            {film.ceskyFilm && <Badge color={T.blue}>CZ</Badge>}
+            {film.rewatch && <Badge color={T.purple}>↺ Rewatch</Badge>}
+            {film.doporuceni && <Badge color={T.green}>Doporučil bych</Badge>}
           </div>
-          {film.rok && <span style={{ color: T.muted, fontSize: 12 }}>{film.rok}</span>}
-          {film.platforma && <Badge color={T.goldBg ? T.gold : T.muted}>{film.platforma}</Badge>}
-          {film.ceskyFilm && <Badge color={T.blue}>CZ</Badge>}
-          {film.rewatch && <Badge color={T.purple}>↺ Rewatch</Badge>}
-          {film.doporuceni && <Badge color={T.green}>Doporučil bych</Badge>}
+          {film.ceskyNazev && <span style={{ fontSize: 12, color: T.muted, fontStyle: "italic" }}>({film.ceskyNazev})</span>}
         </div>
         {(film.zanry ?? []).length > 0 && <div style={{ marginBottom: 6 }}><TagList items={film.zanry} /></div>}
         <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
@@ -576,14 +576,14 @@ function SerialCard({ serial, herci, onEdit, onDelete, isAdmin }) {
         </div>
       )}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 6, flexWrap: "wrap" }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+        <div style={{ marginBottom: 6 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
             <a href={`https://www.imdb.com/find/?q=${encodeURIComponent(serial.nazev)}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: 15, fontWeight: 600, color: T.text, fontFamily: "Cormorant Garamond, serif", textDecoration: "none" }} onMouseEnter={e => e.target.style.color=T.gold} onMouseLeave={e => e.target.style.color=T.text}>{serial.nazev}</a>
-            {serial.ceskyNazev && <span style={{ fontSize: 12, color: T.muted, fontStyle: "italic" }}>({serial.ceskyNazev})</span>}
+            {serial.rok && <span style={{ color: T.muted, fontSize: 12 }}>{serial.rok}</span>}
+            {serial.platforma && <Badge color={T.gold}>{serial.platforma}</Badge>}
+            {serial.stav && <Badge color={stavColor[serial.stav] ?? T.muted}>{serial.stav}</Badge>}
           </div>
-          {serial.rok && <span style={{ color: T.muted, fontSize: 12 }}>{serial.rok}</span>}
-          {serial.platforma && <Badge color={T.gold}>{serial.platforma}</Badge>}
-          {serial.stav && <Badge color={stavColor[serial.stav] ?? T.muted}>{serial.stav}</Badge>}
+          {serial.ceskyNazev && <span style={{ fontSize: 12, color: T.muted, fontStyle: "italic" }}>({serial.ceskyNazev})</span>}
         </div>
         {(serial.zanry ?? []).length > 0 && <div style={{ marginBottom: 6 }}><TagList items={serial.zanry} /></div>}
         <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
