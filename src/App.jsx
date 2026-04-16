@@ -304,7 +304,7 @@ function PersonSearch({ label, persons, selected, onChange, multi = false }) {
 
 // ─── FORMY ────────────────────────────────────────────────────────────────────
 const emptyFilm = () => ({
-  id: uid(), datum: today(), nazev: "", zanry: [], rok: "", platforma: "",
+  id: uid(), datum: today(), nazev: "", ceskyNazev: "", zanry: [], rok: "", platforma: "",
   stopaz: "", reziserIds: [], herciIds: [],
   hodnoceni: null, rewatch: false, ceskyFilm: false, doporuceni: false,
 });
@@ -324,7 +324,10 @@ function FilmForm({ data, setData, herci, reziseri }) {
   return (
     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 20px" }}>
       <div style={{ gridColumn: "1/-1" }}>
-        <TextInput label="Název *" value={data.nazev} onChange={v => u("nazev", v)} />
+        <TextInput label="Originální název *" value={data.nazev} onChange={v => u("nazev", v)} />
+      </div>
+      <div style={{ gridColumn: "1/-1" }}>
+        <TextInput label="Český název" value={data.ceskyNazev} onChange={v => u("ceskyNazev", v)} />
       </div>
       <TextInput label="Datum zhlédnutí" value={data.datum} onChange={v => u("datum", v)} type="date" />
       <TextInput label="Rok vydání" value={data.rok} onChange={v => u("rok", v)} type="number" placeholder="2024" />
@@ -468,6 +471,7 @@ function FilmCard({ film, herci, reziseri, onEdit, onDelete, isAdmin }) {
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 6, flexWrap: "wrap" }}>
           <a href={`https://www.imdb.com/find/?q=${encodeURIComponent(film.nazev)}${film.rok ? `+${film.rok}` : ''}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: 15, fontWeight: 600, color: T.text, fontFamily: "Cormorant Garamond, serif", textDecoration: "none" }} onMouseEnter={e => e.target.style.color=T.gold} onMouseLeave={e => e.target.style.color=T.text}>{film.nazev}</a>
+          {film.ceskyNazev && <span style={{ fontSize: 12, color: T.muted, fontStyle: "italic" }}>{film.ceskyNazev}</span>}
           {film.rok && <span style={{ color: T.muted, fontSize: 12 }}>{film.rok}</span>}
           {film.platforma && <Badge color={T.goldBg ? T.gold : T.muted}>{film.platforma}</Badge>}
           {film.ceskyFilm && <Badge color={T.blue}>CZ</Badge>}
