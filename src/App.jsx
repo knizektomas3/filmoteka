@@ -898,6 +898,16 @@ function FilmyTab({ filmy, setFilmy, herci, reziseri, isAdmin }) {
   const [sort, setSort] = useState("datum-desc");
   const [bulkLoading, setBulkLoading] = useState(false);
 
+  const vycistitDuplikatyNazvu = async () => {
+    const duplicity = filmy.filter(f => f.ceskyNazev && f.ceskyNazev === f.nazev);
+    if (!duplicity.length) { alert("Žádné duplicity nenalezeny."); return; }
+    for (const film of duplicity) {
+      await supabase.from("filmy").update({ ceskyNazev: null }).eq("id", film.id);
+      setFilmy(fs => fs.map(f => f.id === film.id ? { ...f, ceskyNazev: null } : f));
+    }
+    alert(`Vyčištěno ${duplicity.length} záznamů.`);
+  };
+
   const doplnitCeskeNazvy = async () => {
     const chybejici = filmy.filter(f => !f.ceskyNazev);
     if (!chybejici.length) return;
@@ -908,7 +918,7 @@ function FilmyTab({ filmy, setFilmy, herci, reziseri, isAdmin }) {
         await supabase.from("filmy").update({ ceskyNazev: nazev }).eq("id", film.id);
         setFilmy(fs => fs.map(f => f.id === film.id ? { ...f, ceskyNazev: nazev } : f));
       }
-      await new Promise(r => setTimeout(r, 260)); // TMDB rate limit
+      await new Promise(r => setTimeout(r, 260));
     }
     setBulkLoading(false);
   };
@@ -963,6 +973,7 @@ function FilmyTab({ filmy, setFilmy, herci, reziseri, isAdmin }) {
       {showFilters && <FilmyFilters filters={filters} setFilters={setFilters} filmy={filmy} />}
       {activeFilterCount > 0 && <button onClick={() => setFilters(emptyFilmFilters())} style={{ ...btnSecondary, fontSize: 11, marginBottom: 12, color: T.danger, borderColor: T.danger }}>× Zrušit filtry</button>}
       {isAdmin && <button onClick={doplnitCeskeNazvy} disabled={bulkLoading} style={{ ...btnSecondary, fontSize: 11, marginBottom: 12, marginLeft: activeFilterCount > 0 ? 8 : 0, opacity: bulkLoading ? 0.6 : 1 }}>{bulkLoading ? "Doplňuji…" : `Doplnit české názvy (${filmy.filter(f => !f.ceskyNazev).length})`}</button>}
+      {isAdmin && <button onClick={vycistitDuplikatyNazvu} style={{ ...btnSecondary, fontSize: 11, marginBottom: 12, marginLeft: 8, color: T.danger, borderColor: T.danger }}>Vyčistit duplicity CZ názvů</button>}
       {filtered.map(f => <FilmCard key={f.id} film={f} herci={herci} reziseri={reziseri} onEdit={openEdit} onDelete={del} isAdmin={isAdmin} />)}
       {filtered.length === 0 && <Empty />}
       <Modal open={modal} title={editing ? "Upravit film" : "Přidat film"} onClose={() => setModal(false)} onSave={save} wide>
@@ -991,18 +1002,24 @@ function SerialyTab({ serialy, setSerialy, herci, isAdmin }) {
   const [sort, setSort] = useState("datum-desc");
   const [bulkLoading, setBulkLoading] = useState(false);
 
+  const vycistitDuplikatyNazvu = async () => {
+    const duplicity = serialy.filter(s => s.ceskyNazev && s.ceskyNazev === s.nazev);
+    if (!duplicity.length) { alert("Žádné duplicity nenalezeny."); return; }
+    for (const serial of duplicity) {
+      await supabase.from("serialy").update({ ceskyNazev: null }).eq("id", serial.id);
+      setSerialy(ss => ss.map(s => s.id === serial.id ? { ...s, ceskyNazev: null } : s));
+    }
+    alert(`Vyčištěno ${duplicity.length} záznamů.`);
+  };
+
   const doplnitCeskeNazvy = async () => {
     const chybejici = serialy.filter(s => !s.ceskyNazev);
-    console.log("Chybějící:", chybejici.length, chybejici.map(s => s.nazev));
     if (!chybejici.length) return;
     setBulkLoading(true);
     for (const serial of chybejici) {
-      console.log("Zpracovávám:", serial.nazev, serial.rok);
       const nazev = await fetchTmdbCeskyNazev(serial.nazev, serial.rok, "tv");
-      console.log("Výsledek:", nazev);
       if (nazev) {
-        const { error } = await supabase.from("serialy").update({ ceskyNazev: nazev }).eq("id", serial.id);
-        if (error) console.error("Supabase error:", error);
+        await supabase.from("serialy").update({ ceskyNazev: nazev }).eq("id", serial.id);
         setSerialy(ss => ss.map(s => s.id === serial.id ? { ...s, ceskyNazev: nazev } : s));
       }
       await new Promise(r => setTimeout(r, 260));
@@ -1058,6 +1075,7 @@ function SerialyTab({ serialy, setSerialy, herci, isAdmin }) {
       {showFilters && <SerialyFilters filters={filters} setFilters={setFilters} serialy={serialy} />}
       {activeFilterCount > 0 && <button onClick={() => setFilters(emptySerialFilters())} style={{ ...btnSecondary, fontSize: 11, marginBottom: 12, color: T.danger, borderColor: T.danger }}>× Zrušit filtry</button>}
       {isAdmin && <button onClick={doplnitCeskeNazvy} disabled={bulkLoading} style={{ ...btnSecondary, fontSize: 11, marginBottom: 12, marginLeft: activeFilterCount > 0 ? 8 : 0, opacity: bulkLoading ? 0.6 : 1 }}>{bulkLoading ? "Doplňuji…" : `Doplnit české názvy (${serialy.filter(s => !s.ceskyNazev).length})`}</button>}
+      {isAdmin && <button onClick={vycistitDuplikatyNazvu} style={{ ...btnSecondary, fontSize: 11, marginBottom: 12, marginLeft: 8, color: T.danger, borderColor: T.danger }}>Vyčistit duplicity CZ názvů</button>}
       {filtered.map(s => <SerialCard key={s.id} serial={s} herci={herci} onEdit={openEdit} onDelete={del} isAdmin={isAdmin} />)}
       {filtered.length === 0 && <Empty />}
       <Modal open={modal} title={editing ? "Upravit seriál" : "Přidat seriál"} onClose={() => setModal(false)} onSave={save} wide>
