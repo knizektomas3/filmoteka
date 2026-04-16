@@ -58,16 +58,22 @@ const TMDB_KEY = import.meta.env.VITE_TMDB_API_KEY;
 async function fetchTmdbCeskyNazev(nazev, rok, typ = "movie") {
   if (!TMDB_KEY || !nazev) return null;
   const endpoint = typ === "tv" ? "search/tv" : "search/movie";
-  const yearParam = typ === "tv" ? (rok ? `&first_air_date_year=${rok}` : "") : (rok ? `&year=${rok}` : "");
-  try {
+  const getTitle = (item) => (typ === "tv" ? item.name : item.title) || null;
+  const search = async (withYear) => {
+    const yearParam = withYear && rok
+      ? (typ === "tv" ? `&first_air_date_year=${rok}` : `&year=${rok}`)
+      : "";
     const res = await fetch(`https://api.themoviedb.org/3/${endpoint}?api_key=${TMDB_KEY}&query=${encodeURIComponent(nazev)}${yearParam}&language=cs`);
     if (!res.ok) return null;
     const data = await res.json();
-    const item = data.results?.[0];
+    return data.results?.[0] ?? null;
+  };
+  try {
+    let item = await search(true);
+    if (!item) item = await search(false);
     if (!item) return null;
-    const nazevCs = typ === "tv" ? item.name : item.title;
-    console.log(`TMDB [${typ}] "${nazev}" → "${nazevCs}"`);
-    return nazevCs || null;
+    const nazevCs = getTitle(item);
+    return nazevCs && nazevCs !== nazev ? nazevCs : null;
   } catch (e) { console.error("TMDB error:", e); return null; }
 }
 
@@ -978,15 +984,19 @@ function SerialyTab({ serialy, setSerialy, herci, isAdmin }) {
 
   const doplnitCeskeNazvy = async () => {
     const chybejici = serialy.filter(s => !s.ceskyNazev);
+    console.log("Chybějící:", chybejici.length, chybejici.map(s => s.nazev));
     if (!chybejici.length) return;
     setBulkLoading(true);
     for (const serial of chybejici) {
+      console.log("Zpracovávám:", serial.nazev, serial.rok);
       const nazev = await fetchTmdbCeskyNazev(serial.nazev, serial.rok, "tv");
+      console.log("Výsledek:", nazev);
       if (nazev) {
-        await supabase.from("serialy").update({ ceskyNazev: nazev }).eq("id", serial.id);
+        const { error } = await supabase.from("serialy").update({ ceskyNazev: nazev }).eq("id", serial.id);
+        if (error) console.error("Supabase error:", error);
         setSerialy(ss => ss.map(s => s.id === serial.id ? { ...s, ceskyNazev: nazev } : s));
       }
-      await new Promise(r => setTimeout(r, 260)); // TMDB rate limit
+      await new Promise(r => setTimeout(r, 260));
     }
     setBulkLoading(false);
   };
