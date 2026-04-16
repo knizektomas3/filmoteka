@@ -843,8 +843,8 @@ function FilmyTab({ filmy, setFilmy, herci, reziseri, isAdmin }) {
       .filter(x => !f.rokOd || (x.rok ?? 0) >= parseInt(f.rokOd))
       .filter(x => !f.rokDo || (x.rok ?? 9999) <= parseInt(f.rokDo));
     list.sort((a, b) => {
-      if (sort === "datum-desc") return (b.datum ?? "").localeCompare(a.datum ?? "");
-      if (sort === "datum-asc") return (a.datum ?? "").localeCompare(b.datum ?? "");
+      if (sort === "datum-desc") { const d = (b.datum ?? "").localeCompare(a.datum ?? ""); return d !== 0 ? d : (b.id ?? "").localeCompare(a.id ?? ""); }
+      if (sort === "datum-asc") { const d = (a.datum ?? "").localeCompare(b.datum ?? ""); return d !== 0 ? d : (b.id ?? "").localeCompare(a.id ?? ""); }
       if (sort === "hodnoceni-desc") return (b.hodnoceni ?? 0) - (a.hodnoceni ?? 0);
       if (sort === "nazev-asc") return (a.nazev ?? "").localeCompare(b.nazev ?? "", "cs");
       if (sort === "rok-desc") return (parseInt(b.rok) || 0) - (parseInt(a.rok) || 0);
@@ -916,8 +916,8 @@ function SerialyTab({ serialy, setSerialy, herci, isAdmin }) {
       .filter(x => !f.rokOd || (x.rok ?? 0) >= parseInt(f.rokOd))
       .filter(x => !f.rokDo || (x.rok ?? 9999) <= parseInt(f.rokDo));
     list.sort((a, b) => {
-      if (sort === "datum-desc") { const da = b.konecSledovani||b.zacatekSledovani||""; const db = a.konecSledovani||a.zacatekSledovani||""; return da.localeCompare(db); }
-      if (sort === "datum-asc") { const da = a.konecSledovani||a.zacatekSledovani||""; const db = b.konecSledovani||b.zacatekSledovani||""; return da.localeCompare(db); }
+      if (sort === "datum-desc") { const da = b.konecSledovani||b.zacatekSledovani||""; const db = a.konecSledovani||a.zacatekSledovani||""; const d = da.localeCompare(db); return d !== 0 ? d : (b.id ?? "").localeCompare(a.id ?? ""); }
+      if (sort === "datum-asc") { const da = a.konecSledovani||a.zacatekSledovani||""; const db = b.konecSledovani||b.zacatekSledovani||""; const d = da.localeCompare(db); return d !== 0 ? d : (b.id ?? "").localeCompare(a.id ?? ""); }
       if (sort === "hodnoceni-desc") return (b.hodnoceni ?? 0) - (a.hodnoceni ?? 0);
       if (sort === "nazev-asc") return (a.nazev ?? "").localeCompare(b.nazev ?? "", "cs");
       if (sort === "rok-desc") return (parseInt(b.rok) || 0) - (parseInt(a.rok) || 0);
