@@ -574,6 +574,7 @@ function FilmCard({ film, herci, reziseri, onEdit, onDelete, isAdmin }) {
   const filmReziseri = reziseri.filter(r => (film.reziserIds ?? []).includes(r.id));
   const filmHerci = herci.filter(h => (film.herciIds ?? []).includes(h.id));
   const ratingColor = film.hodnoceni >= 9 ? T.green : film.hodnoceni <= 4 && film.hodnoceni > 0 ? T.danger : T.text;
+  const rowHighlight = film.hodnoceni >= 9 ? T.green + "18" : film.hodnoceni <= 4 && film.hodnoceni > 0 ? T.danger + "18" : null;
 
   if (isMobile) {
     return (
@@ -610,7 +611,7 @@ function FilmCard({ film, herci, reziseri, onEdit, onDelete, isAdmin }) {
       display: "grid", gridTemplateColumns: FILM_COLS, gap: 12,
       padding: "12px 16px", alignItems: "center",
       borderBottom: `1px solid ${T.border}`,
-      background: hover ? T.elevated : T.surface,
+      background: hover ? T.elevated : rowHighlight ?? T.surface,
       transition: "background 0.1s",
       cursor: "default",
     }}
@@ -634,7 +635,7 @@ function FilmCard({ film, herci, reziseri, onEdit, onDelete, isAdmin }) {
         {(filmReziseri.length > 0 || filmHerci.length > 0) && (
           <div style={{ fontFamily: F.mono, fontSize: 10, marginTop: 3, letterSpacing: "0.02em" }}>
             {filmReziseri.length > 0 && (
-              <span style={{ color: T.gold }}>réž. {filmReziseri.map(r => r.jmeno).join(", ")}</span>
+              <span style={{ color: T.gold }}>rež. {filmReziseri.map(r => r.jmeno).join(", ")}</span>
             )}
             {filmReziseri.length > 0 && filmHerci.length > 0 && <span style={{ color: T.muted }}> · </span>}
             {filmHerci.length > 0 && (
@@ -650,7 +651,7 @@ function FilmCard({ film, herci, reziseri, onEdit, onDelete, isAdmin }) {
       {/* Stopáž */}
       <div style={{ fontFamily: F.mono, fontSize: 11, color: T.muted, textAlign: "right" }}>{film.stopaz || ""}</div>
       {/* Hodnocení + admin */}
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, paddingLeft: 10 }}>
         <Rating value={film.hodnoceni} />
         {isAdmin && <div style={{ display: "flex", gap: 4, marginLeft: "auto" }}>
           <button onClick={() => onEdit(film)} style={{ ...btnSecondary, padding: "3px 8px", fontSize: 10 }}>upravit</button>
