@@ -619,24 +619,16 @@ function FilmDetailModal({ film: initialFilm, filmy, herci, reziseri, onClose, o
         <div style={{ padding: isMobile ? "20px 18px 16px" : "28px 36px 20px", borderBottom: `1px solid ${T.text}` }}>
           <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr auto", gap: 24, alignItems: "flex-end" }}>
             <div>
-              <h2 style={{ margin: 0, fontFamily: F.display, fontSize: isMobile ? 36 : 64, fontWeight: 500, color: T.text, letterSpacing: "-0.04em", lineHeight: 0.9 }}>
-                {film.nazev}<span style={{ color: T.gold, fontWeight: 600 }}>.</span>
+              <h2 style={{ margin: 0, fontFamily: F.display, fontSize: isMobile ? 28 : 42, fontWeight: 500, color: T.text, letterSpacing: "-0.03em", lineHeight: 1.05 }}>
+                {film.nazev}
               </h2>
               {film.ceskyNazev && <div style={{ fontFamily: F.sans, fontSize: 14, color: T.muted, fontStyle: "italic", marginTop: 6 }}>({film.ceskyNazev})</div>}
-              <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 10, fontFamily: F.mono, fontSize: 12, color: T.inkMuted ?? T.muted }}>
-                {metaRow.map((m, i) => (
-                  <span key={i} style={{ display: "flex", gap: 10 }}>
-                    {i > 0 && <span style={{ color: T.border }}>·</span>}
-                    {m}
-                  </span>
-                ))}
-              </div>
             </div>
             {!isMobile && film.hodnoceni && (
               <div style={{ textAlign: "right" }}>
                 <div style={{ fontFamily: F.mono, fontSize: 10, color: T.muted, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 4 }}>hodnocení</div>
                 <div style={{ fontFamily: F.display, fontSize: 96, fontWeight: 500, color: ratingColor, letterSpacing: "-0.06em", lineHeight: 0.85 }}>
-                  {film.hodnoceni}<span style={{ color: T.gold, fontSize: 48 }}>.</span>
+                  {film.hodnoceni}
                 </div>
               </div>
             )}
@@ -842,24 +834,16 @@ function SerialDetailModal({ serial: initialSerial, serialy, herci, onClose, onE
         <div style={{ padding: isMobile ? "20px 18px 16px" : "28px 36px 20px", borderBottom: `1px solid ${T.text}` }}>
           <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr auto", gap: 24, alignItems: "flex-end" }}>
             <div>
-              <h2 style={{ margin: 0, fontFamily: F.display, fontSize: isMobile ? 36 : 64, fontWeight: 500, color: T.text, letterSpacing: "-0.04em", lineHeight: 0.9 }}>
-                {serial.nazev}<span style={{ color: T.gold, fontWeight: 600 }}>.</span>
+              <h2 style={{ margin: 0, fontFamily: F.display, fontSize: isMobile ? 28 : 42, fontWeight: 500, color: T.text, letterSpacing: "-0.03em", lineHeight: 1.05 }}>
+                {serial.nazev}
               </h2>
               {serial.ceskyNazev && <div style={{ fontFamily: F.sans, fontSize: 14, color: T.muted, fontStyle: "italic", marginTop: 6 }}>({serial.ceskyNazev})</div>}
-              <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 10, fontFamily: F.mono, fontSize: 12, color: T.inkMuted ?? T.muted }}>
-                {[serial.rok, (serial.zanry ?? []).join(", ") || null, serial.stav].filter(Boolean).map((m, i) => (
-                  <span key={i} style={{ display: "flex", gap: 10 }}>
-                    {i > 0 && <span style={{ color: T.border }}>·</span>}
-                    <span style={{ color: serial.stav === m ? (stavColor[m] ?? T.muted) : "inherit" }}>{m}</span>
-                  </span>
-                ))}
-              </div>
             </div>
             {!isMobile && serial.hodnoceni && (
               <div style={{ textAlign: "right" }}>
                 <div style={{ fontFamily: F.mono, fontSize: 10, color: T.muted, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 4 }}>hodnocení</div>
                 <div style={{ fontFamily: F.display, fontSize: 96, fontWeight: 500, color: ratingColor, letterSpacing: "-0.06em", lineHeight: 0.85 }}>
-                  {serial.hodnoceni}<span style={{ color: T.gold, fontSize: 48 }}>.</span>
+                  {serial.hodnoceni}
                 </div>
               </div>
             )}
