@@ -1661,14 +1661,10 @@ export default function App() {
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
             <div style={{ width: 8, height: 8, background: T.text, borderRadius: "50%" }} />
             <div style={{ fontFamily: F.display, fontSize: isMobile ? 15 : 17, fontWeight: 500, color: T.text, letterSpacing: "-0.025em", lineHeight: 1 }}>
-              Filmotéka<span style={{ color: T.gold, fontWeight: 600 }}>.</span>
+              Filmotéka
             </div>
           </div>
-          {!isMobile && (
-            <div style={{ fontFamily: F.mono, fontSize: 10, color: T.muted, letterSpacing: "0.12em", textTransform: "uppercase", paddingLeft: 14, borderLeft: `1px solid ${T.border}`, marginLeft: 6 }}>
-              {filmy.length + serialy.length} záznamů
-            </div>
-          )}
+
           <div style={{ flex: 1 }} />
           <button onClick={() => setDarkMode(d => !d)} title={darkMode ? "Světlý režim" : "Tmavý režim"}
             style={{ background: "none", border: "none", cursor: "pointer", color: T.muted, fontSize: 15, padding: "0 6px", display: "flex", alignItems: "center" }}
