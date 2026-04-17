@@ -568,7 +568,8 @@ function FilmTableHeader() {
   );
 }
 
-function FilmDetailModal({ film, filmy, herci, reziseri, onClose, onEdit, isAdmin }) {
+function FilmDetailModal({ film: initialFilm, filmy, herci, reziseri, onClose, onEdit, isAdmin }) {
+  const [film, setFilm] = useState(initialFilm);
   const isMobile = useMobile();
   const filmReziseri = reziseri.filter(r => (film.reziserIds ?? []).includes(r.id));
   const filmHerci = herci.filter(h => (film.herciIds ?? []).includes(h.id));
@@ -599,8 +600,10 @@ function FilmDetailModal({ film, filmy, herci, reziseri, onClose, onEdit, isAdmi
       <div style={{ fontFamily: F.mono, fontSize: 10, color: T.muted, letterSpacing: "0.12em", textTransform: "uppercase", paddingBottom: 6, borderBottom: `1px solid ${T.text}`, marginBottom: 10 }}>{title}</div>
       {items.length === 0 && <div style={{ fontFamily: F.mono, fontSize: 11, color: T.muted }}>Žádné záznamy.</div>}
       {items.map((f, i) => (
-        <div key={f.id} style={{ display: "grid", gridTemplateColumns: "1fr 36px 36px", gap: 8, padding: "7px 0", borderBottom: i < items.length - 1 ? `1px solid ${T.border}` : "none", alignItems: "baseline" }}>
-          <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 500, color: T.text, letterSpacing: "-0.01em" }}>{f.nazev}</span>
+        <div key={f.id} onClick={() => setFilm(f)} style={{ display: "grid", gridTemplateColumns: "1fr 36px 36px", gap: 8, padding: "7px 0", borderBottom: i < items.length - 1 ? `1px solid ${T.border}` : "none", alignItems: "baseline", cursor: "pointer" }}
+          onMouseEnter={e => e.currentTarget.style.background = T.elevated}
+          onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+          <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 500, color: T.gold, letterSpacing: "-0.01em" }}>{f.nazev}</span>
           <span style={{ fontFamily: F.mono, fontSize: 10, color: T.muted, textAlign: "right" }}>{f.rok}</span>
           <span style={{ fontFamily: F.display, fontSize: 15, fontWeight: 500, color: f.hodnoceni >= 9 ? T.green : f.hodnoceni <= 4 && f.hodnoceni ? T.danger : T.text, textAlign: "right" }}>{f.hodnoceni ?? "—"}</span>
         </div>
@@ -616,9 +619,6 @@ function FilmDetailModal({ film, filmy, herci, reziseri, onClose, onEdit, isAdmi
         <div style={{ padding: isMobile ? "20px 18px 16px" : "28px 36px 20px", borderBottom: `1px solid ${T.text}` }}>
           <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr auto", gap: 24, alignItems: "flex-end" }}>
             <div>
-              <div style={{ fontFamily: F.mono, fontSize: 10, color: T.muted, letterSpacing: "0.16em", textTransform: "uppercase", marginBottom: 8 }}>
-                {film.datum ? fmtDate(film.datum) : "—"} · {film.platforma ?? ""}
-              </div>
               <h2 style={{ margin: 0, fontFamily: F.display, fontSize: isMobile ? 36 : 64, fontWeight: 500, color: T.text, letterSpacing: "-0.04em", lineHeight: 0.9 }}>
                 {film.nazev}<span style={{ color: T.gold, fontWeight: 600 }}>.</span>
               </h2>
@@ -817,7 +817,8 @@ function SerialTableHeader() {
   );
 }
 
-function SerialDetailModal({ serial, serialy, herci, onClose, onEdit, isAdmin }) {
+function SerialDetailModal({ serial: initialSerial, serialy, herci, onClose, onEdit, isAdmin }) {
+  const [serial, setSerial] = useState(initialSerial);
   const isMobile = useMobile();
   const serialHerci = herci.filter(h => (serial.herciIds ?? []).includes(h.id));
   const ratingColor = serial.hodnoceni >= 9 ? T.green : serial.hodnoceni <= 4 && serial.hodnoceni > 0 ? T.danger : T.text;
@@ -841,9 +842,6 @@ function SerialDetailModal({ serial, serialy, herci, onClose, onEdit, isAdmin })
         <div style={{ padding: isMobile ? "20px 18px 16px" : "28px 36px 20px", borderBottom: `1px solid ${T.text}` }}>
           <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr auto", gap: 24, alignItems: "flex-end" }}>
             <div>
-              <div style={{ fontFamily: F.mono, fontSize: 10, color: T.muted, letterSpacing: "0.16em", textTransform: "uppercase", marginBottom: 8 }}>
-                {datumLabel || "—"} · {serial.platforma ?? ""}
-              </div>
               <h2 style={{ margin: 0, fontFamily: F.display, fontSize: isMobile ? 36 : 64, fontWeight: 500, color: T.text, letterSpacing: "-0.04em", lineHeight: 0.9 }}>
                 {serial.nazev}<span style={{ color: T.gold, fontWeight: 600 }}>.</span>
               </h2>
@@ -911,8 +909,10 @@ function SerialDetailModal({ serial, serialy, herci, onClose, onEdit, isAdmin })
               </div>
               {podobne.length === 0 && <div style={{ fontFamily: F.mono, fontSize: 11, color: T.muted }}>Žádné záznamy.</div>}
               {podobne.map((s, i) => (
-                <div key={s.id} style={{ display: "grid", gridTemplateColumns: "1fr 36px 36px", gap: 8, padding: "8px 0", borderBottom: i < podobne.length - 1 ? `1px solid ${T.border}` : "none", alignItems: "baseline" }}>
-                  <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 500, color: T.text, letterSpacing: "-0.01em" }}>{s.nazev}</span>
+                <div key={s.id} onClick={() => setSerial(s)} style={{ display: "grid", gridTemplateColumns: "1fr 36px 36px", gap: 8, padding: "8px 0", borderBottom: i < podobne.length - 1 ? `1px solid ${T.border}` : "none", alignItems: "baseline", cursor: "pointer" }}
+                  onMouseEnter={e => e.currentTarget.style.background = T.elevated}
+                  onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                  <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 500, color: T.gold, letterSpacing: "-0.01em" }}>{s.nazev}</span>
                   <span style={{ fontFamily: F.mono, fontSize: 10, color: T.muted, textAlign: "right" }}>{s.rok}</span>
                   <span style={{ fontFamily: F.display, fontSize: 15, fontWeight: 500, color: s.hodnoceni >= 9 ? T.green : s.hodnoceni <= 4 && s.hodnoceni ? T.danger : T.text, textAlign: "right" }}>{s.hodnoceni ?? "—"}</span>
                 </div>
