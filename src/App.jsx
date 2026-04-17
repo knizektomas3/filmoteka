@@ -1414,6 +1414,207 @@ function BilCard({ title, children }) {
   );
 }
 
+// ─── DASHBOARD ────────────────────────────────────────────────────────────────
+function DashSectionHead({ title, meta, tight = false }) {
+  return (
+    <div style={{
+      display: "flex", justifyContent: "space-between", alignItems: "baseline",
+      paddingBottom: tight ? 6 : 9,
+      borderBottom: `1px solid ${T.text}`,
+      marginBottom: tight ? 12 : 16,
+    }}>
+      <div style={{ fontFamily: F.display, fontSize: tight ? 17 : 20, fontWeight: 500, color: T.text, letterSpacing: "-0.025em" }}>{title}</div>
+      {meta && <div style={{ fontFamily: F.mono, fontSize: 10, color: T.muted, letterSpacing: "0.1em", textTransform: "uppercase" }}>{meta}</div>}
+    </div>
+  );
+}
+
+function DashKV({ label, value, suffix }) {
+  return (
+    <div>
+      <div style={{ fontFamily: F.mono, fontSize: 10, color: T.muted, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 6 }}>{label}</div>
+      <div style={{ display: "flex", alignItems: "baseline", gap: 5 }}>
+        <span style={{ fontFamily: F.display, fontSize: 40, fontWeight: 500, color: T.text, letterSpacing: "-0.04em", lineHeight: 1 }}>{value}</span>
+        {suffix && <span style={{ fontFamily: F.mono, fontSize: 11, color: T.muted }}>{suffix}</span>}
+      </div>
+    </div>
+  );
+}
+
+function DashboardTab({ filmy, serialy, watchlist }) {
+  const isMobile = useMobile();
+  const now = new Date();
+  const hour = now.getHours();
+  const greeting = hour < 12 ? "Dobré ráno" : hour < 18 ? "Dobré odpoledne" : "Dobrý večer";
+  const dayNames = ["Neděle","Pondělí","Úterý","Středa","Čtvrtek","Pátek","Sobota"];
+  const monthNames = ["ledna","února","března","dubna","května","června","července","srpna","září","října","listopadu","prosince"];
+  const dateStr = `${dayNames[now.getDay()]} ${now.getDate()}. ${monthNames[now.getMonth()]} ${now.getFullYear()}`;
+
+  const currentMonth = now.toISOString().slice(0, 7);
+  const currentYear = now.getFullYear().toString();
+  const totalThisMonth = filmy.filter(f => f.datum?.startsWith(currentMonth)).length
+    + serialy.filter(s => (s.konecSledovani || s.zacatekSledovani)?.startsWith(currentMonth)).length;
+  const totalThisYear = filmy.filter(f => f.datum?.startsWith(currentYear)).length
+    + serialy.filter(s => (s.konecSledovani || s.zacatekSledovani)?.startsWith(currentYear)).length;
+  const allRated = [...filmy, ...serialy].filter(x => x.hodnoceni);
+  const avgRating = allRated.length
+    ? (allRated.reduce((s, x) => s + x.hodnoceni, 0) / allRated.length).toFixed(1)
+    : "—";
+
+  // Recent items
+  const recent = [
+    ...filmy.map(f => ({ ...f, _type: "film", _date: f.datum })),
+    ...serialy.map(s => ({ ...s, _type: "serial", _date: s.konecSledovani || s.zacatekSledovani })),
+  ].filter(x => x._date).sort((a, b) => b._date.localeCompare(a._date)).slice(0, 6);
+
+  // Monthly activity — last 12 months
+  const months = Array.from({ length: 12 }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - 11 + i, 1);
+    const key = d.toISOString().slice(0, 7);
+    const label = d.toLocaleString("cs", { month: "short" }).slice(0, 2);
+    const count = filmy.filter(f => f.datum?.startsWith(key)).length
+      + serialy.filter(s => (s.konecSledovani || s.zacatekSledovani)?.startsWith(key)).length;
+    return { key, label, count };
+  });
+  const maxCount = Math.max(...months.map(m => m.count), 1);
+
+  // Top genres
+  const genreCount = {};
+  [...filmy, ...serialy].forEach(x => (x.zanry ?? []).forEach(g => { genreCount[g] = (genreCount[g] || 0) + 1; }));
+  const topGenres = Object.entries(genreCount).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  const maxGenre = topGenres[0]?.[1] || 1;
+  const totalItems = filmy.length + serialy.length || 1;
+
+  const watchlistPreview = watchlist.slice(0, 4);
+
+  return (
+    <div>
+      {/* Masthead */}
+      <div style={{
+        display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr auto",
+        alignItems: "flex-end", gap: 32,
+        paddingBottom: 24, marginBottom: 32,
+        borderBottom: `1px solid ${T.text}`,
+      }}>
+        <div>
+          <div style={{ fontFamily: F.mono, fontSize: 11, color: T.muted, letterSpacing: "0.18em", textTransform: "uppercase", marginBottom: 10 }}>
+            {dateStr}
+          </div>
+          <h1 style={{ margin: 0, fontFamily: F.display, fontSize: isMobile ? 40 : 66, fontWeight: 500, color: T.text, letterSpacing: "-0.04em", lineHeight: 0.92 }}>
+            {greeting}, <em style={{ fontStyle: "italic", fontWeight: 400 }}>Pavle</em><span style={{ color: T.gold, fontWeight: 600 }}>.</span>
+          </h1>
+          <div style={{ maxWidth: 500, marginTop: 14, fontSize: 15, color: T.inkSoft, lineHeight: 1.55 }}>
+            Ve sbírce máš <strong style={{ color: T.text }}>{filmy.length} filmů</strong> a <strong style={{ color: T.text }}>{serialy.length} seriálů</strong>. Průměrné hodnocení <strong style={{ color: T.text }}>{avgRating}</strong>.
+          </div>
+        </div>
+        {!isMobile && (
+          <div style={{ display: "flex", gap: 40, alignItems: "flex-end" }}>
+            <DashKV label={now.toLocaleString("cs", { month: "long" })} value={totalThisMonth} suffix="položek" />
+            <DashKV label={`Rok ${currentYear}`} value={totalThisYear} suffix="položek" />
+            <DashKV label="Průměr" value={avgRating} suffix="/10" />
+          </div>
+        )}
+      </div>
+
+      {/* 2-col */}
+      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1.55fr 1fr", gap: 44 }}>
+        {/* LEFT — nedávno zhlédnuté */}
+        <div>
+          <DashSectionHead title="Naposledy zhlédnuté" meta={`${recent.length} záznamů`} />
+          {recent.length === 0 && <div style={{ fontFamily: F.mono, fontSize: 12, color: T.muted }}>Žádné záznamy.</div>}
+          {recent.map((item, i) => (
+            <div key={item.id + item._type} style={{
+              display: "grid", gridTemplateColumns: "54px 1fr 80px",
+              gap: 16, padding: "13px 0",
+              borderBottom: `1px solid ${T.border}`,
+              alignItems: "baseline",
+            }}>
+              <div style={{ fontFamily: F.mono, fontSize: 11, color: T.muted }}>{fmtDate(item._date).slice(0, 5)}</div>
+              <div>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap" }}>
+                  <span style={{ fontFamily: F.display, fontSize: 17, fontWeight: 500, color: T.text, letterSpacing: "-0.02em" }}>{item.nazev}</span>
+                  {item.rok && <span style={{ fontFamily: F.mono, fontSize: 10, color: T.muted }}>{item.rok}</span>}
+                  {item._type === "serial" && <span style={{ fontFamily: F.mono, fontSize: 9, color: T.muted, letterSpacing: "0.1em" }}>seriál</span>}
+                  {item.rewatch && <span style={{ fontFamily: F.mono, fontSize: 9, color: T.muted, letterSpacing: "0.1em" }}>Rewatch</span>}
+                  {item.doporuceni && <span style={{ fontFamily: F.mono, fontSize: 9, color: T.green, letterSpacing: "0.1em" }}>Doporučení</span>}
+                </div>
+                <div style={{ fontFamily: F.mono, fontSize: 10, color: T.muted, marginTop: 3 }}>
+                  {item.platforma}{item.zanry?.length ? ` · ${item.zanry.slice(0, 2).join(", ")}` : ""}
+                </div>
+              </div>
+              <div style={{ textAlign: "right" }}><Rating value={item.hodnoceni} /></div>
+            </div>
+          ))}
+        </div>
+
+        {/* RIGHT */}
+        <div>
+          {/* Aktivita */}
+          <div style={{ marginBottom: 32 }}>
+            <DashSectionHead title="Aktivita" meta="12 měsíců" tight />
+            <div style={{ display: "flex", alignItems: "flex-end", gap: 5, height: 88, borderBottom: `1px solid ${T.border}`, paddingBottom: 4 }}>
+              {months.map((m, i) => {
+                const isLast = i === months.length - 1;
+                return (
+                  <div key={m.key} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", gap: 4 }}>
+                    {m.count > 0 && <div style={{ fontFamily: F.mono, fontSize: 9, color: isLast ? T.gold : T.muted, fontWeight: isLast ? 600 : 400 }}>{m.count}</div>}
+                    <div style={{ width: "100%", height: `${Math.max((m.count / maxCount) * 68, m.count ? 3 : 0)}px`, background: isLast ? T.gold : T.text }} />
+                  </div>
+                );
+              })}
+            </div>
+            <div style={{ display: "flex", gap: 5, marginTop: 6 }}>
+              {months.map((m, i) => (
+                <div key={m.key} style={{ flex: 1, fontFamily: F.mono, fontSize: 9, color: i === 11 ? T.gold : T.muted, textAlign: "center" }}>{m.label}</div>
+              ))}
+            </div>
+          </div>
+
+          {/* Žánry */}
+          {topGenres.length > 0 && (
+            <div style={{ marginBottom: 32 }}>
+              <DashSectionHead title="Žánry" meta="Top 5" tight />
+              {topGenres.map(([genre, count], i) => (
+                <div key={genre} style={{
+                  display: "grid", gridTemplateColumns: "88px 1fr 30px 38px",
+                  gap: 10, padding: "7px 0", alignItems: "center",
+                  borderBottom: i < topGenres.length - 1 ? `1px solid ${T.border}` : "none",
+                }}>
+                  <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 500, color: T.text, letterSpacing: "-0.01em" }}>{genre}</span>
+                  <div style={{ height: 3, background: T.border, position: "relative" }}>
+                    <div style={{ position: "absolute", inset: 0, width: `${(count / maxGenre) * 100}%`, background: i === 0 ? T.gold : T.text }} />
+                  </div>
+                  <span style={{ fontFamily: F.mono, fontSize: 11, color: T.text, textAlign: "right" }}>{count}</span>
+                  <span style={{ fontFamily: F.mono, fontSize: 10, color: T.muted, textAlign: "right" }}>{Math.round((count / totalItems) * 100)}%</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Watchlist */}
+          {watchlistPreview.length > 0 && (
+            <div>
+              <DashSectionHead title="Watchlist" meta={`${watchlist.length} položek`} tight />
+              {watchlistPreview.map((x, i) => (
+                <div key={x.id} style={{
+                  padding: "9px 0",
+                  borderBottom: i < watchlistPreview.length - 1 ? `1px solid ${T.border}` : "none",
+                }}>
+                  <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+                    <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 500, color: T.text, letterSpacing: "-0.01em" }}>{x.nazev}</span>
+                    {x.rok && <span style={{ fontFamily: F.mono, fontSize: 10, color: T.muted }}>{x.rok}</span>}
+                  </div>
+                  {x.platforma && <div style={{ fontFamily: F.mono, fontSize: 10, color: T.muted, marginTop: 2 }}>{x.platforma}</div>}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function BilanceFilmyTab({ filmy }) {
   const isMobile = useMobile();
   const currentYear = new Date().getFullYear();
@@ -1642,6 +1843,7 @@ function WatchlistTab({ watchlist, setWatchlist, isAdmin, userId }) {
 
 // ─── APP ──────────────────────────────────────────────────────────────────────
 const TABS = [
+  { id: "dashboard", label: "Přehled" },
   { id: "filmy", label: "Filmy" },
   { id: "serialy", label: "Seriály" },
   { id: "herci", label: "Herci" },
@@ -1746,7 +1948,7 @@ export default function App() {
     const q = window.location.search;
     return h.includes("type=recovery") || q.includes("type=recovery");
   });
-  const [tab, setTab] = useState("filmy");
+  const [tab, setTab] = useState("dashboard");
   const [darkMode, setDarkMode] = useLS("wl_theme_dark", true);
 
   applyTheme(darkMode);
@@ -1840,6 +2042,7 @@ export default function App() {
           <div style={{ textAlign: "center", color: T.muted, padding: "80px 0", fontSize: 14 }}>Načítám...</div>
         ) : (
           <>
+            {tab === "dashboard" && <DashboardTab filmy={filmy} serialy={serialy} watchlist={watchlist} />}
             {tab === "filmy" && <FilmyTab filmy={filmy} setFilmy={setFilmy} herci={herci} reziseri={reziseri} isAdmin={isAdmin} userId={session?.user?.id} />}
             {tab === "serialy" && <SerialyTab serialy={serialy} setSerialy={setSerialy} herci={herci} isAdmin={isAdmin} userId={session?.user?.id} />}
             {tab === "herci" && <HerciTab herci={herci} setHerci={setHerci} filmy={filmy} serialy={serialy} isAdmin={isAdmin} userId={session?.user?.id} />}
