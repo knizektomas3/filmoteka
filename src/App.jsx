@@ -2198,7 +2198,7 @@ function BilanceSerialyTab({ serialy }) {
 
       {/* Roky */}
       <div style={{ marginBottom: 40 }}>
-        <BilCard title="Dokoukáno po letech" meta={byYearData.length > 0 ? `rekord ${topYear.label} · ${topYear.value}` : ''}>
+        <BilCard title="Zhlédnuto po letech" meta={byYearData.length > 0 ? `rekord ${topYear.label} · ${topYear.value}` : ''}>
           <BarChart data={byYearData} height={140} accent />
           <BarLabels data={byYearData} />
         </BilCard>
