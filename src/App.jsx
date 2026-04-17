@@ -1699,6 +1699,13 @@ function BilanceFilmyTab({ filmy }) {
   filmy.forEach(f => { (f.zanry??[]).forEach(z => { byGenre[z]=(byGenre[z]||0)+1; }); });
   const genreData = Object.entries(byGenre).sort((a,b)=>b[1]-a[1]).map(([l,v])=>({label:l,value:v}));
 
+  const delkaData = [
+    { label: 'do 90 min',   value: filmy.filter(f => f.stopaz && parseInt(f.stopaz) < 90).length },
+    { label: '90–120 min',  value: filmy.filter(f => f.stopaz && parseInt(f.stopaz) >= 90 && parseInt(f.stopaz) < 120).length },
+    { label: '120–150 min', value: filmy.filter(f => f.stopaz && parseInt(f.stopaz) >= 120 && parseInt(f.stopaz) < 150).length },
+    { label: '150+ min',    value: filmy.filter(f => f.stopaz && parseInt(f.stopaz) >= 150).length },
+  ].filter(d => d.value > 0);
+
   return (
     <div>
       {/* Masthead */}
@@ -1751,6 +1758,9 @@ function BilanceFilmyTab({ filmy }) {
         <BilCard title="Dekády vzniku" meta="rok výroby">
           <HBarChart data={decData} />
         </BilCard>
+        {delkaData.length > 0 && <BilCard title="Délka filmů" meta="distribuce stopáže">
+          <HBarChart data={delkaData} />
+        </BilCard>}
       </div>
     </div>
   );
@@ -1791,6 +1801,18 @@ function BilanceSerialyTab({ serialy }) {
   const stavCounts = { Dokoukáno: 0, Sleduji: 0, Nedokončeno: 0, Plánuji: 0 };
   serialy.forEach(s => { if (s.stav && stavCounts[s.stav] !== undefined) stavCounts[s.stav]++; });
 
+  // Série distribuce
+  const serieCount = { '1': 0, '2': 0, '3–4': 0, '5+': 0 };
+  serialy.forEach(s => {
+    const n = Array.isArray(s.serie) ? s.serie.length : (s.serie ? 1 : 0);
+    if (n === 1) serieCount['1']++;
+    else if (n === 2) serieCount['2']++;
+    else if (n >= 3 && n <= 4) serieCount['3–4']++;
+    else if (n >= 5) serieCount['5+']++;
+  });
+  const serieData = Object.entries(serieCount).filter(([,v]) => v > 0).map(([l,v]) => ({ label: `${l} série`, value: v }));
+  const totalDilu = serialy.reduce((a, s) => a + (parseInt(s.pocetDilu) || 0), 0);
+
   return (
     <div>
       {/* Masthead */}
@@ -1810,9 +1832,9 @@ function BilanceSerialyTab({ serialy }) {
         </div>
         <div style={{ display: 'flex', gap: isMobile ? 24 : 40, flexWrap: 'wrap' }}>
           <BilStat label="Celkem" value={serialy.length} />
-          <BilStat label="Dokoukáno" value={finished.length} sub={`sleduji ${stavCounts['Sleduji']}`} />
           <BilStat label="Průměr" value={avg} color={T.gold} sub={`z ${rated.length} hodnocených`} />
           <BilStat label={`Rok ${currentYear}`} value={thisYear.length} />
+          {totalDilu > 0 && <BilStat label="Dílů celkem" value={totalDilu} />}
         </div>
       </div>
 
@@ -1843,6 +1865,9 @@ function BilanceSerialyTab({ serialy }) {
         <BilCard title="Dekády vzniku" meta="rok výroby">
           <HBarChart data={decData} />
         </BilCard>
+        {serieData.length > 0 && <BilCard title="Počet sérií" meta={totalDilu > 0 ? `${totalDilu} dílů celkem` : ''}>
+          <HBarChart data={serieData} />
+        </BilCard>}
       </div>
     </div>
   );
