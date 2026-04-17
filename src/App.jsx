@@ -552,46 +552,110 @@ let cardStyle = {
   transition: "border-color 0.15s",
 };
 
+const FILM_COLS = "80px minmax(0,1fr) 130px 100px 44px 90px";
+
+function FilmTableHeader() {
+  return (
+    <div style={{
+      display: "grid", gridTemplateColumns: FILM_COLS, gap: 12,
+      padding: "8px 16px", borderBottom: `1px solid ${T.border}`,
+      fontFamily: F.mono, fontSize: 9, color: T.muted,
+      letterSpacing: "0.14em", textTransform: "uppercase",
+      background: T.surface,
+    }}>
+      <div>datum</div><div>název</div><div>žánr</div><div>platforma</div><div style={{ textAlign: "right" }}>min</div><div>hodnocení</div>
+    </div>
+  );
+}
+
 function FilmCard({ film, herci, reziseri, onEdit, onDelete, isAdmin }) {
   const isMobile = useMobile();
   const [hover, setHover] = useState(false);
   const filmReziseri = reziseri.filter(r => (film.reziserIds ?? []).includes(r.id));
   const filmHerci = herci.filter(h => (film.herciIds ?? []).includes(h.id));
-  const ratingBorder = film.hodnoceni >= 9 ? "#27ae60" : film.hodnoceni <= 4 && film.hodnoceni > 0 ? "#c0392b" : null;
-  return (
-    <div style={{ ...cardStyle, borderColor: ratingBorder ?? (hover ? T.borderHover : T.border), ...(ratingBorder ? { background: ratingBorder === "#27ae60" ? "rgba(39,174,96,0.13)" : "rgba(192,57,43,0.13)" } : {}) }}
-      onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
-      {film.datum && (
-        <div style={{ flexShrink: 0, marginRight: 14, textAlign: "center", minWidth: 44 }}>
+  const ratingColor = film.hodnoceni >= 9 ? T.green : film.hodnoceni <= 4 && film.hodnoceni > 0 ? T.danger : T.text;
+
+  if (isMobile) {
+    return (
+      <div style={{ ...cardStyle, borderColor: hover ? T.borderHover : T.border }}
+        onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
+        <div style={{ flexShrink: 0, marginRight: 12, minWidth: 38 }}>
           <div style={{ fontSize: 13, fontWeight: 500, color: T.gold, lineHeight: 1, fontFamily: F.mono }}>{fmtDate(film.datum).slice(0, 5)}</div>
-          <div style={{ fontSize: 10, color: T.muted, marginTop: 1 }}>{fmtDate(film.datum).slice(6)}</div>
+          <div style={{ fontSize: 10, color: T.muted, marginTop: 2, fontFamily: F.mono }}>{fmtDate(film.datum).slice(6)}</div>
         </div>
-      )}
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ marginBottom: 6 }}>
-          <div style={{ display: "flex", alignItems: "baseline", gap: 7 }}>
-            <a href={`https://www.imdb.com/find/?q=${encodeURIComponent(film.nazev)}${film.rok ? `+${film.rok}` : ''}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: 15, fontWeight: 600, color: T.text, fontFamily: F.display, fontVariantNumeric: "lining-nums", textDecoration: "none" }} onMouseEnter={e => e.target.style.color=T.gold} onMouseLeave={e => e.target.style.color=T.text}>{film.nazev}</a>
-            {film.rok && <span style={{ color: T.muted, fontSize: 11, flexShrink: 0, fontFamily: F.mono }}>{film.rok}</span>}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginBottom: 2 }}>
+            <a href={`https://www.imdb.com/find/?q=${encodeURIComponent(film.nazev)}${film.rok ? `+${film.rok}` : ''}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: 14, fontWeight: 500, color: T.text, fontFamily: F.display, textDecoration: "none" }} onMouseEnter={e => e.target.style.color=T.gold} onMouseLeave={e => e.target.style.color=T.text}>{film.nazev}</a>
+            {film.rok && <span style={{ color: T.muted, fontSize: 10, fontFamily: F.mono }}>{film.rok}</span>}
           </div>
-          {film.ceskyNazev && <div style={{ fontSize: 12, color: T.muted, fontStyle: "italic" }}>({film.ceskyNazev})</div>}
-          <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap", marginTop: film.ceskyNazev || isMobile ? 4 : 0 }}>
-            {film.platforma && <Badge color={T.goldBg ? T.gold : T.muted}>{film.platforma}</Badge>}
-            {film.ceskyFilm && <Badge color={T.blue}>CZ</Badge>}
-            {film.rewatch && <Badge color={T.purple}>↺ Rewatch</Badge>}
-            {film.doporuceni && <Badge color={T.green}>Doporučil bych</Badge>}
+          {film.ceskyNazev && <div style={{ fontSize: 11, color: T.muted, fontStyle: "italic", marginBottom: 3 }}>({film.ceskyNazev})</div>}
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
+            {film.platforma && <span style={{ fontFamily: F.mono, fontSize: 10, color: T.muted }}>{film.platforma}</span>}
+            {(film.zanry ?? []).length > 0 && <span style={{ fontSize: 11, color: T.muted }}>{film.zanry.join(", ")}</span>}
           </div>
         </div>
-        {(film.zanry ?? []).length > 0 && <div style={{ marginBottom: 6 }}><TagList items={film.zanry} /></div>}
-        <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
-          {film.stopaz && <span style={{ fontSize: 12, color: T.muted }}>{film.stopaz} min</span>}
-          {filmReziseri.length > 0 && <span style={{ fontSize: 12, color: T.muted }}>🎬 {filmReziseri.map(r => r.jmeno).join(", ")}</span>}
-          {filmHerci.length > 0 && <span style={{ fontSize: 12, color: T.muted }}>👤 {filmHerci.map(h => h.jmeno).join(", ")}</span>}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6, marginLeft: 10, flexShrink: 0 }}>
+          {film.hodnoceni && <span style={{ fontFamily: F.display, fontSize: 18, fontWeight: 500, color: ratingColor, lineHeight: 1 }}>{film.hodnoceni}</span>}
+          <div style={{ display: "flex", gap: 4 }}>
+            {isAdmin && <button onClick={() => onEdit(film)} style={btnSecondary}>Upravit</button>}
+            {isAdmin && <button onClick={() => onDelete(film.id)} style={btnDanger}>✕</button>}
+          </div>
         </div>
       </div>
-      <div style={{ display: "flex", alignItems: "center", gap: isMobile ? 6 : 10, marginLeft: isMobile ? 8 : 14, flexShrink: 0 }}>
+    );
+  }
+
+  return (
+    <div style={{
+      display: "grid", gridTemplateColumns: FILM_COLS, gap: 12,
+      padding: "12px 16px", alignItems: "center",
+      borderBottom: `1px solid ${T.border}`,
+      background: hover ? T.elevated : T.surface,
+      transition: "background 0.1s",
+      cursor: "default",
+    }}
+      onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
+      {/* Datum */}
+      <div>
+        <div style={{ fontFamily: F.mono, fontSize: 12, color: T.muted }}>
+          {film.datum ? fmtDate(film.datum).slice(0, 5) : "—"}
+          {film.datum && <span style={{ opacity: 0.5, fontSize: 10 }}> {fmtDate(film.datum).slice(6)}</span>}
+        </div>
+      </div>
+      {/* Název */}
+      <div>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap" }}>
+          <a href={`https://www.imdb.com/find/?q=${encodeURIComponent(film.nazev)}${film.rok ? `+${film.rok}` : ''}`} target="_blank" rel="noopener noreferrer"
+            style={{ fontFamily: F.display, fontSize: 16, fontWeight: 500, color: T.text, textDecoration: "none", letterSpacing: "-0.02em" }}
+            onMouseEnter={e => e.target.style.color=T.gold} onMouseLeave={e => e.target.style.color=T.text}>{film.nazev}</a>
+          {film.rok && <span style={{ fontFamily: F.mono, fontSize: 10, color: T.muted }}>{film.rok}</span>}
+          {film.ceskyFilm && <span style={{ fontFamily: F.mono, fontSize: 9, color: T.gold, letterSpacing: "0.1em" }}>CZ</span>}
+          {film.rewatch && <span style={{ fontFamily: F.mono, fontSize: 9, color: T.muted, letterSpacing: "0.1em" }}>↺ RW</span>}
+          {film.doporuceni && <span style={{ fontFamily: F.mono, fontSize: 9, color: T.green, letterSpacing: "0.1em" }}>★ REC</span>}
+        </div>
+        {film.ceskyNazev && <div style={{ fontFamily: F.sans, fontSize: 11, color: T.muted, fontStyle: "italic", marginTop: 1 }}>({film.ceskyNazev})</div>}
+        {(filmReziseri.length > 0 || filmHerci.length > 0) && (
+          <div style={{ fontFamily: F.mono, fontSize: 10, color: T.muted, marginTop: 3, letterSpacing: "0.02em" }}>
+            {filmReziseri.length > 0 && filmReziseri.map(r => r.jmeno).join(", ")}
+            {filmReziseri.length > 0 && filmHerci.length > 0 && " · "}
+            {filmHerci.length > 0 && filmHerci.map(h => h.jmeno).join(", ")}
+          </div>
+        )}
+      </div>
+      {/* Žánr */}
+      <div style={{ fontFamily: F.sans, fontSize: 12, color: T.muted }}>{(film.zanry ?? []).join(", ")}</div>
+      {/* Platforma */}
+      <div style={{ fontFamily: F.mono, fontSize: 11, color: T.muted }}>{film.platforma}</div>
+      {/* Délka */}
+      <div style={{ fontFamily: F.mono, fontSize: 11, color: T.muted, textAlign: "right" }}>{film.stopaz || ""}</div>
+      {/* Hodnocení */}
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
         <Rating value={film.hodnoceni} />
-        {isAdmin && <button onClick={() => onEdit(film)} style={btnSecondary}>Upravit</button>}
-        {isAdmin && <button onClick={() => onDelete(film.id)} style={btnDanger}>✕</button>}
+        {film.hodnoceni && <span style={{ fontFamily: F.display, fontSize: 18, fontWeight: 500, color: ratingColor, letterSpacing: "-0.03em", lineHeight: 1 }}>{film.hodnoceni}</span>}
+        {isAdmin && <div style={{ display: "flex", gap: 4, marginLeft: "auto" }}>
+          <button onClick={() => onEdit(film)} style={{ ...btnSecondary, padding: "3px 8px", fontSize: 10 }}>upravit</button>
+          <button onClick={() => onDelete(film.id)} style={{ ...btnDanger, padding: "3px 8px", fontSize: 10 }}>✕</button>
+        </div>}
       </div>
     </div>
   );
@@ -993,8 +1057,12 @@ function FilmyTab({ filmy, setFilmy, herci, reziseri, isAdmin, userId }) {
       <TabHeader count={filtered.length} onAdd={isAdmin ? openAdd : null} q={q} setQ={setQ} addLabel="Přidat film" onToggleFilters={() => setShowFilters(v => !v)} activeFilterCount={activeFilterCount} sortOptions={FILM_SORT_OPTS} sort={sort} setSort={setSort} />
       {showFilters && <FilmyFilters filters={filters} setFilters={setFilters} filmy={filmy} />}
       {activeFilterCount > 0 && <button onClick={() => setFilters(emptyFilmFilters())} style={{ ...btnSecondary, fontSize: 11, marginBottom: 12, color: T.danger, borderColor: T.danger }}>× Zrušit filtry</button>}
-      {filtered.map(f => <FilmCard key={f.id} film={f} herci={herci} reziseri={reziseri} onEdit={openEdit} onDelete={del} isAdmin={isAdmin} />)}
-      {filtered.length === 0 && <Empty />}
+      {filtered.length > 0 ? (
+        <div style={{ border: `1px solid ${T.border}`, overflow: "hidden" }}>
+          <FilmTableHeader />
+          {filtered.map(f => <FilmCard key={f.id} film={f} herci={herci} reziseri={reziseri} onEdit={openEdit} onDelete={del} isAdmin={isAdmin} />)}
+        </div>
+      ) : <Empty />}
       <Modal open={modal} title={editing ? "Upravit film" : "Přidat film"} onClose={() => setModal(false)} onSave={save} wide>
         <FilmForm data={form} setData={setForm} herci={herci} reziseri={reziseri} />
       </Modal>
