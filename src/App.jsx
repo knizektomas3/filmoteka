@@ -568,7 +568,144 @@ function FilmTableHeader() {
   );
 }
 
-function FilmCard({ film, herci, reziseri, onEdit, onDelete, isAdmin }) {
+function FilmDetailModal({ film, filmy, herci, reziseri, onClose, onEdit, isAdmin }) {
+  const isMobile = useMobile();
+  const filmReziseri = reziseri.filter(r => (film.reziserIds ?? []).includes(r.id));
+  const filmHerci = herci.filter(h => (film.herciIds ?? []).includes(h.id));
+  const ratingColor = film.hodnoceni >= 9 ? T.green : film.hodnoceni <= 4 && film.hodnoceni > 0 ? T.danger : T.text;
+
+  // Od stejného režiséra
+  const odRezisera = filmy
+    .filter(f => f.id !== film.id && !f.rewatch && (film.reziserIds ?? []).some(rid => (f.reziserIds ?? []).includes(rid)))
+    .sort((a, b) => (b.hodnoceni ?? 0) - (a.hodnoceni ?? 0))
+    .slice(0, 6);
+
+  // Ze stejného žánru se stejným hodnocením
+  const podobne = filmy
+    .filter(f => f.id !== film.id && f.hodnoceni === film.hodnoceni && (film.zanry ?? []).some(z => (f.zanry ?? []).includes(z)))
+    .sort((a, b) => (b.datum ?? "").localeCompare(a.datum ?? ""))
+    .slice(0, 6);
+
+  const metaRow = [
+    film.rok,
+    filmReziseri.length > 0 ? filmReziseri.map(r => r.jmeno).join(", ") : null,
+    film.stopaz ? `${film.stopaz} min` : null,
+    (film.zanry ?? []).join(", ") || null,
+    film.platforma,
+  ].filter(Boolean);
+
+  const SideSection = ({ title, items }) => (
+    <div style={{ marginBottom: 28 }}>
+      <div style={{ fontFamily: F.mono, fontSize: 10, color: T.muted, letterSpacing: "0.12em", textTransform: "uppercase", paddingBottom: 6, borderBottom: `1px solid ${T.text}`, marginBottom: 10 }}>{title}</div>
+      {items.length === 0 && <div style={{ fontFamily: F.mono, fontSize: 11, color: T.muted }}>Žádné záznamy.</div>}
+      {items.map((f, i) => (
+        <div key={f.id} style={{ display: "grid", gridTemplateColumns: "1fr 36px 36px", gap: 8, padding: "7px 0", borderBottom: i < items.length - 1 ? `1px solid ${T.border}` : "none", alignItems: "baseline" }}>
+          <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 500, color: T.text, letterSpacing: "-0.01em" }}>{f.nazev}</span>
+          <span style={{ fontFamily: F.mono, fontSize: 10, color: T.muted, textAlign: "right" }}>{f.rok}</span>
+          <span style={{ fontFamily: F.display, fontSize: 15, fontWeight: 500, color: f.hodnoceni >= 9 ? T.green : f.hodnoceni <= 4 && f.hodnoceni ? T.danger : T.text, textAlign: "right" }}>{f.hodnoceni ?? "—"}</span>
+        </div>
+      ))}
+    </div>
+  );
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", display: "flex", alignItems: isMobile ? "flex-end" : "center", justifyContent: "center", zIndex: 1000, padding: isMobile ? 0 : 24 }}
+      onClick={e => e.target === e.currentTarget && onClose()}>
+      <div style={{ background: T.bg, width: "100%", maxWidth: 960, maxHeight: "92vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        {/* Masthead */}
+        <div style={{ padding: isMobile ? "20px 18px 16px" : "28px 36px 20px", borderBottom: `1px solid ${T.text}` }}>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr auto", gap: 24, alignItems: "flex-end" }}>
+            <div>
+              <div style={{ fontFamily: F.mono, fontSize: 10, color: T.muted, letterSpacing: "0.16em", textTransform: "uppercase", marginBottom: 8 }}>
+                {film.datum ? fmtDate(film.datum) : "—"} · {film.platforma ?? ""}
+              </div>
+              <h2 style={{ margin: 0, fontFamily: F.display, fontSize: isMobile ? 36 : 64, fontWeight: 500, color: T.text, letterSpacing: "-0.04em", lineHeight: 0.9 }}>
+                {film.nazev}<span style={{ color: T.gold, fontWeight: 600 }}>.</span>
+              </h2>
+              {film.ceskyNazev && <div style={{ fontFamily: F.sans, fontSize: 14, color: T.muted, fontStyle: "italic", marginTop: 6 }}>({film.ceskyNazev})</div>}
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 10, fontFamily: F.mono, fontSize: 12, color: T.inkMuted ?? T.muted }}>
+                {metaRow.map((m, i) => (
+                  <span key={i} style={{ display: "flex", gap: 10 }}>
+                    {i > 0 && <span style={{ color: T.border }}>·</span>}
+                    {m}
+                  </span>
+                ))}
+              </div>
+            </div>
+            {!isMobile && film.hodnoceni && (
+              <div style={{ textAlign: "right" }}>
+                <div style={{ fontFamily: F.mono, fontSize: 10, color: T.muted, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 4 }}>hodnocení</div>
+                <div style={{ fontFamily: F.display, fontSize: 96, fontWeight: 500, color: ratingColor, letterSpacing: "-0.06em", lineHeight: 0.85 }}>
+                  {film.hodnoceni}<span style={{ color: T.gold, fontSize: 48 }}>.</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Body */}
+        <div style={{ overflowY: "auto", flex: 1, padding: isMobile ? "16px 18px" : "24px 36px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "200px 1fr 1fr", gap: 32 }}>
+            {/* LEFT — metadata + obsazení */}
+            <div>
+              <div style={{ fontFamily: F.mono, fontSize: 10, color: T.muted, letterSpacing: "0.12em", textTransform: "uppercase", paddingBottom: 6, borderBottom: `1px solid ${T.text}`, marginBottom: 10 }}>Informace</div>
+              {[
+                ["datum", film.datum ? fmtDate(film.datum) : null],
+                ["rok výroby", film.rok],
+                ["délka", film.stopaz ? `${film.stopaz} min` : null],
+                ["platforma", film.platforma],
+                ["žánr", (film.zanry ?? []).join(", ") || null],
+                ["česky film", film.ceskyFilm ? "Ano" : null],
+                ["rewatch", film.rewatch ? "Ano" : null],
+              ].filter(([, v]) => v).map(([k, v]) => (
+                <div key={k} style={{ display: "grid", gridTemplateColumns: "80px 1fr", gap: 8, padding: "5px 0", borderBottom: `1px solid ${T.border}`, fontFamily: F.mono, fontSize: 11, alignItems: "baseline" }}>
+                  <span style={{ color: T.muted }}>{k}</span>
+                  <span style={{ color: T.text }}>{v}</span>
+                </div>
+              ))}
+              {filmReziseri.length > 0 && (
+                <div style={{ marginTop: 20 }}>
+                  <div style={{ fontFamily: F.mono, fontSize: 10, color: T.muted, letterSpacing: "0.12em", textTransform: "uppercase", paddingBottom: 6, borderBottom: `1px solid ${T.text}`, marginBottom: 10 }}>Režie</div>
+                  {filmReziseri.map((r, i) => (
+                    <div key={r.id} style={{ padding: "6px 0", borderBottom: i < filmReziseri.length - 1 ? `1px solid ${T.border}` : "none", fontFamily: F.display, fontSize: 14, fontWeight: 500, color: T.text, letterSpacing: "-0.01em" }}>{r.jmeno}</div>
+                  ))}
+                </div>
+              )}
+              {filmHerci.length > 0 && (
+                <div style={{ marginTop: 20 }}>
+                  <div style={{ fontFamily: F.mono, fontSize: 10, color: T.muted, letterSpacing: "0.12em", textTransform: "uppercase", paddingBottom: 6, borderBottom: `1px solid ${T.text}`, marginBottom: 10 }}>Obsazení</div>
+                  {filmHerci.map((h, i) => (
+                    <div key={h.id} style={{ padding: "6px 0", borderBottom: i < filmHerci.length - 1 ? `1px solid ${T.border}` : "none", fontFamily: F.display, fontSize: 14, fontWeight: 500, color: T.text, letterSpacing: "-0.01em" }}>{h.jmeno}</div>
+                  ))}
+                </div>
+              )}
+              {film.poznamka && (
+                <div style={{ marginTop: 20 }}>
+                  <div style={{ fontFamily: F.mono, fontSize: 10, color: T.muted, letterSpacing: "0.12em", textTransform: "uppercase", paddingBottom: 6, borderBottom: `1px solid ${T.text}`, marginBottom: 10 }}>Poznámka</div>
+                  <p style={{ margin: 0, fontSize: 13, color: T.text, lineHeight: 1.55, fontFamily: F.sans }}>{film.poznamka}</p>
+                </div>
+              )}
+            </div>
+
+            {/* MIDDLE — od stejného režiséra */}
+            <SideSection title={filmReziseri.length > 0 ? `Od ${filmReziseri.map(r => r.jmeno).join(", ")}` : "Od stejného režiséra"} items={odRezisera} />
+
+            {/* RIGHT — ze stejného žánru */}
+            <SideSection title={`Žánr · hodnocení ${film.hodnoceni ?? "—"}`} items={podobne} />
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div style={{ padding: "12px 36px", borderTop: `1px solid ${T.border}`, display: "flex", justifyContent: "flex-end", gap: 8 }}>
+          {isAdmin && <button onClick={() => { onClose(); onEdit(film); }} style={{ ...btnSecondary, fontFamily: F.mono, fontSize: 11 }}>Upravit</button>}
+          <button onClick={onClose} style={{ ...btnSecondary, fontFamily: F.mono, fontSize: 11 }}>Zavřít</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FilmCard({ film, herci, reziseri, onEdit, onDelete, onDetail, isAdmin }) {
   const isMobile = useMobile();
   const [hover, setHover] = useState(false);
   const filmReziseri = reziseri.filter(r => (film.reziserIds ?? []).includes(r.id));
@@ -586,7 +723,7 @@ function FilmCard({ film, herci, reziseri, onEdit, onDelete, isAdmin }) {
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginBottom: 2 }}>
-            <a href={`https://www.imdb.com/find/?q=${encodeURIComponent(film.nazev)}${film.rok ? `+${film.rok}` : ''}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: 14, fontWeight: 500, color: T.text, fontFamily: F.display, textDecoration: "none" }} onMouseEnter={e => e.target.style.color=T.gold} onMouseLeave={e => e.target.style.color=T.text}>{film.nazev}</a>
+            <span onClick={() => onDetail && onDetail(film)} style={{ fontSize: 14, fontWeight: 500, color: T.text, fontFamily: F.display, cursor: "pointer" }} onMouseEnter={e => e.target.style.color=T.gold} onMouseLeave={e => e.target.style.color=T.text}>{film.nazev}</span>
             {film.rok && <span style={{ color: T.muted, fontSize: 10, fontFamily: F.mono }}>{film.rok}</span>}
           </div>
           {film.ceskyNazev && <div style={{ fontSize: 11, color: T.muted, fontStyle: "italic", marginBottom: 3 }}>({film.ceskyNazev})</div>}
@@ -623,9 +760,9 @@ function FilmCard({ film, herci, reziseri, onEdit, onDelete, isAdmin }) {
       {/* Název */}
       <div>
         <div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap" }}>
-          <a href={`https://www.imdb.com/find/?q=${encodeURIComponent(film.nazev)}${film.rok ? `+${film.rok}` : ''}`} target="_blank" rel="noopener noreferrer"
-            style={{ fontFamily: F.display, fontSize: 15, fontWeight: 500, color: T.text, textDecoration: "none", letterSpacing: "-0.02em" }}
-            onMouseEnter={e => e.target.style.color=T.gold} onMouseLeave={e => e.target.style.color=T.text}>{film.nazev}</a>
+          <span onClick={() => onDetail && onDetail(film)}
+            style={{ fontFamily: F.display, fontSize: 15, fontWeight: 500, color: T.text, letterSpacing: "-0.02em", cursor: "pointer" }}
+            onMouseEnter={e => e.target.style.color=T.gold} onMouseLeave={e => e.target.style.color=T.text}>{film.nazev}</span>
           {film.rok && <span style={{ fontFamily: F.mono, fontSize: 10, color: T.muted }}>{film.rok}</span>}
           {film.ceskyFilm && <span style={{ fontFamily: F.mono, fontSize: 9, color: T.gold, letterSpacing: "0.1em" }}>CZ</span>}
           {film.rewatch && <span style={{ fontFamily: F.mono, fontSize: 9, color: T.muted, letterSpacing: "0.1em" }}>Rewatch</span>}
@@ -1171,6 +1308,7 @@ function FilmyTab({ filmy, setFilmy, herci, reziseri, isAdmin, userId }) {
   const [modal, setModal] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(emptyFilm);
+  const [detail, setDetail] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState(emptyFilmFilters());
   const [sort, setSort] = useState("datum-desc");
@@ -1228,9 +1366,10 @@ function FilmyTab({ filmy, setFilmy, herci, reziseri, isAdmin, userId }) {
       {filtered.length > 0 ? (
         <div style={{ border: `1px solid ${T.border}`, overflow: "hidden" }}>
           <FilmTableHeader />
-          {filtered.map(f => <FilmCard key={f.id} film={f} herci={herci} reziseri={reziseri} onEdit={openEdit} onDelete={del} isAdmin={isAdmin} />)}
+          {filtered.map(f => <FilmCard key={f.id} film={f} herci={herci} reziseri={reziseri} onEdit={openEdit} onDelete={del} onDetail={setDetail} isAdmin={isAdmin} />)}
         </div>
       ) : <Empty />}
+      {detail && <FilmDetailModal film={detail} filmy={filmy} herci={herci} reziseri={reziseri} onClose={() => setDetail(null)} onEdit={f => { setDetail(null); openEdit(f); }} isAdmin={isAdmin} />}
       <Modal open={modal} title={editing ? "Upravit film" : "Přidat film"} onClose={() => setModal(false)} onSave={save} wide>
         <FilmForm data={form} setData={setForm} herci={herci} reziseri={reziseri} />
       </Modal>
