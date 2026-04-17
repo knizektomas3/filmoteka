@@ -872,27 +872,87 @@ function OsobaDetailModal({ osoba, filmy, serialy, onClose, onToggle, showNeobli
   );
 }
 
-function OsobaCard({ osoba, onEdit, onDelete, onDetail, filmCount, isAdmin }) {
-  const [hover, setHover] = useState(false);
+const OSOBA_COLS = "minmax(0,1fr) 130px 60px 54px 130px";
+
+function OsobaTableHeader() {
   return (
-    <div style={{ ...cardStyle, borderColor: hover ? T.borderHover : T.border, alignItems: "center", cursor: "pointer" }}
+    <div style={{
+      display: "grid", gridTemplateColumns: OSOBA_COLS, gap: 12,
+      padding: "8px 16px", borderBottom: `1px solid ${T.border}`,
+      fontFamily: F.mono, fontSize: 9, color: T.muted,
+      letterSpacing: "0.14em", textTransform: "uppercase",
+      background: T.surface,
+    }}>
+      <div>jméno</div><div>národnost</div><div>nar.</div><div style={{ textAlign: "right" }}>záz.</div><div></div>
+    </div>
+  );
+}
+
+function OsobaCard({ osoba, onEdit, onDelete, onDetail, filmCount, isAdmin }) {
+  const isMobile = useMobile();
+  const [hover, setHover] = useState(false);
+
+  if (isMobile) {
+    return (
+      <div style={{ ...cardStyle, borderColor: hover ? T.borderHover : T.border, alignItems: "center", cursor: "pointer" }}
+        onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
+        onClick={() => onDetail(osoba)}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap" }}>
+            <span style={{ fontFamily: F.display, fontSize: 15, fontWeight: 500, color: T.text, letterSpacing: "-0.02em" }}>{osoba.jmeno}</span>
+            {osoba.zijici === "Ne" && <span style={{ fontFamily: F.mono, fontSize: 9, color: T.muted }}>†</span>}
+            {osoba.oblibeny && <span style={{ fontFamily: F.mono, fontSize: 9, color: T.gold }}>★</span>}
+          </div>
+          <div style={{ fontFamily: F.mono, fontSize: 10, color: T.muted, marginTop: 2 }}>
+            {osoba.narodnost}{osoba.rokNarozeni ? ` · *${osoba.rokNarozeni}` : ""}
+            {filmCount > 0 ? ` · ${filmCount} záz.` : ""}
+          </div>
+        </div>
+        {isAdmin && (
+          <div style={{ display: "flex", gap: 6, flexShrink: 0, marginLeft: 10 }} onClick={e => e.stopPropagation()}>
+            <button onClick={() => onEdit(osoba)} style={{ ...btnSecondary, padding: "3px 8px", fontSize: 10 }}>upravit</button>
+            <button onClick={() => onDelete(osoba.id)} style={{ ...btnDanger, padding: "3px 8px", fontSize: 10 }}>✕</button>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div style={{
+      display: "grid", gridTemplateColumns: OSOBA_COLS, gap: 12,
+      padding: "11px 16px", alignItems: "center",
+      borderBottom: `1px solid ${T.border}`,
+      background: hover ? T.elevated : T.surface,
+      transition: "background 0.1s",
+      cursor: "pointer",
+    }}
       onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
       onClick={() => onDetail(osoba)}>
-      <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", flex: 1 }}>
-        <span style={{ fontSize: 14, fontWeight: 600, color: T.text, fontFamily: F.display }}>{osoba.jmeno}</span>
-        {osoba.narodnost && <span style={{ fontSize: 12, color: T.muted }}>{osoba.narodnost}</span>}
-        {osoba.rokNarozeni && <span style={{ fontSize: 12, color: T.muted }}>*{osoba.rokNarozeni}</span>}
-        {osoba.zijici === "Ne" && <Badge color={T.muted}>†</Badge>}
-        {osoba.oblibeny && <Badge color={T.gold}>★ Oblíbený</Badge>}
-        {osoba.neoblibeny && <Badge color={T.danger}>✕ Neoblíbený</Badge>}
-        {filmCount != null && filmCount > 0 && <span style={{ fontSize: 11, color: T.muted, marginLeft: 4 }}>{filmCount} {filmCount === 1 ? "záznam" : filmCount < 5 ? "záznamy" : "záznamů"}</span>}
-      </div>
-      {isAdmin && (
-        <div style={{ display: "flex", gap: 8, flexShrink: 0, marginLeft: 12 }} onClick={e => e.stopPropagation()}>
-          <button onClick={() => onEdit(osoba)} style={btnSecondary}>Upravit</button>
-          <button onClick={() => onDelete(osoba.id)} style={btnDanger}>✕</button>
+      {/* Jméno + příznaky */}
+      <div>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+          <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 500, color: T.text, letterSpacing: "-0.02em" }}>{osoba.jmeno}</span>
+          {osoba.zijici === "Ne" && <span style={{ fontFamily: F.mono, fontSize: 9, color: T.muted, letterSpacing: "0.1em" }}>†</span>}
+          {osoba.oblibeny && <span style={{ fontFamily: F.mono, fontSize: 9, color: T.gold, letterSpacing: "0.1em" }}>★ oblíbený</span>}
+          {osoba.neoblibeny && <span style={{ fontFamily: F.mono, fontSize: 9, color: T.danger, letterSpacing: "0.1em" }}>✕ neoblíbený</span>}
         </div>
-      )}
+      </div>
+      {/* Národnost */}
+      <div style={{ fontFamily: F.mono, fontSize: 11, color: T.muted }}>{osoba.narodnost || ""}</div>
+      {/* Rok narození */}
+      <div style={{ fontFamily: F.mono, fontSize: 11, color: T.muted }}>{osoba.rokNarozeni ? `*${osoba.rokNarozeni}` : ""}</div>
+      {/* Počet záznamů */}
+      <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 500, color: filmCount > 0 ? T.text : T.muted, textAlign: "right", letterSpacing: "-0.03em", lineHeight: 1 }}>
+        {filmCount > 0 ? filmCount : "—"}
+      </div>
+      {/* Admin */}
+      <div style={{ display: "flex", justifyContent: "flex-end" }} onClick={e => e.stopPropagation()}>
+        {isAdmin && <div style={{ display: "flex", gap: 4 }}>
+          <button onClick={() => onEdit(osoba)} style={{ ...btnSecondary, padding: "3px 8px", fontSize: 10 }}>upravit</button>
+          <button onClick={() => onDelete(osoba.id)} style={{ ...btnDanger, padding: "3px 8px", fontSize: 10 }}>✕</button>
+        </div>}
+      </div>
     </div>
   );
 }
@@ -1272,8 +1332,12 @@ function HerciTab({ herci, setHerci, filmy, serialy, isAdmin, userId }) {
           <FilterPill key={l} label={l} active={osobaFilter === k} onClick={() => setOsobaFilter(k)} />
         ))}
       </div>
-      {filtered.map(h => <OsobaCard key={h.id} osoba={h} onEdit={openEdit} onDelete={del} onDetail={setDetail} filmCount={countMap[h.id] ?? 0} isAdmin={isAdmin} />)}
-      {filtered.length === 0 && <Empty />}
+      {filtered.length > 0 ? (
+        <div style={{ border: `1px solid ${T.border}`, overflow: "hidden" }}>
+          <OsobaTableHeader />
+          {filtered.map(h => <OsobaCard key={h.id} osoba={h} onEdit={openEdit} onDelete={del} onDetail={setDetail} filmCount={countMap[h.id] ?? 0} isAdmin={isAdmin} />)}
+        </div>
+      ) : <Empty />}
       <Modal open={modal} title={editing ? "Upravit herce" : "Přidat herce"} onClose={() => setModal(false)} onSave={save}>
         <OsobaForm data={form} setData={setForm} showNeoblibeny />
       </Modal>
@@ -1343,8 +1407,12 @@ function ReziseriTab({ reziseri, setReziseri, filmy, isAdmin, userId }) {
           <FilterPill key={l} label={l} active={osobaFilter === k} onClick={() => setOsobaFilter(k)} />
         ))}
       </div>
-      {filtered.map(r => <OsobaCard key={r.id} osoba={r} onEdit={openEdit} onDelete={del} onDetail={setDetail} filmCount={countMap[r.id] ?? 0} isAdmin={isAdmin} />)}
-      {filtered.length === 0 && <Empty />}
+      {filtered.length > 0 ? (
+        <div style={{ border: `1px solid ${T.border}`, overflow: "hidden" }}>
+          <OsobaTableHeader />
+          {filtered.map(r => <OsobaCard key={r.id} osoba={r} onEdit={openEdit} onDelete={del} onDetail={setDetail} filmCount={countMap[r.id] ?? 0} isAdmin={isAdmin} />)}
+        </div>
+      ) : <Empty />}
       <Modal open={modal} title={editing ? "Upravit režiséra" : "Přidat režiséra"} onClose={() => setModal(false)} onSave={save}>
         <OsobaForm data={form} setData={setForm} />
       </Modal>
