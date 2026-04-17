@@ -1652,43 +1652,52 @@ export default function App() {
 
   return (
     <MobileCtx.Provider value={isMobile}>
-    <div style={{ background: T.bg, minHeight: "100vh", color: T.text, fontFamily: "DM Sans, sans-serif", fontSize: 13 }}>
+    <div style={{ background: T.bg, minHeight: "100vh", color: T.text, fontFamily: F.sans, fontSize: 13 }}>
       {/* Navigace */}
       <div style={{ borderBottom: `1px solid ${T.border}`, background: T.surface, position: "sticky", top: 0, zIndex: 100 }}>
-        {/* Logo + akce */}
-        <div style={{ padding: "0 16px", display: "flex", alignItems: "center", height: isMobile ? 46 : 52, gap: 4 }}>
-          <div style={{ fontFamily: F.display, fontSize: isMobile ? 16 : 19, fontWeight: 700, color: T.gold, letterSpacing: "0.12em", flexShrink: 0 }}>
-            FILMOTÉKA
+        {/* Horní lišta: wordmark + akce */}
+        <div style={{ padding: isMobile ? "0 14px" : "0 28px", display: "flex", alignItems: "center", height: isMobile ? 46 : 54, gap: 8 }}>
+          {/* Wordmark */}
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+            <div style={{ width: 8, height: 8, background: T.text, borderRadius: "50%" }} />
+            <div style={{ fontFamily: F.display, fontSize: isMobile ? 15 : 17, fontWeight: 500, color: T.text, letterSpacing: "-0.025em", lineHeight: 1 }}>
+              Filmotéka<span style={{ color: T.gold, fontWeight: 600 }}>.</span>
+            </div>
           </div>
+          {!isMobile && (
+            <div style={{ fontFamily: F.mono, fontSize: 10, color: T.muted, letterSpacing: "0.12em", textTransform: "uppercase", paddingLeft: 14, borderLeft: `1px solid ${T.border}`, marginLeft: 6 }}>
+              {filmy.length + serialy.length} záznamů
+            </div>
+          )}
           <div style={{ flex: 1 }} />
           <button onClick={() => setDarkMode(d => !d)} title={darkMode ? "Světlý režim" : "Tmavý režim"}
-            style={{ background: "none", border: "none", cursor: "pointer", color: T.muted, fontSize: 17, padding: "0 6px", display: "flex", alignItems: "center" }}
+            style={{ background: "none", border: "none", cursor: "pointer", color: T.muted, fontSize: 15, padding: "0 6px", display: "flex", alignItems: "center" }}
           >{darkMode ? "☀️" : "🌙"}</button>
           {isAdmin
             ? <>
-                <button onClick={stahnoutZalohu} title="Stáhnout zálohu" style={{ background: "none", border: "none", cursor: "pointer", color: T.muted, fontSize: 15, padding: "0 4px", display: "flex", alignItems: "center" }}>💾</button>
-                <button onClick={() => supabase.auth.signOut()} style={{ background: "none", border: "none", cursor: "pointer", color: T.muted, fontSize: 11, padding: "0 8px", display: "flex", alignItems: "center" }}>Odhlásit</button>
+                <button onClick={stahnoutZalohu} title="Stáhnout zálohu" style={{ background: "none", border: "none", cursor: "pointer", color: T.muted, fontSize: 14, padding: "0 4px", display: "flex", alignItems: "center" }}>💾</button>
+                <button onClick={() => supabase.auth.signOut()} style={{ background: "none", border: "none", cursor: "pointer", color: T.muted, fontFamily: F.mono, fontSize: 10, letterSpacing: "0.08em", padding: "0 8px" }}>odhlásit</button>
               </>
-            : <button onClick={() => setLoginModal(true)} style={{ background: "none", border: "none", cursor: "pointer", color: T.muted, fontSize: 11, padding: "0 8px", display: "flex", alignItems: "center" }}>Přihlásit</button>
+            : <button onClick={() => setLoginModal(true)} style={{ background: "none", border: "none", cursor: "pointer", color: T.muted, fontFamily: F.mono, fontSize: 10, letterSpacing: "0.08em", padding: "0 8px" }}>přihlásit</button>
           }
         </div>
-        {/* Taby — scrollovatelné */}
-        <div style={{ display: "flex", overflowX: "auto", scrollbarWidth: "none", borderTop: `1px solid ${T.border}`, padding: "0 8px" }}>
+        {/* Taby */}
+        <div style={{ display: "flex", overflowX: "auto", scrollbarWidth: "none", borderTop: `1px solid ${T.border}`, padding: isMobile ? "0 6px" : "0 20px" }}>
           {TABS.map(t => (
             <button key={t.id} onClick={() => setTab(t.id)} style={{
               background: "none", border: "none", cursor: "pointer", flexShrink: 0,
               padding: isMobile ? "0 10px" : "0 14px",
-              fontSize: isMobile ? 10 : 11, fontWeight: 600, letterSpacing: "0.06em",
-              color: tab === t.id ? T.gold : T.muted,
+              fontFamily: F.sans, fontSize: isMobile ? 12 : 13, fontWeight: tab === t.id ? 600 : 500,
+              color: tab === t.id ? T.text : T.muted,
               borderBottom: tab === t.id ? `2px solid ${T.gold}` : "2px solid transparent",
-              textTransform: "uppercase", display: "flex", alignItems: "center", gap: 5,
-              height: isMobile ? 38 : 44, whiteSpace: "nowrap",
+              display: "flex", alignItems: "center", gap: 5,
+              height: isMobile ? 36 : 42, whiteSpace: "nowrap",
+              letterSpacing: "-0.005em",
             }}>
               {t.label}
-              {counts[t.id] != null && counts[t.id] > 0 && <span style={{
-                fontSize: 9, background: tab === t.id ? T.goldBg : T.elevated,
-                color: tab === t.id ? T.gold : T.muted, padding: "1px 5px", borderRadius: 10,
-              }}>{counts[t.id]}</span>}
+              {counts[t.id] != null && counts[t.id] > 0 && (
+                <span style={{ fontFamily: F.mono, fontSize: 9, color: T.muted, opacity: 0.8 }}>{counts[t.id]}</span>
+              )}
             </button>
           ))}
         </div>
