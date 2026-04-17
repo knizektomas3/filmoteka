@@ -963,7 +963,7 @@ const emptySerialFilters = () => ({ hodnoceniMin: null, platformy: [], zanry: []
 
 function FilterPill({ label, active, onClick }) {
   return (
-    <button onClick={onClick} style={{ padding: "3px 10px", borderRadius: 20, fontSize: 11, cursor: "pointer", border: `1px solid ${active ? T.gold : T.border}`, background: active ? T.gold : "transparent", color: active ? "#0b0b0d" : T.muted, fontWeight: active ? 600 : 400, whiteSpace: "nowrap" }}>
+    <button onClick={onClick} style={{ padding: "4px 10px", fontSize: 11, cursor: "pointer", border: `1px solid ${active ? T.gold : T.border}`, background: active ? T.gold : "transparent", color: active ? (T.mode === "dark" ? "#0f0e0c" : "#fff8f0") : T.muted, fontWeight: active ? 600 : 400, whiteSpace: "nowrap", fontFamily: F.mono, letterSpacing: "0.04em" }}>
       {label}
     </button>
   );
@@ -978,7 +978,7 @@ function FilmyFilters({ filters, setFilters, filmy }) {
   const usedZanry = [...new Set(filmy.flatMap(x => x.zanry ?? []))].sort();
 
   return (
-    <div style={{ background: T.elevated, border: `1px solid ${T.border}`, borderRadius: 6, padding: "14px 16px", marginBottom: 16 }}>
+    <div style={{ background: T.elevated, border: `1px solid ${T.border}`, borderBottom: `1px solid ${T.text}`, padding: "14px 16px", marginBottom: 16 }}>
       <div style={{ display: "flex", flexWrap: "wrap", gap: "12px 32px" }}>
         <div>
           <div style={{ fontSize: 10, color: T.muted, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>Hodnocení min.</div>
@@ -1032,7 +1032,7 @@ function SerialyFilters({ filters, setFilters, serialy }) {
   const usedZanry = [...new Set(serialy.flatMap(x => x.zanry ?? []))].sort();
 
   return (
-    <div style={{ background: T.elevated, border: `1px solid ${T.border}`, borderRadius: 6, padding: "14px 16px", marginBottom: 16 }}>
+    <div style={{ background: T.elevated, border: `1px solid ${T.border}`, borderBottom: `1px solid ${T.text}`, padding: "14px 16px", marginBottom: 16 }}>
       <div style={{ display: "flex", flexWrap: "wrap", gap: "12px 32px" }}>
         <div>
           <div style={{ fontSize: 10, color: T.muted, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>Hodnocení min.</div>
@@ -1092,21 +1092,66 @@ function countActiveFilters(f) {
 // ─── ZÁHLAVÍ ZÁLOŽKY ──────────────────────────────────────────────────────────
 function TabHeader({ count, onAdd, q, setQ, addLabel, onToggleFilters, activeFilterCount, sortOptions, sort, setSort }) {
   return (
-    <div style={{ display: "flex", gap: 10, marginBottom: 20, alignItems: "center", flexWrap: "wrap" }}>
-      <input value={q} onChange={e => setQ(e.target.value)} placeholder="Vyhledat..." style={{ ...inp, maxWidth: 240 }} />
-      <span style={{ color: T.muted, fontSize: 11, flexShrink: 0, fontFamily: F.mono }}>{count} záznamů</span>
+    <div style={{
+      display: "flex", gap: 8, alignItems: "center",
+      padding: "10px 0", marginBottom: 0,
+      borderBottom: `1px solid ${T.border}`,
+      marginBottom: 16,
+      fontFamily: F.mono, fontSize: 11,
+    }}>
+      {/* Search */}
+      <div style={{
+        display: "flex", alignItems: "center", gap: 8,
+        padding: "5px 10px", background: T.surface,
+        border: `1px solid ${T.border}`, color: T.muted, minWidth: 220,
+      }}>
+        <span style={{ flexShrink: 0 }}>⌕</span>
+        <input
+          value={q} onChange={e => setQ(e.target.value)}
+          placeholder="Vyhledat..."
+          style={{ background: "none", border: "none", outline: "none", color: T.text, fontFamily: F.mono, fontSize: 11, width: "100%", padding: 0 }}
+        />
+      </div>
+
+      {/* Divider */}
+      <div style={{ width: 1, height: 20, background: T.border, flexShrink: 0 }} />
+
+      {/* Filtry */}
+      {onToggleFilters && (
+        <button onClick={onToggleFilters} style={{
+          padding: "5px 10px", background: activeFilterCount > 0 ? T.gold : "transparent",
+          border: `1px solid ${activeFilterCount > 0 ? T.gold : T.border}`,
+          color: activeFilterCount > 0 ? (T.mode === "dark" ? "#0f0e0c" : "#fff8f0") : T.muted,
+          fontFamily: F.mono, fontSize: 11, cursor: "pointer", letterSpacing: "0.04em",
+        }}>
+          Filtry{activeFilterCount > 0 ? ` · ${activeFilterCount} ×` : ""}
+        </button>
+      )}
+
+      {/* Sort */}
       {sortOptions && (
-        <select value={sort} onChange={e => setSort(e.target.value)} style={{ ...inp, width: "auto", padding: "6px 10px", cursor: "pointer" }}>
+        <select value={sort} onChange={e => setSort(e.target.value)} style={{
+          background: "transparent", border: `1px solid ${T.border}`,
+          color: T.muted, fontFamily: F.mono, fontSize: 11,
+          padding: "5px 8px", cursor: "pointer", outline: "none",
+        }}>
           {sortOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>
       )}
+
       <div style={{ flex: 1 }} />
-      {onToggleFilters && (
-        <button onClick={onToggleFilters} style={{ ...btnSecondary, position: "relative", borderColor: activeFilterCount > 0 ? T.gold : T.border, color: activeFilterCount > 0 ? T.gold : T.muted }}>
-          Filtry {activeFilterCount > 0 && <span style={{ marginLeft: 4, background: T.gold, color: "#0b0b0d", borderRadius: 10, padding: "0 5px", fontSize: 10, fontWeight: 700 }}>{activeFilterCount}</span>}
-        </button>
+
+      {/* Count */}
+      <span style={{ color: T.muted, letterSpacing: "0.05em", flexShrink: 0 }}>{count} záznamů</span>
+
+      {/* Add button */}
+      {onAdd && (
+        <button onClick={onAdd} style={{
+          padding: "5px 12px", background: T.text, color: T.bg,
+          border: "none", fontFamily: F.mono, fontSize: 11,
+          letterSpacing: "0.06em", cursor: "pointer", fontWeight: 600,
+        }}>+ {addLabel}</button>
       )}
-      {onAdd && <button onClick={onAdd} style={btnPrimary}>+ {addLabel}</button>}
     </div>
   );
 }
