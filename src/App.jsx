@@ -1013,7 +1013,9 @@ function SerialCard({ serial, herci, onEdit, onDelete, onDetail, isAdmin }) {
   );
 }
 
-function OsobaDetailModal({ osoba, filmy, serialy, onClose, onToggle, showNeoblibeny = false }) {
+function OsobaDetailModal({ osoba, filmy, serialy, herci, reziseri, onClose, onToggle, showNeoblibeny = false }) {
+  const [filmDetail, setFilmDetail] = useState(null);
+  const [serialDetail, setSerialDetail] = useState(null);
   const osobaFilmy = filmy.filter(f =>
     !f.rewatch && ((f.herciIds ?? []).includes(osoba.id) || (f.reziserIds ?? []).includes(osoba.id))
   ).sort((a, b) => (b.rok || 0) - (a.rok || 0));
@@ -1067,9 +1069,11 @@ function OsobaDetailModal({ osoba, filmy, serialy, onClose, onToggle, showNeobli
             <>
               <div style={{ fontSize: 10, color: T.muted, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10 }}>Filmy ({osobaFilmy.length})</div>
               {osobaFilmy.map(f => (
-                <div key={f.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "7px 0", borderBottom: `1px solid ${T.border}` }}>
+                <div key={f.id} onClick={() => setFilmDetail(f)} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "7px 0", borderBottom: `1px solid ${T.border}`, cursor: "pointer" }}
+                  onMouseEnter={e => e.currentTarget.style.background = T.elevated}
+                  onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
                   <div>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: T.text, fontFamily: F.display }}>{f.nazev}</span>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: T.gold, fontFamily: F.display }}>{f.nazev}</span>
                     {f.zanry?.length > 0 && <span style={{ fontSize: 11, color: T.muted, marginLeft: 8 }}>{f.zanry.join(", ")}</span>}
                   </div>
                   <div style={{ display: "flex", gap: 10, alignItems: "center", flexShrink: 0, marginLeft: 12 }}>
@@ -1085,9 +1089,11 @@ function OsobaDetailModal({ osoba, filmy, serialy, onClose, onToggle, showNeobli
             <>
               <div style={{ fontSize: 10, color: T.muted, textTransform: "uppercase", letterSpacing: "0.1em", marginTop: osobaFilmy.length > 0 ? 20 : 0, marginBottom: 10 }}>Seriály ({osobaSerialy.length})</div>
               {osobaSerialy.map(s => (
-                <div key={s.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "7px 0", borderBottom: `1px solid ${T.border}` }}>
+                <div key={s.id} onClick={() => setSerialDetail(s)} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "7px 0", borderBottom: `1px solid ${T.border}`, cursor: "pointer" }}
+                  onMouseEnter={e => e.currentTarget.style.background = T.elevated}
+                  onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
                   <div>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: T.text, fontFamily: F.display }}>{s.nazev}</span>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: T.gold, fontFamily: F.display }}>{s.nazev}</span>
                     {s.zanry?.length > 0 && <span style={{ fontSize: 11, color: T.muted, marginLeft: 8 }}>{s.zanry.join(", ")}</span>}
                   </div>
                   <div style={{ display: "flex", gap: 10, alignItems: "center", flexShrink: 0, marginLeft: 12 }}>
@@ -1103,6 +1109,8 @@ function OsobaDetailModal({ osoba, filmy, serialy, onClose, onToggle, showNeobli
           <button onClick={onClose} style={btnSecondary}>Zavřít</button>
         </div>
       </div>
+      {filmDetail && <FilmDetailModal film={filmDetail} filmy={filmy} herci={herci ?? []} reziseri={reziseri ?? []} onClose={() => setFilmDetail(null)} onEdit={() => {}} isAdmin={false} />}
+      {serialDetail && <SerialDetailModal serial={serialDetail} serialy={serialy ?? []} herci={herci ?? []} onClose={() => setSerialDetail(null)} onEdit={() => {}} isAdmin={false} />}
     </div>
   );
 }
@@ -1556,7 +1564,7 @@ function SerialyTab({ serialy, setSerialy, herci, isAdmin, userId }) {
   );
 }
 
-function HerciTab({ herci, setHerci, filmy, serialy, isAdmin, userId }) {
+function HerciTab({ herci, setHerci, filmy, serialy, reziseri, isAdmin, userId }) {
   const [q, setQ] = useState("");
   const [modal, setModal] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -1625,12 +1633,12 @@ function HerciTab({ herci, setHerci, filmy, serialy, isAdmin, userId }) {
       <Modal open={modal} title={editing ? "Upravit herce" : "Přidat herce"} onClose={() => setModal(false)} onSave={save}>
         <OsobaForm data={form} setData={setForm} showNeoblibeny />
       </Modal>
-      {detail && <OsobaDetailModal osoba={detail} filmy={filmy} serialy={serialy} onClose={() => setDetail(null)} onToggle={handleToggle} showNeoblibeny />}
+      {detail && <OsobaDetailModal osoba={detail} filmy={filmy} serialy={serialy} herci={herci} reziseri={reziseri} onClose={() => setDetail(null)} onToggle={handleToggle} showNeoblibeny />}
     </div>
   );
 }
 
-function ReziseriTab({ reziseri, setReziseri, filmy, isAdmin, userId }) {
+function ReziseriTab({ reziseri, setReziseri, filmy, herci, isAdmin, userId }) {
   const [q, setQ] = useState("");
   const [modal, setModal] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -1700,7 +1708,7 @@ function ReziseriTab({ reziseri, setReziseri, filmy, isAdmin, userId }) {
       <Modal open={modal} title={editing ? "Upravit režiséra" : "Přidat režiséra"} onClose={() => setModal(false)} onSave={save}>
         <OsobaForm data={form} setData={setForm} />
       </Modal>
-      {detail && <OsobaDetailModal osoba={detail} filmy={filmy} onClose={() => setDetail(null)} onToggle={handleToggle} />}
+      {detail && <OsobaDetailModal osoba={detail} filmy={filmy} herci={herci} reziseri={reziseri} onClose={() => setDetail(null)} onToggle={handleToggle} />}
     </div>
   );
 }
@@ -2543,8 +2551,8 @@ export default function App() {
             {tab === "dashboard" && <DashboardTab filmy={filmy} serialy={serialy} herci={herci} reziseri={reziseri} />}
             {tab === "filmy" && <FilmyTab filmy={filmy} setFilmy={setFilmy} herci={herci} reziseri={reziseri} isAdmin={isAdmin} userId={session?.user?.id} />}
             {tab === "serialy" && <SerialyTab serialy={serialy} setSerialy={setSerialy} herci={herci} isAdmin={isAdmin} userId={session?.user?.id} />}
-            {tab === "herci" && <HerciTab herci={herci} setHerci={setHerci} filmy={filmy} serialy={serialy} isAdmin={isAdmin} userId={session?.user?.id} />}
-            {tab === "reziseri" && <ReziseriTab reziseri={reziseri} setReziseri={setReziseri} filmy={filmy} isAdmin={isAdmin} userId={session?.user?.id} />}
+            {tab === "herci" && <HerciTab herci={herci} setHerci={setHerci} filmy={filmy} serialy={serialy} reziseri={reziseri} isAdmin={isAdmin} userId={session?.user?.id} />}
+            {tab === "reziseri" && <ReziseriTab reziseri={reziseri} setReziseri={setReziseri} filmy={filmy} herci={herci} isAdmin={isAdmin} userId={session?.user?.id} />}
             {tab === "bilance-filmy" && <BilanceFilmyTab filmy={filmy} />}
             {tab === "bilance-serialy" && <BilanceSerialyTab serialy={serialy} />}
             {tab === "watchlist" && <WatchlistTab watchlist={watchlist} setWatchlist={setWatchlist} isAdmin={isAdmin} userId={session?.user?.id} />}
