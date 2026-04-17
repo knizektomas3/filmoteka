@@ -515,7 +515,7 @@ function FilmCard({ film, herci, reziseri, onEdit, onDelete, isAdmin }) {
   const filmHerci = herci.filter(h => (film.herciIds ?? []).includes(h.id));
   const ratingBorder = film.hodnoceni >= 9 ? "#27ae60" : film.hodnoceni <= 4 && film.hodnoceni > 0 ? "#c0392b" : null;
   return (
-    <div style={{ ...cardStyle, borderColor: ratingBorder ?? (hover ? T.borderHover : T.border), ...(ratingBorder ? { background: ratingBorder === "#27ae60" ? "rgba(39,174,96,0.07)" : "rgba(192,57,43,0.07)" } : {}) }}
+    <div style={{ ...cardStyle, borderColor: ratingBorder ?? (hover ? T.borderHover : T.border), ...(ratingBorder ? { background: ratingBorder === "#27ae60" ? "rgba(39,174,96,0.13)" : "rgba(192,57,43,0.13)" } : {}) }}
       onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
       {film.datum && (
         <div style={{ flexShrink: 0, marginRight: 14, textAlign: "center", minWidth: 44 }}>
@@ -558,7 +558,7 @@ function SerialCard({ serial, herci, onEdit, onDelete, isAdmin }) {
   const serialHerci = herci.filter(h => (serial.herciIds ?? []).includes(h.id));
   const ratingBorder = serial.hodnoceni >= 9 ? "#27ae60" : serial.hodnoceni <= 4 && serial.hodnoceni > 0 ? "#c0392b" : null;
   return (
-    <div style={{ ...cardStyle, borderColor: ratingBorder ?? (hover ? T.borderHover : T.border), ...(ratingBorder ? { background: ratingBorder === "#27ae60" ? "rgba(39,174,96,0.07)" : "rgba(192,57,43,0.07)" } : {}) }}
+    <div style={{ ...cardStyle, borderColor: ratingBorder ?? (hover ? T.borderHover : T.border), ...(ratingBorder ? { background: ratingBorder === "#27ae60" ? "rgba(39,174,96,0.13)" : "rgba(192,57,43,0.13)" } : {}) }}
       onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
       {(serial.zacatekSledovani || serial.konecSledovani) && (
         <div style={{ flexShrink: 0, marginRight: 14, textAlign: "center", minWidth: 54 }}>
