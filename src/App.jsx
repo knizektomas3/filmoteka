@@ -1360,35 +1360,50 @@ function Empty() {
 // ─── BILANCE – KOMPONENTY ─────────────────────────────────────────────────────
 const MONTHS_CZ = ['Led','Úno','Bře','Dub','Kvě','Čer','Čvc','Srp','Zář','Říj','Lis','Pro'];
 
-function BarChart({ data, color = T.gold, height = 100 }) {
+function BarChart({ data, height = 120, accent = false }) {
   const max = Math.max(...data.map(d => d.value), 1);
+  const maxVal = Math.max(...data.map(d => d.value));
   return (
-    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3 }}>
+    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, borderBottom: `1px solid ${T.border}`, paddingBottom: 4 }}>
+      {data.map((d, i) => {
+        const isTop = d.value === maxVal && d.value > 0;
+        const isLast = i === data.length - 1;
+        const bg = isTop && accent ? T.gold : isLast && accent ? T.gold : T.text;
+        const op = isTop || isLast ? 1 : 0.45;
+        return (
+          <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', gap: 4, minWidth: 0 }}>
+            {d.value > 0 && <div style={{ fontFamily: F.mono, fontSize: 9, color: isTop && accent ? T.gold : T.muted, fontWeight: isTop ? 600 : 400 }}>{d.value}</div>}
+            <div style={{ width: '100%', height: `${Math.max((d.value / max) * height, d.value > 0 ? 3 : 0)}px`, background: bg, opacity: op }} />
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function BarLabels({ data }) {
+  const maxVal = Math.max(...data.map(d => d.value));
+  return (
+    <div style={{ display: 'flex', gap: 4, marginTop: 6 }}>
       {data.map((d, i) => (
-        <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', minWidth: 0 }}>
-          {d.value > 0 && <div style={{ fontSize: 9, color: T.muted, marginBottom: 2 }}>{d.value}</div>}
-          <div style={{ width: '100%', background: d.value > 0 ? color : T.border, borderRadius: '3px 3px 0 0', height: `${Math.max(d.value / max * height, d.value > 0 ? 3 : 2)}px`, transition: 'height 0.3s' }} />
-          <div style={{ fontSize: 9, color: T.muted, marginTop: 4, textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' }}>{d.label}</div>
-        </div>
+        <div key={i} style={{ flex: 1, fontFamily: F.mono, fontSize: 9, color: d.value === maxVal && d.value > 0 ? T.gold : T.muted, textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.label}</div>
       ))}
     </div>
   );
 }
 
-function HBarChart({ data, color = T.gold, limit = 20 }) {
+function HBarChart({ data, limit = 20 }) {
   const visible = data.slice(0, limit);
   const max = Math.max(...visible.map(d => d.value), 1);
   return (
     <div>
       {visible.map((d, i) => (
-        <div key={i} style={{ marginBottom: 8 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
-            <span style={{ fontSize: 12, color: T.text }}>{d.label}</span>
-            <span style={{ fontSize: 12, color, fontWeight: 700 }}>{d.value}</span>
+        <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 30px', gap: 10, padding: '6px 0', alignItems: 'center', borderBottom: i < visible.length - 1 ? `1px solid ${T.border}` : 'none' }}>
+          <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 500, color: T.text, letterSpacing: '-0.01em' }}>{d.label}</span>
+          <div style={{ height: 3, background: T.border, position: 'relative' }}>
+            <div style={{ position: 'absolute', inset: 0, width: `${(d.value / max) * 100}%`, background: i === 0 ? T.gold : T.text }} />
           </div>
-          <div style={{ height: 5, background: T.border, borderRadius: 3, overflow: 'hidden' }}>
-            <div style={{ height: '100%', width: `${d.value / max * 100}%`, background: color, borderRadius: 3, transition: 'width 0.3s' }} />
-          </div>
+          <span style={{ fontFamily: F.mono, fontSize: 11, color: T.text, textAlign: 'right' }}>{d.value}</span>
         </div>
       ))}
     </div>
@@ -1397,18 +1412,24 @@ function HBarChart({ data, color = T.gold, limit = 20 }) {
 
 function BilStat({ label, value, sub, color = T.text }) {
   return (
-    <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 8, padding: '16px 20px' }}>
-      <div style={{ fontSize: 10, color: T.muted, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>{label}</div>
-      <div style={{ fontSize: 30, fontWeight: 800, color, fontFamily: F.display, lineHeight: 1 }}>{value}</div>
-      {sub && <div style={{ fontSize: 11, color: T.muted, marginTop: 5 }}>{sub}</div>}
+    <div>
+      <div style={{ fontFamily: F.mono, fontSize: 10, color: T.muted, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 6 }}>{label}</div>
+      <div style={{ fontFamily: F.display, fontSize: 36, fontWeight: 500, color, letterSpacing: '-0.04em', lineHeight: 1 }}>{value}</div>
+      {sub && <div style={{ fontFamily: F.mono, fontSize: 10, color: T.muted, marginTop: 4 }}>{sub}</div>}
     </div>
   );
 }
 
-function BilCard({ title, children }) {
+function BilCard({ title, meta, children }) {
   return (
-    <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 8, padding: '18px 20px' }}>
-      <div style={{ fontSize: 10, color: T.muted, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 16 }}>{title}</div>
+    <div>
+      <div style={{
+        display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
+        paddingBottom: 8, borderBottom: `1px solid ${T.text}`, marginBottom: 16,
+      }}>
+        <div style={{ fontFamily: F.display, fontSize: 17, fontWeight: 500, color: T.text, letterSpacing: '-0.025em' }}>{title}</div>
+        {meta && <div style={{ fontFamily: F.mono, fontSize: 10, color: T.muted, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{meta}</div>}
+      </div>
       {children}
     </div>
   );
@@ -1651,54 +1672,85 @@ function BilanceFilmyTab({ filmy }) {
   const rated = filmy.filter(f => f.hodnoceni);
   const avg = rated.length ? (rated.reduce((a, f) => a + f.hodnoceni, 0) / rated.length).toFixed(1) : '–';
   const thisYear = filmy.filter(f => f.datum?.startsWith(String(currentYear)));
+  const totalMin = filmy.filter(f => f.stopaz).reduce((a, f) => a + (parseInt(f.stopaz) || 0), 0);
+  const totalHod = Math.round(totalMin / 60);
 
-  // Po letech
   const byYear = {};
-  filmy.filter(f => f.datum).forEach(f => { const y = f.datum.slice(0,4); byYear[y] = (byYear[y]||0)+1; });
-  const byYearData = Object.keys(byYear).sort().map(y => ({ label: "'"+y.slice(2), value: byYear[y] }));
+  filmy.filter(f => f.datum).forEach(f => { const y = f.datum.slice(0,4); byYear[y]=(byYear[y]||0)+1; });
+  const byYearData = Object.keys(byYear).sort().map(y => ({ label: y, value: byYear[y] }));
+  const topYear = byYearData.reduce((a, b) => b.value > a.value ? b : a, { value: 0 });
 
-  // Po měsících aktuálního roku
   const monthData = MONTHS_CZ.map(l => ({ label: l, value: 0 }));
   thisYear.forEach(f => { monthData[parseInt(f.datum.slice(5,7))-1].value++; });
 
-  // Platformy
   const byPlat = {};
-  filmy.forEach(f => { if (f.platforma) byPlat[f.platforma] = (byPlat[f.platforma]||0)+1; });
+  filmy.forEach(f => { if (f.platforma) byPlat[f.platforma]=(byPlat[f.platforma]||0)+1; });
   const platData = Object.entries(byPlat).sort((a,b)=>b[1]-a[1]).map(([l,v])=>({label:l,value:v}));
 
-  // Hodnocení
   const ratingData = Array.from({length:10},(_,i)=>({ label:String(i+1), value:0 }));
   rated.forEach(f => { ratingData[f.hodnoceni-1].value++; });
+  const ratingMode = ratingData.reduce((a, b) => b.value > a.value ? b : a, { value: 0 });
 
-  // Rok výroby – dekády
   const byDec = {};
-  filmy.filter(f=>f.rok).forEach(f => { const d = Math.floor(parseInt(f.rok)/10)*10; byDec[d]=(byDec[d]||0)+1; });
+  filmy.filter(f=>f.rok).forEach(f => { const d=Math.floor(parseInt(f.rok)/10)*10; byDec[d]=(byDec[d]||0)+1; });
   const decData = Object.keys(byDec).sort().map(d=>({ label:`${d}s`, value:byDec[d] }));
 
-  // Žánry aktuálního roku + český film
   const byGenre = {};
-  thisYear.forEach(f => {
-    (f.zanry??[]).forEach(z => { byGenre[z]=(byGenre[z]||0)+1; });
-    if (f.ceskyFilm) byGenre['Český film']=(byGenre['Český film']||0)+1;
-  });
+  filmy.forEach(f => { (f.zanry??[]).forEach(z => { byGenre[z]=(byGenre[z]||0)+1; }); });
   const genreData = Object.entries(byGenre).sort((a,b)=>b[1]-a[1]).map(([l,v])=>({label:l,value:v}));
 
   return (
     <div>
-      <div style={{ fontSize: 22, fontWeight: 700, color: T.text, fontFamily: F.display, marginBottom: 4 }}>Bilance filmů</div>
-      <div style={{ fontSize: 13, color: T.muted, marginBottom: 24 }}>Celkový přehled sledování</div>
-      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(3, 1fr)', gap: 12, marginBottom: 16 }}>
-        <BilStat label="Filmů celkem" value={filmy.length} />
-        <BilStat label="Průměrné hodnocení" value={avg} color={T.gold} sub={`z ${rated.length} hodnocených`} />
-        <BilStat label={`Zhlédnuto ${currentYear}`} value={thisYear.length} />
+      {/* Masthead */}
+      <div style={{
+        display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr auto',
+        alignItems: 'flex-end', gap: 32,
+        paddingBottom: 24, marginBottom: 32,
+        borderBottom: `1px solid ${T.text}`,
+      }}>
+        <div>
+          <div style={{ fontFamily: F.mono, fontSize: 11, color: T.muted, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 8 }}>
+            Bilance · Filmy
+          </div>
+          <h1 style={{ margin: 0, fontFamily: F.display, fontSize: isMobile ? 40 : 64, fontWeight: 500, color: T.text, letterSpacing: '-0.04em', lineHeight: 0.92 }}>
+            Filmy<span style={{ color: T.gold, fontWeight: 600 }}>.</span>
+          </h1>
+        </div>
+        <div style={{ display: 'flex', gap: isMobile ? 24 : 40, flexWrap: 'wrap' }}>
+          <BilStat label="Celkem" value={filmy.length} />
+          <BilStat label="Hodnoceno" value={rated.length} />
+          <BilStat label="Průměr" value={avg} color={T.gold} sub={`modus ${ratingMode.label}`} />
+          {totalHod > 0 && <BilStat label="Hodin" value={totalHod} sub={`${totalMin} min`} />}
+        </div>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12 }}>
-        <BilCard title="Filmy po letech"><BarChart data={byYearData} color={T.gold} /></BilCard>
-        <BilCard title={`Měsíce ${currentYear}`}><BarChart data={monthData} color={T.blue} /></BilCard>
-        <BilCard title="Platformy"><HBarChart data={platData} color={T.purple} /></BilCard>
-        <BilCard title="Hodnocení"><BarChart data={ratingData} color={T.green} /></BilCard>
-        <BilCard title="Rok výroby (dekády)"><BarChart data={decData} color={T.orange} /></BilCard>
-        {genreData.length > 0 && <BilCard title={`Žánry ${currentYear}`}><HBarChart data={genreData} color={T.gold} /></BilCard>}
+
+      {/* Roky — full width */}
+      <div style={{ marginBottom: 40 }}>
+        <BilCard title="Zhlédnuto po letech" meta={`${byYearData.length} let · rekord ${topYear.label} · ${topYear.value}`}>
+          <BarChart data={byYearData} height={140} accent />
+          <BarLabels data={byYearData} />
+        </BilCard>
+      </div>
+
+      {/* 2-col */}
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 40, marginBottom: 40 }}>
+        <BilCard title={`Měsíce ${currentYear}`} meta={`${thisYear.length} filmů`}>
+          <BarChart data={monthData} height={100} />
+          <BarLabels data={monthData} />
+        </BilCard>
+        <BilCard title="Hodnocení" meta={`1–10 · modus ${ratingMode.label}`}>
+          <BarChart data={ratingData} height={100} accent />
+          <BarLabels data={ratingData} />
+        </BilCard>
+        <BilCard title="Platformy" meta={`${platData.length} platforem`}>
+          <HBarChart data={platData} />
+        </BilCard>
+        <BilCard title="Žánry" meta={`${genreData.length} žánrů`}>
+          <HBarChart data={genreData} />
+        </BilCard>
+        <BilCard title="Dekády vzniku" meta="rok výroby">
+          <HBarChart data={decData} />
+        </BilCard>
       </div>
     </div>
   );
@@ -1712,44 +1764,85 @@ function BilanceSerialyTab({ serialy }) {
   const avg = rated.length ? (rated.reduce((a, s) => a + s.hodnoceni, 0) / rated.length).toFixed(1) : '–';
   const thisYear = finished.filter(s => s.konecSledovani.startsWith(String(currentYear)));
 
-  // Po letech
   const byYear = {};
   finished.forEach(s => { const y = s.konecSledovani.slice(0,4); byYear[y]=(byYear[y]||0)+1; });
-  const byYearData = Object.keys(byYear).sort().map(y=>({ label:"'"+y.slice(2), value:byYear[y] }));
+  const byYearData = Object.keys(byYear).sort().map(y => ({ label: y, value: byYear[y] }));
+  const topYear = byYearData.reduce((a, b) => b.value > a.value ? b : a, { value: 0 });
 
-  // Po měsících aktuálního roku
-  const monthData = MONTHS_CZ.map(l=>({ label:l, value:0 }));
+  const monthData = MONTHS_CZ.map(l => ({ label: l, value: 0 }));
   thisYear.forEach(s => { monthData[parseInt(s.konecSledovani.slice(5,7))-1].value++; });
 
-  // Platformy
   const byPlat = {};
   finished.forEach(s => { if (s.platforma) byPlat[s.platforma]=(byPlat[s.platforma]||0)+1; });
   const platData = Object.entries(byPlat).sort((a,b)=>b[1]-a[1]).map(([l,v])=>({label:l,value:v}));
 
-  // Hodnocení
   const ratingData = Array.from({length:10},(_,i)=>({ label:String(i+1), value:0 }));
   rated.forEach(s => { ratingData[s.hodnoceni-1].value++; });
+  const ratingMode = ratingData.reduce((a, b) => b.value > a.value ? b : a, { value: 0 });
 
-  // Rok výroby – dekády
   const byDec = {};
   finished.filter(s=>s.rok).forEach(s => { const d=Math.floor(parseInt(s.rok)/10)*10; byDec[d]=(byDec[d]||0)+1; });
   const decData = Object.keys(byDec).sort().map(d=>({ label:`${d}s`, value:byDec[d] }));
 
+  const byGenre = {};
+  finished.forEach(s => { (s.zanry??[]).forEach(z => { byGenre[z]=(byGenre[z]||0)+1; }); });
+  const genreData = Object.entries(byGenre).sort((a,b)=>b[1]-a[1]).map(([l,v])=>({label:l,value:v}));
+
+  const stavCounts = { Dokoukáno: 0, Sleduji: 0, Nedokončeno: 0, Plánuji: 0 };
+  serialy.forEach(s => { if (s.stav && stavCounts[s.stav] !== undefined) stavCounts[s.stav]++; });
+
   return (
     <div>
-      <div style={{ fontSize: 22, fontWeight: 700, color: T.text, fontFamily: F.display, marginBottom: 4 }}>Bilance seriálů</div>
-      <div style={{ fontSize: 13, color: T.muted, marginBottom: 24 }}>Celkový přehled sledování</div>
-      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(3, 1fr)', gap: 12, marginBottom: 16 }}>
-        <BilStat label="Dosledováno celkem" value={finished.length} sub={`z ${serialy.length} v databázi`} />
-        <BilStat label="Průměrné hodnocení" value={avg} color={T.gold} sub={`z ${rated.length} hodnocených`} />
-        <BilStat label={`Zhlédnuto ${currentYear}`} value={thisYear.length} />
+      {/* Masthead */}
+      <div style={{
+        display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr auto',
+        alignItems: 'flex-end', gap: 32,
+        paddingBottom: 24, marginBottom: 32,
+        borderBottom: `1px solid ${T.text}`,
+      }}>
+        <div>
+          <div style={{ fontFamily: F.mono, fontSize: 11, color: T.muted, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 8 }}>
+            Bilance · Seriály
+          </div>
+          <h1 style={{ margin: 0, fontFamily: F.display, fontSize: isMobile ? 40 : 64, fontWeight: 500, color: T.text, letterSpacing: '-0.04em', lineHeight: 0.92 }}>
+            Seriály<span style={{ color: T.gold, fontWeight: 600 }}>.</span>
+          </h1>
+        </div>
+        <div style={{ display: 'flex', gap: isMobile ? 24 : 40, flexWrap: 'wrap' }}>
+          <BilStat label="Celkem" value={serialy.length} />
+          <BilStat label="Dokoukáno" value={finished.length} sub={`sleduji ${stavCounts['Sleduji']}`} />
+          <BilStat label="Průměr" value={avg} color={T.gold} sub={`z ${rated.length} hodnocených`} />
+          <BilStat label={`Rok ${currentYear}`} value={thisYear.length} />
+        </div>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12 }}>
-        <BilCard title="Seriály po letech"><BarChart data={byYearData} color={T.gold} /></BilCard>
-        <BilCard title={`Měsíce ${currentYear}`}><BarChart data={monthData} color={T.blue} /></BilCard>
-        <BilCard title="Platformy"><HBarChart data={platData} color={T.purple} /></BilCard>
-        <BilCard title="Hodnocení"><BarChart data={ratingData} color={T.green} /></BilCard>
-        <BilCard title="Rok výroby (dekády)"><BarChart data={decData} color={T.orange} /></BilCard>
+
+      {/* Roky */}
+      <div style={{ marginBottom: 40 }}>
+        <BilCard title="Dokoukáno po letech" meta={byYearData.length > 0 ? `rekord ${topYear.label} · ${topYear.value}` : ''}>
+          <BarChart data={byYearData} height={140} accent />
+          <BarLabels data={byYearData} />
+        </BilCard>
+      </div>
+
+      {/* 2-col */}
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 40, marginBottom: 40 }}>
+        <BilCard title={`Měsíce ${currentYear}`} meta={`${thisYear.length} seriálů`}>
+          <BarChart data={monthData} height={100} />
+          <BarLabels data={monthData} />
+        </BilCard>
+        <BilCard title="Hodnocení" meta={`1–10 · modus ${ratingMode.label}`}>
+          <BarChart data={ratingData} height={100} accent />
+          <BarLabels data={ratingData} />
+        </BilCard>
+        <BilCard title="Platformy" meta={`${platData.length} platforem`}>
+          <HBarChart data={platData} />
+        </BilCard>
+        {genreData.length > 0 && <BilCard title="Žánry" meta={`${genreData.length} žánrů`}>
+          <HBarChart data={genreData} />
+        </BilCard>}
+        <BilCard title="Dekády vzniku" meta="rok výroby">
+          <HBarChart data={decData} />
+        </BilCard>
       </div>
     </div>
   );
