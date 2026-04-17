@@ -555,6 +555,8 @@ let cardStyle = {
 const FILM_COLS = "80px minmax(0,1fr) 120px 100px 54px 160px";
 
 function FilmTableHeader() {
+  const isMobile = useMobile();
+  if (isMobile) return null;
   return (
     <div style={{
       display: "grid", gridTemplateColumns: FILM_COLS, gap: 12,
@@ -614,9 +616,9 @@ function FilmDetailModal({ film: initialFilm, filmy, herci, reziseri, onClose, o
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", display: "flex", alignItems: isMobile ? "flex-end" : "center", justifyContent: "center", zIndex: 1000, padding: isMobile ? 0 : 24 }}
       onClick={e => e.target === e.currentTarget && onClose()}>
-      <div style={{ background: T.bg, width: "100%", maxWidth: 960, maxHeight: "92vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+      <div style={{ background: T.bg, width: "100%", maxWidth: 960, height: isMobile ? "92vh" : "auto", maxHeight: "92vh", display: "flex", flexDirection: "column" }}>
         {/* Masthead */}
-        <div style={{ padding: isMobile ? "20px 18px 16px" : "28px 36px 20px", borderBottom: `1px solid ${T.text}` }}>
+        <div style={{ padding: isMobile ? "16px 16px 12px" : "28px 36px 20px", borderBottom: `1px solid ${T.text}`, flexShrink: 0 }}>
           <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr auto", gap: 24, alignItems: "flex-end" }}>
             <div>
               <h2 style={{ margin: 0, fontFamily: F.display, fontSize: isMobile ? 28 : 42, fontWeight: 500, color: T.text, letterSpacing: "-0.03em", lineHeight: 1.05 }}>
@@ -636,8 +638,8 @@ function FilmDetailModal({ film: initialFilm, filmy, herci, reziseri, onClose, o
         </div>
 
         {/* Body */}
-        <div style={{ overflowY: "auto", flex: 1, padding: isMobile ? "16px 18px" : "24px 36px" }}>
-          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "200px 1fr 1fr", gap: 32 }}>
+        <div style={{ overflowY: "auto", flex: 1, padding: isMobile ? "12px 16px" : "24px 36px", WebkitOverflowScrolling: "touch" }}>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "200px 1fr 1fr", gap: isMobile ? 20 : 32 }}>
             {/* LEFT — metadata + obsazení */}
             <div>
               <div style={{ fontFamily: F.mono, fontSize: 10, color: T.muted, letterSpacing: "0.12em", textTransform: "uppercase", paddingBottom: 6, borderBottom: `1px solid ${T.text}`, marginBottom: 10 }}>Informace</div>
@@ -688,7 +690,7 @@ function FilmDetailModal({ film: initialFilm, filmy, herci, reziseri, onClose, o
         </div>
 
         {/* Footer */}
-        <div style={{ padding: "12px 36px", borderTop: `1px solid ${T.border}`, display: "flex", justifyContent: "flex-end", gap: 8 }}>
+        <div style={{ padding: isMobile ? "10px 16px" : "12px 36px", borderTop: `1px solid ${T.border}`, display: "flex", justifyContent: "flex-end", gap: 8, flexShrink: 0 }}>
           {isAdmin && <button onClick={() => { onClose(); onEdit(film); }} style={{ ...btnSecondary, fontFamily: F.mono, fontSize: 11 }}>Upravit</button>}
           <button onClick={onClose} style={{ ...btnSecondary, fontFamily: F.mono, fontSize: 11 }}>Zavřít</button>
         </div>
@@ -796,6 +798,8 @@ function FilmCard({ film, herci, reziseri, onEdit, onDelete, onDetail, isAdmin }
 const SERIAL_COLS = "80px minmax(0,1fr) 120px 100px 60px 160px";
 
 function SerialTableHeader() {
+  const isMobile = useMobile();
+  if (isMobile) return null;
   return (
     <div style={{
       display: "grid", gridTemplateColumns: SERIAL_COLS, gap: 12,
@@ -829,9 +833,9 @@ function SerialDetailModal({ serial: initialSerial, serialy, herci, onClose, onE
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", display: "flex", alignItems: isMobile ? "flex-end" : "center", justifyContent: "center", zIndex: 1000, padding: isMobile ? 0 : 24 }}
       onClick={e => e.target === e.currentTarget && onClose()}>
-      <div style={{ background: T.bg, width: "100%", maxWidth: 820, maxHeight: "92vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+      <div style={{ background: T.bg, width: "100%", maxWidth: 820, height: isMobile ? "92vh" : "auto", maxHeight: "92vh", display: "flex", flexDirection: "column" }}>
         {/* Masthead */}
-        <div style={{ padding: isMobile ? "20px 18px 16px" : "28px 36px 20px", borderBottom: `1px solid ${T.text}` }}>
+        <div style={{ padding: isMobile ? "16px 16px 12px" : "28px 36px 20px", borderBottom: `1px solid ${T.text}`, flexShrink: 0 }}>
           <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr auto", gap: 24, alignItems: "flex-end" }}>
             <div>
               <h2 style={{ margin: 0, fontFamily: F.display, fontSize: isMobile ? 28 : 42, fontWeight: 500, color: T.text, letterSpacing: "-0.03em", lineHeight: 1.05 }}>
@@ -851,8 +855,8 @@ function SerialDetailModal({ serial: initialSerial, serialy, herci, onClose, onE
         </div>
 
         {/* Body */}
-        <div style={{ overflowY: "auto", flex: 1, padding: isMobile ? "16px 18px" : "24px 36px" }}>
-          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "220px 1fr", gap: 36 }}>
+        <div style={{ overflowY: "auto", flex: 1, padding: isMobile ? "12px 16px" : "24px 36px", WebkitOverflowScrolling: "touch" }}>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "220px 1fr", gap: isMobile ? 20 : 36 }}>
             {/* LEFT — metadata + obsazení */}
             <div>
               <div style={{ fontFamily: F.mono, fontSize: 10, color: T.muted, letterSpacing: "0.12em", textTransform: "uppercase", paddingBottom: 6, borderBottom: `1px solid ${T.text}`, marginBottom: 10 }}>Informace</div>
@@ -906,7 +910,7 @@ function SerialDetailModal({ serial: initialSerial, serialy, herci, onClose, onE
         </div>
 
         {/* Footer */}
-        <div style={{ padding: "12px 36px", borderTop: `1px solid ${T.border}`, display: "flex", justifyContent: "flex-end", gap: 8 }}>
+        <div style={{ padding: isMobile ? "10px 16px" : "12px 36px", borderTop: `1px solid ${T.border}`, display: "flex", justifyContent: "flex-end", gap: 8, flexShrink: 0 }}>
           {isAdmin && <button onClick={() => { onClose(); onEdit(serial); }} style={{ ...btnSecondary, fontFamily: F.mono, fontSize: 11 }}>Upravit</button>}
           <button onClick={onClose} style={{ ...btnSecondary, fontFamily: F.mono, fontSize: 11 }}>Zavřít</button>
         </div>
@@ -1044,7 +1048,7 @@ function OsobaDetailModal({ osoba, filmy, serialy, herci, reziseri, onClose, onT
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", display: "flex", alignItems: isMobile ? "flex-end" : "center", justifyContent: "center", zIndex: 1000, padding: isMobile ? 0 : 20 }}
       onClick={e => e.target === e.currentTarget && onClose()}>
-      <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: isMobile ? "12px 12px 0 0" : 8, width: isMobile ? "100%" : 600, maxWidth: "100%", maxHeight: "92vh", display: "flex", flexDirection: "column" }}>
+      <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: isMobile ? "12px 12px 0 0" : 8, width: isMobile ? "100%" : 600, maxWidth: "100%", height: isMobile ? "85vh" : "auto", maxHeight: "92vh", display: "flex", flexDirection: "column" }}>
         <div style={{ padding: "14px 20px", borderBottom: `1px solid ${T.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
             <span style={{ fontSize: 16, fontWeight: 700, color: T.text, fontFamily: F.display }}>{osoba.jmeno}</span>
@@ -1062,7 +1066,7 @@ function OsobaDetailModal({ osoba, filmy, serialy, herci, reziseri, onClose, onT
             {toggleBtn("† Po smrti", osoba.zijici === "Ne", T.muted, "zijici")}
           </div>
         )}
-        <div style={{ padding: "16px 20px", overflowY: "auto", flex: 1 }}>
+        <div style={{ padding: "16px 20px", overflowY: "auto", flex: 1, WebkitOverflowScrolling: "touch" }}>
           {total === 0 && <div style={{ color: T.muted, fontSize: 13, textAlign: "center", padding: "32px 0" }}>Žádné záznamy</div>}
 
           {osobaFilmy.length > 0 && (
@@ -1118,6 +1122,8 @@ function OsobaDetailModal({ osoba, filmy, serialy, herci, reziseri, onClose, onT
 const OSOBA_COLS = "minmax(0,1fr) 130px 80px 80px 130px";
 
 function OsobaTableHeader() {
+  const isMobile = useMobile();
+  if (isMobile) return null;
   return (
     <div style={{
       display: "grid", gridTemplateColumns: OSOBA_COLS, gap: 12,
@@ -1334,10 +1340,51 @@ function countActiveFilters(f) {
 
 // ─── ZÁHLAVÍ ZÁLOŽKY ──────────────────────────────────────────────────────────
 function TabHeader({ count, onAdd, q, setQ, addLabel, onToggleFilters, activeFilterCount, sortOptions, sort, setSort }) {
+  const isMobile = useMobile();
+  if (isMobile) {
+    return (
+      <div style={{ marginBottom: 12, fontFamily: F.mono, fontSize: 11 }}>
+        {/* Row 1: search */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 10px", background: T.surface, border: `1px solid ${T.border}`, marginBottom: 8 }}>
+          <span style={{ flexShrink: 0, color: T.muted }}>⌕</span>
+          <input value={q} onChange={e => setQ(e.target.value)} placeholder="Vyhledat..."
+            style={{ background: "none", border: "none", outline: "none", color: T.text, fontFamily: F.mono, fontSize: 13, width: "100%", padding: 0 }} />
+        </div>
+        {/* Row 2: filtry + sort + count + add */}
+        <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+          {onToggleFilters && (
+            <button onClick={onToggleFilters} style={{
+              padding: "5px 10px", background: activeFilterCount > 0 ? T.gold : "transparent",
+              border: `1px solid ${activeFilterCount > 0 ? T.gold : T.border}`,
+              color: activeFilterCount > 0 ? "#0f0e0c" : T.muted,
+              fontFamily: F.mono, fontSize: 11, cursor: "pointer",
+            }}>Filtry{activeFilterCount > 0 ? ` · ${activeFilterCount} ×` : ""}</button>
+          )}
+          {sortOptions && (
+            <select value={sort} onChange={e => setSort(e.target.value)} style={{
+              background: T.surface, border: `1px solid ${T.border}`,
+              color: T.muted, fontFamily: F.mono, fontSize: 11,
+              padding: "5px 8px", cursor: "pointer", outline: "none",
+            }}>
+              {sortOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+          )}
+          <span style={{ color: T.muted, marginLeft: "auto", flexShrink: 0 }}>{count} záz.</span>
+          {onAdd && (
+            <button onClick={onAdd} style={{
+              padding: "5px 12px", background: T.text, color: T.bg,
+              border: "none", fontFamily: F.mono, fontSize: 11,
+              letterSpacing: "0.06em", cursor: "pointer", fontWeight: 600,
+            }}>+ Přidat</button>
+          )}
+        </div>
+      </div>
+    );
+  }
   return (
     <div style={{
       display: "flex", gap: 8, alignItems: "center",
-      padding: "10px 0", marginBottom: 0,
+      padding: "10px 0",
       borderBottom: `1px solid ${T.border}`,
       marginBottom: 16,
       fontFamily: F.mono, fontSize: 11,
@@ -1355,11 +1402,7 @@ function TabHeader({ count, onAdd, q, setQ, addLabel, onToggleFilters, activeFil
           style={{ background: "none", border: "none", outline: "none", color: T.text, fontFamily: F.mono, fontSize: 11, width: "100%", padding: 0 }}
         />
       </div>
-
-      {/* Divider */}
       <div style={{ width: 1, height: 20, background: T.border, flexShrink: 0 }} />
-
-      {/* Filtry */}
       {onToggleFilters && (
         <button onClick={onToggleFilters} style={{
           padding: "5px 10px", background: activeFilterCount > 0 ? T.gold : "transparent",
@@ -1370,8 +1413,6 @@ function TabHeader({ count, onAdd, q, setQ, addLabel, onToggleFilters, activeFil
           Filtry{activeFilterCount > 0 ? ` · ${activeFilterCount} ×` : ""}
         </button>
       )}
-
-      {/* Sort */}
       {sortOptions && (
         <select value={sort} onChange={e => setSort(e.target.value)} style={{
           background: "transparent", border: `1px solid ${T.border}`,
@@ -1381,13 +1422,8 @@ function TabHeader({ count, onAdd, q, setQ, addLabel, onToggleFilters, activeFil
           {sortOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>
       )}
-
       <div style={{ flex: 1 }} />
-
-      {/* Count */}
       <span style={{ color: T.muted, letterSpacing: "0.05em", flexShrink: 0 }}>{count} záznamů</span>
-
-      {/* Add button */}
       {onAdd && (
         <button onClick={onAdd} style={{
           padding: "5px 12px", background: T.text, color: T.bg,
