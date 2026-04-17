@@ -817,7 +817,121 @@ function SerialTableHeader() {
   );
 }
 
-function SerialCard({ serial, herci, onEdit, onDelete, isAdmin }) {
+function SerialDetailModal({ serial, serialy, herci, onClose, onEdit, isAdmin }) {
+  const isMobile = useMobile();
+  const serialHerci = herci.filter(h => (serial.herciIds ?? []).includes(h.id));
+  const ratingColor = serial.hodnoceni >= 9 ? T.green : serial.hodnoceni <= 4 && serial.hodnoceni > 0 ? T.danger : T.text;
+  const stavColor = { Dokoukáno: T.green, Sleduji: T.gold, Nedokončeno: T.orange, Plánuji: T.muted };
+
+  const podobne = serialy
+    .filter(s => s.id !== serial.id && s.hodnoceni === serial.hodnoceni && (serial.zanry ?? []).some(z => (s.zanry ?? []).includes(z)))
+    .sort((a, b) => (b.konecSledovani || b.zacatekSledovani || "").localeCompare(a.konecSledovani || a.zacatekSledovani || ""))
+    .slice(0, 8);
+
+  const datumLabel = [
+    serial.zacatekSledovani ? fmtDate(serial.zacatekSledovani) : null,
+    serial.konecSledovani && serial.konecSledovani !== serial.zacatekSledovani ? fmtDate(serial.konecSledovani) : null,
+  ].filter(Boolean).join(" → ");
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", display: "flex", alignItems: isMobile ? "flex-end" : "center", justifyContent: "center", zIndex: 1000, padding: isMobile ? 0 : 24 }}
+      onClick={e => e.target === e.currentTarget && onClose()}>
+      <div style={{ background: T.bg, width: "100%", maxWidth: 820, maxHeight: "92vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        {/* Masthead */}
+        <div style={{ padding: isMobile ? "20px 18px 16px" : "28px 36px 20px", borderBottom: `1px solid ${T.text}` }}>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr auto", gap: 24, alignItems: "flex-end" }}>
+            <div>
+              <div style={{ fontFamily: F.mono, fontSize: 10, color: T.muted, letterSpacing: "0.16em", textTransform: "uppercase", marginBottom: 8 }}>
+                {datumLabel || "—"} · {serial.platforma ?? ""}
+              </div>
+              <h2 style={{ margin: 0, fontFamily: F.display, fontSize: isMobile ? 36 : 64, fontWeight: 500, color: T.text, letterSpacing: "-0.04em", lineHeight: 0.9 }}>
+                {serial.nazev}<span style={{ color: T.gold, fontWeight: 600 }}>.</span>
+              </h2>
+              {serial.ceskyNazev && <div style={{ fontFamily: F.sans, fontSize: 14, color: T.muted, fontStyle: "italic", marginTop: 6 }}>({serial.ceskyNazev})</div>}
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 10, fontFamily: F.mono, fontSize: 12, color: T.inkMuted ?? T.muted }}>
+                {[serial.rok, (serial.zanry ?? []).join(", ") || null, serial.stav].filter(Boolean).map((m, i) => (
+                  <span key={i} style={{ display: "flex", gap: 10 }}>
+                    {i > 0 && <span style={{ color: T.border }}>·</span>}
+                    <span style={{ color: serial.stav === m ? (stavColor[m] ?? T.muted) : "inherit" }}>{m}</span>
+                  </span>
+                ))}
+              </div>
+            </div>
+            {!isMobile && serial.hodnoceni && (
+              <div style={{ textAlign: "right" }}>
+                <div style={{ fontFamily: F.mono, fontSize: 10, color: T.muted, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 4 }}>hodnocení</div>
+                <div style={{ fontFamily: F.display, fontSize: 96, fontWeight: 500, color: ratingColor, letterSpacing: "-0.06em", lineHeight: 0.85 }}>
+                  {serial.hodnoceni}<span style={{ color: T.gold, fontSize: 48 }}>.</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Body */}
+        <div style={{ overflowY: "auto", flex: 1, padding: isMobile ? "16px 18px" : "24px 36px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "220px 1fr", gap: 36 }}>
+            {/* LEFT — metadata + obsazení */}
+            <div>
+              <div style={{ fontFamily: F.mono, fontSize: 10, color: T.muted, letterSpacing: "0.12em", textTransform: "uppercase", paddingBottom: 6, borderBottom: `1px solid ${T.text}`, marginBottom: 10 }}>Informace</div>
+              {[
+                ["sledováno", datumLabel || null],
+                ["rok výroby", serial.rok],
+                ["platforma", serial.platforma],
+                ["žánr", (serial.zanry ?? []).join(", ") || null],
+                ["stav", serial.stav],
+                ["série", Array.isArray(serial.serie) && serial.serie.length > 0 ? serial.serie.join(", ") : (serial.serie || null)],
+                ["dílů", serial.pocetDilu || null],
+              ].filter(([, v]) => v).map(([k, v]) => (
+                <div key={k} style={{ display: "grid", gridTemplateColumns: "80px 1fr", gap: 8, padding: "5px 0", borderBottom: `1px solid ${T.border}`, fontFamily: F.mono, fontSize: 11, alignItems: "baseline" }}>
+                  <span style={{ color: T.muted }}>{k}</span>
+                  <span style={{ color: k === "stav" ? (stavColor[v] ?? T.text) : T.text }}>{v}</span>
+                </div>
+              ))}
+              {serialHerci.length > 0 && (
+                <div style={{ marginTop: 20 }}>
+                  <div style={{ fontFamily: F.mono, fontSize: 10, color: T.muted, letterSpacing: "0.12em", textTransform: "uppercase", paddingBottom: 6, borderBottom: `1px solid ${T.text}`, marginBottom: 10 }}>Obsazení</div>
+                  {serialHerci.map((h, i) => (
+                    <div key={h.id} style={{ padding: "6px 0", borderBottom: i < serialHerci.length - 1 ? `1px solid ${T.border}` : "none", fontFamily: F.display, fontSize: 14, fontWeight: 500, color: T.text, letterSpacing: "-0.01em" }}>{h.jmeno}</div>
+                  ))}
+                </div>
+              )}
+              {serial.poznamka && (
+                <div style={{ marginTop: 20 }}>
+                  <div style={{ fontFamily: F.mono, fontSize: 10, color: T.muted, letterSpacing: "0.12em", textTransform: "uppercase", paddingBottom: 6, borderBottom: `1px solid ${T.text}`, marginBottom: 10 }}>Poznámka</div>
+                  <p style={{ margin: 0, fontSize: 13, color: T.text, lineHeight: 1.55, fontFamily: F.sans }}>{serial.poznamka}</p>
+                </div>
+              )}
+            </div>
+
+            {/* RIGHT — stejný žánr + hodnocení */}
+            <div>
+              <div style={{ fontFamily: F.mono, fontSize: 10, color: T.muted, letterSpacing: "0.12em", textTransform: "uppercase", paddingBottom: 6, borderBottom: `1px solid ${T.text}`, marginBottom: 10 }}>
+                Žánr · hodnocení {serial.hodnoceni ?? "—"}
+              </div>
+              {podobne.length === 0 && <div style={{ fontFamily: F.mono, fontSize: 11, color: T.muted }}>Žádné záznamy.</div>}
+              {podobne.map((s, i) => (
+                <div key={s.id} style={{ display: "grid", gridTemplateColumns: "1fr 36px 36px", gap: 8, padding: "8px 0", borderBottom: i < podobne.length - 1 ? `1px solid ${T.border}` : "none", alignItems: "baseline" }}>
+                  <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 500, color: T.text, letterSpacing: "-0.01em" }}>{s.nazev}</span>
+                  <span style={{ fontFamily: F.mono, fontSize: 10, color: T.muted, textAlign: "right" }}>{s.rok}</span>
+                  <span style={{ fontFamily: F.display, fontSize: 15, fontWeight: 500, color: s.hodnoceni >= 9 ? T.green : s.hodnoceni <= 4 && s.hodnoceni ? T.danger : T.text, textAlign: "right" }}>{s.hodnoceni ?? "—"}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div style={{ padding: "12px 36px", borderTop: `1px solid ${T.border}`, display: "flex", justifyContent: "flex-end", gap: 8 }}>
+          {isAdmin && <button onClick={() => { onClose(); onEdit(serial); }} style={{ ...btnSecondary, fontFamily: F.mono, fontSize: 11 }}>Upravit</button>}
+          <button onClick={onClose} style={{ ...btnSecondary, fontFamily: F.mono, fontSize: 11 }}>Zavřít</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SerialCard({ serial, herci, onEdit, onDelete, onDetail, isAdmin }) {
   const isMobile = useMobile();
   const [hover, setHover] = useState(false);
   const stavColor = { Dokoukáno: T.green, Sleduji: T.gold, Nedokončeno: T.orange, Plánuji: "#95a5a6" };
@@ -835,7 +949,7 @@ function SerialCard({ serial, herci, onEdit, onDelete, isAdmin }) {
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginBottom: 2 }}>
-            <a href={`https://www.imdb.com/find/?q=${encodeURIComponent(serial.nazev)}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: 14, fontWeight: 500, color: T.text, fontFamily: F.display, textDecoration: "none" }} onMouseEnter={e => e.target.style.color=T.gold} onMouseLeave={e => e.target.style.color=T.text}>{serial.nazev}</a>
+            <span onClick={() => onDetail && onDetail(serial)} style={{ fontSize: 14, fontWeight: 500, color: T.text, fontFamily: F.display, cursor: "pointer" }} onMouseEnter={e => e.target.style.color=T.gold} onMouseLeave={e => e.target.style.color=T.text}>{serial.nazev}</span>
             {serial.rok && <span style={{ color: T.muted, fontSize: 10, fontFamily: F.mono }}>{serial.rok}</span>}
           </div>
           {serial.ceskyNazev && <div style={{ fontSize: 11, color: T.muted, fontStyle: "italic", marginBottom: 3 }}>({serial.ceskyNazev})</div>}
@@ -876,9 +990,9 @@ function SerialCard({ serial, herci, onEdit, onDelete, isAdmin }) {
       {/* Název */}
       <div>
         <div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap" }}>
-          <a href={`https://www.imdb.com/find/?q=${encodeURIComponent(serial.nazev)}`} target="_blank" rel="noopener noreferrer"
-            style={{ fontFamily: F.display, fontSize: 15, fontWeight: 500, color: T.text, textDecoration: "none", letterSpacing: "-0.02em" }}
-            onMouseEnter={e => e.target.style.color=T.gold} onMouseLeave={e => e.target.style.color=T.text}>{serial.nazev}</a>
+          <span onClick={() => onDetail && onDetail(serial)}
+            style={{ fontFamily: F.display, fontSize: 15, fontWeight: 500, color: T.text, letterSpacing: "-0.02em", cursor: "pointer" }}
+            onMouseEnter={e => e.target.style.color=T.gold} onMouseLeave={e => e.target.style.color=T.text}>{serial.nazev}</span>
           {serial.rok && <span style={{ fontFamily: F.mono, fontSize: 10, color: T.muted }}>{serial.rok}</span>}
           {serial.rewatch && <span style={{ fontFamily: F.mono, fontSize: 9, color: T.muted, letterSpacing: "0.1em" }}>Rewatch</span>}
         </div>
@@ -1394,6 +1508,7 @@ function SerialyTab({ serialy, setSerialy, herci, isAdmin, userId }) {
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState(emptySerialFilters());
   const [sort, setSort] = useState("datum-desc");
+  const [detail, setDetail] = useState(null);
   const filtered = useMemo(() => {
     const f = filters;
     const list = serialy
@@ -1446,12 +1561,13 @@ function SerialyTab({ serialy, setSerialy, herci, isAdmin, userId }) {
       {filtered.length > 0 ? (
         <div style={{ border: `1px solid ${T.border}`, overflow: "hidden" }}>
           <SerialTableHeader />
-          {filtered.map(s => <SerialCard key={s.id} serial={s} herci={herci} onEdit={openEdit} onDelete={del} isAdmin={isAdmin} />)}
+          {filtered.map(s => <SerialCard key={s.id} serial={s} herci={herci} onEdit={openEdit} onDelete={del} onDetail={setDetail} isAdmin={isAdmin} />)}
         </div>
       ) : <Empty />}
       <Modal open={modal} title={editing ? "Upravit seriál" : "Přidat seriál"} onClose={() => setModal(false)} onSave={save} wide>
         <SerialForm data={form} setData={setForm} herci={herci} />
       </Modal>
+      {detail && <SerialDetailModal serial={detail} serialy={serialy} herci={herci} onClose={() => setDetail(null)} onEdit={s => { setDetail(null); openEdit(s); }} isAdmin={isAdmin} />}
     </div>
   );
 }
