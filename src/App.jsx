@@ -1124,11 +1124,13 @@ function ReziseriTab({ reziseri, setReziseri, filmy, isAdmin, userId }) {
   const save = async () => {
     if (!form.jmeno?.trim()) return;
     if (editing) {
-      const { error } = await supabase.from("reziseri").update(form).eq("id", form.id);
+      const { neoblibeny: _, ...formReziser } = form;
+      const { error } = await supabase.from("reziseri").update(formReziser).eq("id", form.id);
       if (error) { alert("Chyba při ukládání: " + error.message); return; }
       setReziseri(rs => rs.map(r => r.id === editing ? form : r));
     } else {
-      const { error } = await supabase.from("reziseri").insert({ ...form, user_id: userId });
+      const { neoblibeny: _, ...formReziser } = form;
+      const { error } = await supabase.from("reziseri").insert({ ...formReziser, user_id: userId });
       if (error) { alert("Chyba při ukládání: " + error.message); return; }
       setReziseri(rs => [...rs, form]);
     }
