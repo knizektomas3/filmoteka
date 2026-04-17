@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo, useCallback, useContext, createContext } from "react";
 import { supabase } from "./lib/supabase";
+import JSZip from "jszip";
 
 const MobileCtx = createContext(false);
 const useMobile = () => useContext(MobileCtx);
@@ -53,6 +54,38 @@ function useLS(key, init) {
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 const today = () => new Date().toISOString().slice(0, 10);
 const fmtDate = (s) => { if (!s) return ""; const [y, m, d] = s.split("-"); return `${d}.${m}.${y}`; };
+
+function toCSV(rows) {
+  if (!rows.length) return "";
+  const cols = Object.keys(rows[0]);
+  const escape = v => {
+    if (v == null) return "";
+    const s = Array.isArray(v) ? v.join(", ") : String(v);
+    return s.includes(",") || s.includes('"') || s.includes("\n") ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  return [cols.join(","), ...rows.map(r => cols.map(c => escape(r[c])).join(","))].join("\n");
+}
+
+async function stahnoutZalohu() {
+  const [filmy, serialy, herci, reziseri] = await Promise.all([
+    supabase.from("filmy").select("*").then(r => r.data ?? []),
+    supabase.from("serialy").select("*").then(r => r.data ?? []),
+    supabase.from("herci").select("*").then(r => r.data ?? []),
+    supabase.from("reziseri").select("*").then(r => r.data ?? []),
+  ]);
+  const zip = new JSZip();
+  zip.file("filmy.csv", toCSV(filmy));
+  zip.file("serialy.csv", toCSV(serialy));
+  zip.file("herci.csv", toCSV(herci));
+  zip.file("reziseri.csv", toCSV(reziseri));
+  const blob = await zip.generateAsync({ type: "blob" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `filmoteka-zaloha-${today()}.zip`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 const TMDB_KEY = import.meta.env.VITE_TMDB_API_KEY;
 async function fetchTmdbCeskyNazev(nazev, rok, typ = "movie") {
@@ -1621,7 +1654,10 @@ export default function App() {
             style={{ background: "none", border: "none", cursor: "pointer", color: T.muted, fontSize: 17, padding: "0 6px", display: "flex", alignItems: "center" }}
           >{darkMode ? "☀️" : "🌙"}</button>
           {isAdmin
-            ? <button onClick={() => supabase.auth.signOut()} style={{ background: "none", border: "none", cursor: "pointer", color: T.muted, fontSize: 11, padding: "0 8px", display: "flex", alignItems: "center" }}>Odhlásit</button>
+            ? <>
+                <button onClick={stahnoutZalohu} title="Stáhnout zálohu" style={{ background: "none", border: "none", cursor: "pointer", color: T.muted, fontSize: 15, padding: "0 4px", display: "flex", alignItems: "center" }}>💾</button>
+                <button onClick={() => supabase.auth.signOut()} style={{ background: "none", border: "none", cursor: "pointer", color: T.muted, fontSize: 11, padding: "0 8px", display: "flex", alignItems: "center" }}>Odhlásit</button>
+              </>
             : <button onClick={() => setLoginModal(true)} style={{ background: "none", border: "none", cursor: "pointer", color: T.muted, fontSize: 11, padding: "0 8px", display: "flex", alignItems: "center" }}>Přihlásit</button>
           }
         </div>
