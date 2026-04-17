@@ -525,10 +525,12 @@ function FilmCard({ film, herci, reziseri, onEdit, onDelete, isAdmin }) {
       )}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ marginBottom: 6 }}>
-          <a href={`https://www.imdb.com/find/?q=${encodeURIComponent(film.nazev)}${film.rok ? `+${film.rok}` : ''}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: 15, fontWeight: 600, color: T.text, fontFamily: "Playfair Display, serif", fontVariantNumeric: "lining-nums", textDecoration: "none" }} onMouseEnter={e => e.target.style.color=T.gold} onMouseLeave={e => e.target.style.color=T.text}>{film.nazev}</a>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 7 }}>
+            <a href={`https://www.imdb.com/find/?q=${encodeURIComponent(film.nazev)}${film.rok ? `+${film.rok}` : ''}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: 15, fontWeight: 600, color: T.text, fontFamily: "Playfair Display, serif", fontVariantNumeric: "lining-nums", textDecoration: "none" }} onMouseEnter={e => e.target.style.color=T.gold} onMouseLeave={e => e.target.style.color=T.text}>{film.nazev}</a>
+            {film.rok && <span style={{ color: T.muted, fontSize: 12, flexShrink: 0 }}>{film.rok}</span>}
+          </div>
           {film.ceskyNazev && <div style={{ fontSize: 12, color: T.muted, fontStyle: "italic" }}>({film.ceskyNazev})</div>}
           <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap", marginTop: film.ceskyNazev || isMobile ? 4 : 0 }}>
-            {film.rok && <span style={{ color: T.muted, fontSize: 12 }}>{film.rok}</span>}
             {film.platforma && <Badge color={T.goldBg ? T.gold : T.muted}>{film.platforma}</Badge>}
             {film.ceskyFilm && <Badge color={T.blue}>CZ</Badge>}
             {film.rewatch && <Badge color={T.purple}>↺ Rewatch</Badge>}
@@ -579,10 +581,12 @@ function SerialCard({ serial, herci, onEdit, onDelete, isAdmin }) {
       )}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ marginBottom: 6 }}>
-          <a href={`https://www.imdb.com/find/?q=${encodeURIComponent(serial.nazev)}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: 15, fontWeight: 600, color: T.text, fontFamily: "Playfair Display, serif", fontVariantNumeric: "lining-nums", textDecoration: "none" }} onMouseEnter={e => e.target.style.color=T.gold} onMouseLeave={e => e.target.style.color=T.text}>{serial.nazev}</a>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 7 }}>
+            <a href={`https://www.imdb.com/find/?q=${encodeURIComponent(serial.nazev)}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: 15, fontWeight: 600, color: T.text, fontFamily: "Playfair Display, serif", fontVariantNumeric: "lining-nums", textDecoration: "none" }} onMouseEnter={e => e.target.style.color=T.gold} onMouseLeave={e => e.target.style.color=T.text}>{serial.nazev}</a>
+            {serial.rok && <span style={{ color: T.muted, fontSize: 12, flexShrink: 0 }}>{serial.rok}</span>}
+          </div>
           {serial.ceskyNazev && <div style={{ fontSize: 12, color: T.muted, fontStyle: "italic" }}>({serial.ceskyNazev})</div>}
           <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap", marginTop: serial.ceskyNazev || isMobile ? 4 : 0 }}>
-            {serial.rok && <span style={{ color: T.muted, fontSize: 12 }}>{serial.rok}</span>}
             {serial.platforma && <Badge color={T.gold}>{serial.platforma}</Badge>}
             {serial.stav && <Badge color={stavColor[serial.stav] ?? T.muted}>{serial.stav}</Badge>}
           </div>
