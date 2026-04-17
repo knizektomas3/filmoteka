@@ -872,7 +872,7 @@ function OsobaDetailModal({ osoba, filmy, serialy, onClose, onToggle, showNeobli
   );
 }
 
-const OSOBA_COLS = "minmax(0,1fr) 130px 60px 54px 130px";
+const OSOBA_COLS = "minmax(0,1fr) 130px 80px 80px 130px";
 
 function OsobaTableHeader() {
   return (
@@ -883,7 +883,7 @@ function OsobaTableHeader() {
       letterSpacing: "0.14em", textTransform: "uppercase",
       background: T.surface,
     }}>
-      <div>jméno</div><div>národnost</div><div>nar.</div><div style={{ textAlign: "right" }}>záz.</div><div></div>
+      <div>jméno</div><div>národnost</div><div>narozen</div><div style={{ textAlign: "right" }}>záznamy</div><div></div>
     </div>
   );
 }
