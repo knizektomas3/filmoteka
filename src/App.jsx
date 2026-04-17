@@ -733,7 +733,7 @@ function SerialCard({ serial, herci, onEdit, onDelete, isAdmin }) {
       <div style={{ fontFamily: F.mono, fontSize: 11, color: T.muted }}>
         {serial.zacatekSledovani ? fmtDate(serial.zacatekSledovani) : "—"}
         {serial.konecSledovani && serial.konecSledovani !== serial.zacatekSledovani && (
-          <div style={{ opacity: 0.6 }}>→ {fmtDate(serial.konecSledovani)}</div>
+          <div>→ {fmtDate(serial.konecSledovani)}</div>
         )}
       </div>
       {/* Název */}
