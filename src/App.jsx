@@ -1725,7 +1725,6 @@ function BilanceFilmyTab({ filmy }) {
         </div>
         <div style={{ display: 'flex', gap: isMobile ? 24 : 40, flexWrap: 'wrap' }}>
           <BilStat label="Celkem" value={filmy.length} />
-          <BilStat label="Hodnoceno" value={rated.length} />
           <BilStat label="Průměr" value={avg} color={T.gold} sub={`modus ${ratingMode.label}`} />
           {totalHod > 0 && <BilStat label="Hodin" value={totalHod} sub={`${totalMin} min`} />}
         </div>
@@ -1834,7 +1833,6 @@ function BilanceSerialyTab({ serialy }) {
           <BilStat label="Celkem" value={serialy.length} />
           <BilStat label="Průměr" value={avg} color={T.gold} sub={`z ${rated.length} hodnocených`} />
           <BilStat label={`Rok ${currentYear}`} value={thisYear.length} />
-          {totalDilu > 0 && <BilStat label="Dílů celkem" value={totalDilu} />}
         </div>
       </div>
 
