@@ -886,7 +886,7 @@ const FILM_SORT_OPTS = [
   { value: "rok-asc", label: "Rok výroby ↑" },
 ];
 
-function FilmyTab({ filmy, setFilmy, herci, reziseri, isAdmin }) {
+function FilmyTab({ filmy, setFilmy, herci, reziseri, isAdmin, userId }) {
   const [q, setQ] = useState("");
   const [modal, setModal] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -927,7 +927,7 @@ function FilmyTab({ filmy, setFilmy, herci, reziseri, isAdmin }) {
       if (error) { alert("Chyba při ukládání: " + error.message); return; }
       setFilmy(fs => fs.map(f => f.id === editing ? form : f));
     } else {
-      const { error } = await supabase.from("filmy").insert(form);
+      const { error } = await supabase.from("filmy").insert({ ...form, user_id: userId });
       if (error) { alert("Chyba při ukládání: " + error.message); return; }
       setFilmy(fs => [form, ...fs]);
     }
@@ -962,7 +962,7 @@ const SERIAL_SORT_OPTS = [
   { value: "rok-asc", label: "Rok výroby ↑" },
 ];
 
-function SerialyTab({ serialy, setSerialy, herci, isAdmin }) {
+function SerialyTab({ serialy, setSerialy, herci, isAdmin, userId }) {
   const [q, setQ] = useState("");
   const [modal, setModal] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -1001,7 +1001,7 @@ function SerialyTab({ serialy, setSerialy, herci, isAdmin }) {
       if (error) { alert("Chyba při ukládání: " + error.message); return; }
       setSerialy(ss => ss.map(s => s.id === editing ? form : s));
     } else {
-      const { error } = await supabase.from("serialy").insert(form);
+      const { error } = await supabase.from("serialy").insert({ ...form, user_id: userId });
       if (error) { alert("Chyba při ukládání: " + error.message); return; }
       setSerialy(ss => [form, ...ss]);
     }
@@ -1027,7 +1027,7 @@ function SerialyTab({ serialy, setSerialy, herci, isAdmin }) {
   );
 }
 
-function HerciTab({ herci, setHerci, filmy, serialy, isAdmin }) {
+function HerciTab({ herci, setHerci, filmy, serialy, isAdmin, userId }) {
   const [q, setQ] = useState("");
   const [modal, setModal] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -1060,7 +1060,7 @@ function HerciTab({ herci, setHerci, filmy, serialy, isAdmin }) {
       if (error) { alert("Chyba při ukládání: " + error.message); return; }
       setHerci(hs => hs.map(h => h.id === editing ? form : h));
     } else {
-      const { error } = await supabase.from("herci").insert(form);
+      const { error } = await supabase.from("herci").insert({ ...form, user_id: userId });
       if (error) { alert("Chyba při ukládání: " + error.message); return; }
       setHerci(hs => [...hs, form]);
     }
@@ -1096,7 +1096,7 @@ function HerciTab({ herci, setHerci, filmy, serialy, isAdmin }) {
   );
 }
 
-function ReziseriTab({ reziseri, setReziseri, filmy, isAdmin }) {
+function ReziseriTab({ reziseri, setReziseri, filmy, isAdmin, userId }) {
   const [q, setQ] = useState("");
   const [modal, setModal] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -1128,7 +1128,7 @@ function ReziseriTab({ reziseri, setReziseri, filmy, isAdmin }) {
       if (error) { alert("Chyba při ukládání: " + error.message); return; }
       setReziseri(rs => rs.map(r => r.id === editing ? form : r));
     } else {
-      const { error } = await supabase.from("reziseri").insert(form);
+      const { error } = await supabase.from("reziseri").insert({ ...form, user_id: userId });
       if (error) { alert("Chyba při ukládání: " + error.message); return; }
       setReziseri(rs => [...rs, form]);
     }
@@ -1338,7 +1338,7 @@ function BilanceSerialyTab({ serialy }) {
 // ─── WATCHLIST ────────────────────────────────────────────────────────────────
 const emptyWatchItem = () => ({ id: uid(), typ: "film", nazev: "", platforma: "", rok: "", zanry: [], poznamka: "" });
 
-function WatchlistTab({ watchlist, setWatchlist, isAdmin }) {
+function WatchlistTab({ watchlist, setWatchlist, isAdmin, userId }) {
   const [q, setQ] = useState("");
   const [modal, setModal] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -1368,7 +1368,7 @@ function WatchlistTab({ watchlist, setWatchlist, isAdmin }) {
       if (error) { alert("Chyba při ukládání: " + error.message); return; }
       setWatchlist(w => w.map(x => x.id === editing ? form : x));
     } else {
-      const { error } = await supabase.from("watchlist").insert(form);
+      const { error } = await supabase.from("watchlist").insert({ ...form, user_id: userId });
       if (error) { alert("Chyba při ukládání: " + error.message); return; }
       setWatchlist(w => [form, ...w]);
     }
@@ -1646,13 +1646,13 @@ export default function App() {
           <div style={{ textAlign: "center", color: T.muted, padding: "80px 0", fontSize: 14 }}>Načítám...</div>
         ) : (
           <>
-            {tab === "filmy" && <FilmyTab filmy={filmy} setFilmy={setFilmy} herci={herci} reziseri={reziseri} isAdmin={isAdmin} />}
-            {tab === "serialy" && <SerialyTab serialy={serialy} setSerialy={setSerialy} herci={herci} isAdmin={isAdmin} />}
-            {tab === "herci" && <HerciTab herci={herci} setHerci={setHerci} filmy={filmy} serialy={serialy} isAdmin={isAdmin} />}
-            {tab === "reziseri" && <ReziseriTab reziseri={reziseri} setReziseri={setReziseri} filmy={filmy} isAdmin={isAdmin} />}
+            {tab === "filmy" && <FilmyTab filmy={filmy} setFilmy={setFilmy} herci={herci} reziseri={reziseri} isAdmin={isAdmin} userId={session?.user?.id} />}
+            {tab === "serialy" && <SerialyTab serialy={serialy} setSerialy={setSerialy} herci={herci} isAdmin={isAdmin} userId={session?.user?.id} />}
+            {tab === "herci" && <HerciTab herci={herci} setHerci={setHerci} filmy={filmy} serialy={serialy} isAdmin={isAdmin} userId={session?.user?.id} />}
+            {tab === "reziseri" && <ReziseriTab reziseri={reziseri} setReziseri={setReziseri} filmy={filmy} isAdmin={isAdmin} userId={session?.user?.id} />}
             {tab === "bilance-filmy" && <BilanceFilmyTab filmy={filmy} />}
             {tab === "bilance-serialy" && <BilanceSerialyTab serialy={serialy} />}
-            {tab === "watchlist" && <WatchlistTab watchlist={watchlist} setWatchlist={setWatchlist} isAdmin={isAdmin} />}
+            {tab === "watchlist" && <WatchlistTab watchlist={watchlist} setWatchlist={setWatchlist} isAdmin={isAdmin} userId={session?.user?.id} />}
           </>
         )}
       </div>
