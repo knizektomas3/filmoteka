@@ -1441,11 +1441,9 @@ function DashKV({ label, value, suffix }) {
   );
 }
 
-function DashboardTab({ filmy, serialy, watchlist }) {
+function DashboardTab({ filmy, serialy, herci, reziseri }) {
   const isMobile = useMobile();
   const now = new Date();
-  const hour = now.getHours();
-  const greeting = hour < 12 ? "Dobré ráno" : hour < 18 ? "Dobré odpoledne" : "Dobrý večer";
   const dayNames = ["Neděle","Pondělí","Úterý","Středa","Čtvrtek","Pátek","Sobota"];
   const monthNames = ["ledna","února","března","dubna","května","června","července","srpna","září","října","listopadu","prosince"];
   const dateStr = `${dayNames[now.getDay()]} ${now.getDate()}. ${monthNames[now.getMonth()]} ${now.getFullYear()}`;
@@ -1485,7 +1483,21 @@ function DashboardTab({ filmy, serialy, watchlist }) {
   const maxGenre = topGenres[0]?.[1] || 1;
   const totalItems = filmy.length + serialy.length || 1;
 
-  const watchlistPreview = watchlist.slice(0, 4);
+  // Top režiséři
+  const topReziseri = reziseri
+    .map(r => ({ ...r, count: filmy.filter(f => (f.reziserIds ?? []).includes(r.id)).length }))
+    .filter(r => r.count > 0)
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
+  const maxReziser = topReziseri[0]?.count || 1;
+
+  // Top herci
+  const topHerci = herci
+    .map(h => ({ ...h, count: filmy.filter(f => (f.herciIds ?? []).includes(h.id)).length + serialy.filter(s => (s.herciIds ?? []).includes(h.id)).length }))
+    .filter(h => h.count > 0)
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
+  const maxHerec = topHerci[0]?.count || 1;
 
   return (
     <div>
@@ -1500,11 +1512,8 @@ function DashboardTab({ filmy, serialy, watchlist }) {
           <div style={{ fontFamily: F.mono, fontSize: 11, color: T.muted, letterSpacing: "0.18em", textTransform: "uppercase", marginBottom: 10 }}>
             {dateStr}
           </div>
-          <h1 style={{ margin: 0, fontFamily: F.display, fontSize: isMobile ? 40 : 66, fontWeight: 500, color: T.text, letterSpacing: "-0.04em", lineHeight: 0.92 }}>
-            {greeting}, <em style={{ fontStyle: "italic", fontWeight: 400 }}>Pavle</em><span style={{ color: T.gold, fontWeight: 600 }}>.</span>
-          </h1>
-          <div style={{ maxWidth: 500, marginTop: 14, fontSize: 15, color: T.inkSoft, lineHeight: 1.55 }}>
-            Ve sbírce máš <strong style={{ color: T.text }}>{filmy.length} filmů</strong> a <strong style={{ color: T.text }}>{serialy.length} seriálů</strong>. Průměrné hodnocení <strong style={{ color: T.text }}>{avgRating}</strong>.
+          <div style={{ maxWidth: 500, fontSize: 15, color: T.inkSoft, lineHeight: 1.55 }}>
+            Ve sbírce je <strong style={{ color: T.text }}>{filmy.length} filmů</strong> a <strong style={{ color: T.text }}>{serialy.length} seriálů</strong>. Průměrné hodnocení <strong style={{ color: T.text }}>{avgRating}</strong>.
           </div>
         </div>
         {!isMobile && (
@@ -1591,20 +1600,41 @@ function DashboardTab({ filmy, serialy, watchlist }) {
             </div>
           )}
 
-          {/* Watchlist */}
-          {watchlistPreview.length > 0 && (
-            <div>
-              <DashSectionHead title="Watchlist" meta={`${watchlist.length} položek`} tight />
-              {watchlistPreview.map((x, i) => (
-                <div key={x.id} style={{
-                  padding: "9px 0",
-                  borderBottom: i < watchlistPreview.length - 1 ? `1px solid ${T.border}` : "none",
+          {/* Top režiséři */}
+          {topReziseri.length > 0 && (
+            <div style={{ marginBottom: 32 }}>
+              <DashSectionHead title="Režiséři" meta="Top 5" tight />
+              {topReziseri.map((r, i) => (
+                <div key={r.id} style={{
+                  display: "grid", gridTemplateColumns: "1fr 1fr 28px",
+                  gap: 10, padding: "7px 0", alignItems: "center",
+                  borderBottom: i < topReziseri.length - 1 ? `1px solid ${T.border}` : "none",
                 }}>
-                  <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-                    <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 500, color: T.text, letterSpacing: "-0.01em" }}>{x.nazev}</span>
-                    {x.rok && <span style={{ fontFamily: F.mono, fontSize: 10, color: T.muted }}>{x.rok}</span>}
+                  <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 500, color: T.text, letterSpacing: "-0.01em" }}>{r.jmeno}</span>
+                  <div style={{ height: 3, background: T.border, position: "relative" }}>
+                    <div style={{ position: "absolute", inset: 0, width: `${(r.count / maxReziser) * 100}%`, background: i === 0 ? T.gold : T.text }} />
                   </div>
-                  {x.platforma && <div style={{ fontFamily: F.mono, fontSize: 10, color: T.muted, marginTop: 2 }}>{x.platforma}</div>}
+                  <span style={{ fontFamily: F.mono, fontSize: 11, color: T.text, textAlign: "right" }}>{r.count}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Top herci */}
+          {topHerci.length > 0 && (
+            <div>
+              <DashSectionHead title="Herci" meta="Top 5" tight />
+              {topHerci.map((h, i) => (
+                <div key={h.id} style={{
+                  display: "grid", gridTemplateColumns: "1fr 1fr 28px",
+                  gap: 10, padding: "7px 0", alignItems: "center",
+                  borderBottom: i < topHerci.length - 1 ? `1px solid ${T.border}` : "none",
+                }}>
+                  <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 500, color: T.text, letterSpacing: "-0.01em" }}>{h.jmeno}</span>
+                  <div style={{ height: 3, background: T.border, position: "relative" }}>
+                    <div style={{ position: "absolute", inset: 0, width: `${(h.count / maxHerec) * 100}%`, background: i === 0 ? T.gold : T.text }} />
+                  </div>
+                  <span style={{ fontFamily: F.mono, fontSize: 11, color: T.text, textAlign: "right" }}>{h.count}</span>
                 </div>
               ))}
             </div>
@@ -2042,7 +2072,7 @@ export default function App() {
           <div style={{ textAlign: "center", color: T.muted, padding: "80px 0", fontSize: 14 }}>Načítám...</div>
         ) : (
           <>
-            {tab === "dashboard" && <DashboardTab filmy={filmy} serialy={serialy} watchlist={watchlist} />}
+            {tab === "dashboard" && <DashboardTab filmy={filmy} serialy={serialy} herci={herci} reziseri={reziseri} />}
             {tab === "filmy" && <FilmyTab filmy={filmy} setFilmy={setFilmy} herci={herci} reziseri={reziseri} isAdmin={isAdmin} userId={session?.user?.id} />}
             {tab === "serialy" && <SerialyTab serialy={serialy} setSerialy={setSerialy} herci={herci} isAdmin={isAdmin} userId={session?.user?.id} />}
             {tab === "herci" && <HerciTab herci={herci} setHerci={setHerci} filmy={filmy} serialy={serialy} isAdmin={isAdmin} userId={session?.user?.id} />}
