@@ -664,55 +664,115 @@ function FilmCard({ film, herci, reziseri, onEdit, onDelete, isAdmin }) {
   );
 }
 
+const SERIAL_COLS = "80px minmax(0,1fr) 120px 100px 60px 160px";
+
+function SerialTableHeader() {
+  return (
+    <div style={{
+      display: "grid", gridTemplateColumns: SERIAL_COLS, gap: 12,
+      padding: "8px 16px", borderBottom: `1px solid ${T.border}`,
+      fontFamily: F.mono, fontSize: 9, color: T.muted,
+      letterSpacing: "0.14em", textTransform: "uppercase",
+      background: T.surface,
+    }}>
+      <div>datum</div><div>název</div><div>žánr</div><div>platforma</div><div>série</div><div style={{ paddingLeft: 16 }}>hodnocení</div>
+    </div>
+  );
+}
+
 function SerialCard({ serial, herci, onEdit, onDelete, isAdmin }) {
   const isMobile = useMobile();
   const [hover, setHover] = useState(false);
   const stavColor = { Dokoukáno: T.green, Sleduji: T.gold, Nedokončeno: T.orange, Plánuji: "#95a5a6" };
   const serialHerci = herci.filter(h => (serial.herciIds ?? []).includes(h.id));
-  const ratingBorder = serial.hodnoceni >= 9 ? "#27ae60" : serial.hodnoceni <= 4 && serial.hodnoceni > 0 ? "#c0392b" : null;
-  return (
-    <div style={{ ...cardStyle, borderColor: ratingBorder ?? (hover ? T.borderHover : T.border), ...(ratingBorder ? { background: ratingBorder === "#27ae60" ? "rgba(39,174,96,0.13)" : "rgba(192,57,43,0.13)" } : {}) }}
-      onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
-      {(serial.zacatekSledovani || serial.konecSledovani) && (
-        <div style={{ flexShrink: 0, marginRight: 14, textAlign: "center", minWidth: 54 }}>
-          {serial.zacatekSledovani && (
-            <>
-              <div style={{ fontSize: 13, fontWeight: 500, color: T.gold, lineHeight: 1, fontFamily: F.mono }}>{fmtDate(serial.zacatekSledovani).slice(0, 5)}</div>
-              <div style={{ fontSize: 10, color: T.muted, marginTop: 1 }}>{fmtDate(serial.zacatekSledovani).slice(6)}</div>
-            </>
-          )}
-          {serial.konecSledovani && (
-            <>
-              <div style={{ fontSize: 10, color: T.dimmer, margin: "4px 0 2px" }}>—</div>
-              <div style={{ fontSize: 13, fontWeight: 500, color: T.gold, lineHeight: 1, fontFamily: F.mono }}>{fmtDate(serial.konecSledovani).slice(0, 5)}</div>
-              <div style={{ fontSize: 10, color: T.muted, marginTop: 1 }}>{fmtDate(serial.konecSledovani).slice(6)}</div>
-            </>
-          )}
+  const ratingColor = serial.hodnoceni >= 9 ? T.green : serial.hodnoceni <= 4 && serial.hodnoceni > 0 ? T.danger : T.text;
+  const rowHighlight = serial.hodnoceni >= 9 ? T.green + "18" : serial.hodnoceni <= 4 && serial.hodnoceni > 0 ? T.danger + "18" : null;
+
+  if (isMobile) {
+    return (
+      <div style={{ ...cardStyle, borderColor: hover ? T.borderHover : T.border, ...(rowHighlight ? { background: rowHighlight } : {}) }}
+        onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
+        <div style={{ flexShrink: 0, marginRight: 12, minWidth: 38 }}>
+          {serial.zacatekSledovani && <div style={{ fontSize: 13, fontWeight: 500, color: T.gold, lineHeight: 1, fontFamily: F.mono }}>{fmtDate(serial.zacatekSledovani).slice(0, 5)}</div>}
+          {serial.zacatekSledovani && <div style={{ fontSize: 10, color: T.muted, marginTop: 2, fontFamily: F.mono }}>{fmtDate(serial.zacatekSledovani).slice(6)}</div>}
         </div>
-      )}
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ marginBottom: 6 }}>
-          <div style={{ display: "flex", alignItems: "baseline", gap: 7 }}>
-            <a href={`https://www.imdb.com/find/?q=${encodeURIComponent(serial.nazev)}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: 15, fontWeight: 600, color: T.text, fontFamily: F.display, fontVariantNumeric: "lining-nums", textDecoration: "none" }} onMouseEnter={e => e.target.style.color=T.gold} onMouseLeave={e => e.target.style.color=T.text}>{serial.nazev}</a>
-            {serial.rok && <span style={{ color: T.muted, fontSize: 11, flexShrink: 0, fontFamily: F.mono }}>{serial.rok}</span>}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginBottom: 2 }}>
+            <a href={`https://www.imdb.com/find/?q=${encodeURIComponent(serial.nazev)}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: 14, fontWeight: 500, color: T.text, fontFamily: F.display, textDecoration: "none" }} onMouseEnter={e => e.target.style.color=T.gold} onMouseLeave={e => e.target.style.color=T.text}>{serial.nazev}</a>
+            {serial.rok && <span style={{ color: T.muted, fontSize: 10, fontFamily: F.mono }}>{serial.rok}</span>}
           </div>
-          {serial.ceskyNazev && <div style={{ fontSize: 12, color: T.muted, fontStyle: "italic" }}>({serial.ceskyNazev})</div>}
-          <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap", marginTop: serial.ceskyNazev || isMobile ? 4 : 0 }}>
-            {serial.platforma && <Badge color={T.gold}>{serial.platforma}</Badge>}
-            {serial.stav && <Badge color={stavColor[serial.stav] ?? T.muted}>{serial.stav}</Badge>}
+          {serial.ceskyNazev && <div style={{ fontSize: 11, color: T.muted, fontStyle: "italic", marginBottom: 3 }}>({serial.ceskyNazev})</div>}
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
+            {serial.platforma && <span style={{ fontFamily: F.mono, fontSize: 10, color: T.muted }}>{serial.platforma}</span>}
+            {serial.stav && <span style={{ fontFamily: F.mono, fontSize: 10, color: stavColor[serial.stav] ?? T.muted }}>{serial.stav}</span>}
+            {(serial.zanry ?? []).length > 0 && <span style={{ fontSize: 11, color: T.muted }}>{serial.zanry.join(", ")}</span>}
           </div>
         </div>
-        {(serial.zanry ?? []).length > 0 && <div style={{ marginBottom: 6 }}><TagList items={serial.zanry} /></div>}
-        <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
-          {serial.serie && (Array.isArray(serial.serie) ? serial.serie.length > 0 : serial.serie) && <span style={{ fontSize: 12, color: T.muted }}>Série: {Array.isArray(serial.serie) ? serial.serie.join(", ") : serial.serie}</span>}
-          {serial.pocetDilu && <span style={{ fontSize: 12, color: T.muted }}>{serial.pocetDilu} dílů</span>}
-          {serialHerci.length > 0 && <span style={{ fontSize: 12, color: T.muted }}>👤 {serialHerci.map(h => h.jmeno).join(", ")}</span>}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6, marginLeft: 10, flexShrink: 0 }}>
+          {serial.hodnoceni && <span style={{ fontFamily: F.display, fontSize: 18, fontWeight: 500, color: ratingColor, lineHeight: 1 }}>{serial.hodnoceni}</span>}
+          <div style={{ display: "flex", gap: 4 }}>
+            {isAdmin && <button onClick={() => onEdit(serial)} style={btnSecondary}>Upravit</button>}
+            {isAdmin && <button onClick={() => onDelete(serial.id)} style={btnDanger}>✕</button>}
+          </div>
         </div>
       </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginLeft: 14, flexShrink: 0 }}>
-        <Rating value={serial.hodnoceni} />
-        {isAdmin && <button onClick={() => onEdit(serial)} style={btnSecondary}>Upravit</button>}
-        {isAdmin && <button onClick={() => onDelete(serial.id)} style={btnDanger}>✕</button>}
+    );
+  }
+
+  return (
+    <div style={{
+      display: "grid", gridTemplateColumns: SERIAL_COLS, gap: 12,
+      padding: "12px 16px", alignItems: "center",
+      borderBottom: `1px solid ${T.border}`,
+      background: hover ? T.elevated : rowHighlight ?? T.surface,
+      transition: "background 0.1s",
+      cursor: "default",
+    }}
+      onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
+      {/* Datum */}
+      <div style={{ fontFamily: F.mono, fontSize: 11, color: T.muted }}>
+        {serial.zacatekSledovani ? fmtDate(serial.zacatekSledovani) : "—"}
+        {serial.konecSledovani && serial.konecSledovani !== serial.zacatekSledovani && (
+          <div style={{ opacity: 0.6 }}>→ {fmtDate(serial.konecSledovani)}</div>
+        )}
+      </div>
+      {/* Název */}
+      <div>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap" }}>
+          <a href={`https://www.imdb.com/find/?q=${encodeURIComponent(serial.nazev)}`} target="_blank" rel="noopener noreferrer"
+            style={{ fontFamily: F.display, fontSize: 15, fontWeight: 500, color: T.text, textDecoration: "none", letterSpacing: "-0.02em" }}
+            onMouseEnter={e => e.target.style.color=T.gold} onMouseLeave={e => e.target.style.color=T.text}>{serial.nazev}</a>
+          {serial.rok && <span style={{ fontFamily: F.mono, fontSize: 10, color: T.muted }}>{serial.rok}</span>}
+          {serial.rewatch && <span style={{ fontFamily: F.mono, fontSize: 9, color: T.muted, letterSpacing: "0.1em" }}>Rewatch</span>}
+        </div>
+        {serial.ceskyNazev && <div style={{ fontFamily: F.sans, fontSize: 11, color: T.muted, fontStyle: "italic", marginTop: 1 }}>({serial.ceskyNazev})</div>}
+        {serialHerci.length > 0 && (
+          <div style={{ fontFamily: F.mono, fontSize: 10, color: T.muted, marginTop: 3, letterSpacing: "0.02em" }}>
+            {serialHerci.map(h => h.jmeno).join(", ")}
+          </div>
+        )}
+      </div>
+      {/* Žánr */}
+      <div style={{ fontFamily: F.sans, fontSize: 11, color: T.muted }}>{(serial.zanry ?? []).join(", ")}</div>
+      {/* Platforma */}
+      <div style={{ fontFamily: F.mono, fontSize: 11, color: T.muted }}>{serial.platforma}</div>
+      {/* Série */}
+      <div style={{ fontFamily: F.mono, fontSize: 11, color: T.muted }}>
+        {serial.serie && (Array.isArray(serial.serie) ? serial.serie.length > 0 : serial.serie)
+          ? (Array.isArray(serial.serie) ? serial.serie.join(", ") : serial.serie)
+          : ""}
+        {serial.pocetDilu ? <div style={{ fontSize: 10 }}>{serial.pocetDilu} dílů</div> : null}
+      </div>
+      {/* Hodnocení + stav + admin */}
+      <div style={{ display: "flex", alignItems: "center", gap: 8, paddingLeft: 16 }}>
+        <div>
+          <Rating value={serial.hodnoceni} />
+          {serial.stav && <div style={{ fontFamily: F.mono, fontSize: 9, color: stavColor[serial.stav] ?? T.muted, letterSpacing: "0.1em", marginTop: 3 }}>{serial.stav}</div>}
+        </div>
+        {isAdmin && <div style={{ display: "flex", gap: 4, marginLeft: "auto" }}>
+          <button onClick={() => onEdit(serial)} style={{ ...btnSecondary, padding: "3px 8px", fontSize: 10 }}>upravit</button>
+          <button onClick={() => onDelete(serial.id)} style={{ ...btnDanger, padding: "3px 8px", fontSize: 10 }}>✕</button>
+        </div>}
       </div>
     </div>
   );
@@ -1139,8 +1199,12 @@ function SerialyTab({ serialy, setSerialy, herci, isAdmin, userId }) {
       <TabHeader count={filtered.length} onAdd={isAdmin ? openAdd : null} q={q} setQ={setQ} addLabel="Přidat seriál" onToggleFilters={() => setShowFilters(v => !v)} activeFilterCount={activeFilterCount} sortOptions={SERIAL_SORT_OPTS} sort={sort} setSort={setSort} />
       {showFilters && <SerialyFilters filters={filters} setFilters={setFilters} serialy={serialy} />}
       {activeFilterCount > 0 && <button onClick={() => setFilters(emptySerialFilters())} style={{ ...btnSecondary, fontSize: 11, marginBottom: 12, color: T.danger, borderColor: T.danger }}>× Zrušit filtry</button>}
-      {filtered.map(s => <SerialCard key={s.id} serial={s} herci={herci} onEdit={openEdit} onDelete={del} isAdmin={isAdmin} />)}
-      {filtered.length === 0 && <Empty />}
+      {filtered.length > 0 ? (
+        <div style={{ border: `1px solid ${T.border}`, overflow: "hidden" }}>
+          <SerialTableHeader />
+          {filtered.map(s => <SerialCard key={s.id} serial={s} herci={herci} onEdit={openEdit} onDelete={del} isAdmin={isAdmin} />)}
+        </div>
+      ) : <Empty />}
       <Modal open={modal} title={editing ? "Upravit seriál" : "Přidat seriál"} onClose={() => setModal(false)} onSave={save} wide>
         <SerialForm data={form} setData={setForm} herci={herci} />
       </Modal>
