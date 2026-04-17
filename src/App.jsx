@@ -513,8 +513,9 @@ function FilmCard({ film, herci, reziseri, onEdit, onDelete, isAdmin }) {
   const [hover, setHover] = useState(false);
   const filmReziseri = reziseri.filter(r => (film.reziserIds ?? []).includes(r.id));
   const filmHerci = herci.filter(h => (film.herciIds ?? []).includes(h.id));
+  const ratingBorder = film.hodnoceni >= 9 ? "#27ae60" : film.hodnoceni <= 4 && film.hodnoceni > 0 ? "#c0392b" : null;
   return (
-    <div style={{ ...cardStyle, borderColor: hover ? T.borderHover : T.border }}
+    <div style={{ ...cardStyle, borderColor: ratingBorder ?? (hover ? T.borderHover : T.border), ...(ratingBorder ? { background: ratingBorder === "#27ae60" ? "rgba(39,174,96,0.07)" : "rgba(192,57,43,0.07)" } : {}) }}
       onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
       {film.datum && (
         <div style={{ flexShrink: 0, marginRight: 14, textAlign: "center", minWidth: 44 }}>
@@ -543,7 +544,7 @@ function FilmCard({ film, herci, reziseri, onEdit, onDelete, isAdmin }) {
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: isMobile ? 6 : 10, marginLeft: isMobile ? 8 : 14, flexShrink: 0 }}>
         <Rating value={film.hodnoceni} />
-        {isAdmin && !isMobile && <button onClick={() => onEdit(film)} style={btnSecondary}>Upravit</button>}
+        {isAdmin && <button onClick={() => onEdit(film)} style={btnSecondary}>Upravit</button>}
         {isAdmin && <button onClick={() => onDelete(film.id)} style={btnDanger}>✕</button>}
       </div>
     </div>
@@ -555,8 +556,9 @@ function SerialCard({ serial, herci, onEdit, onDelete, isAdmin }) {
   const [hover, setHover] = useState(false);
   const stavColor = { Dokoukáno: T.green, Sleduji: T.gold, Nedokončeno: T.orange, Plánuji: "#95a5a6" };
   const serialHerci = herci.filter(h => (serial.herciIds ?? []).includes(h.id));
+  const ratingBorder = serial.hodnoceni >= 9 ? "#27ae60" : serial.hodnoceni <= 4 && serial.hodnoceni > 0 ? "#c0392b" : null;
   return (
-    <div style={{ ...cardStyle, borderColor: hover ? T.borderHover : T.border }}
+    <div style={{ ...cardStyle, borderColor: ratingBorder ?? (hover ? T.borderHover : T.border), ...(ratingBorder ? { background: ratingBorder === "#27ae60" ? "rgba(39,174,96,0.07)" : "rgba(192,57,43,0.07)" } : {}) }}
       onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
       {(serial.zacatekSledovani || serial.konecSledovani) && (
         <div style={{ flexShrink: 0, marginRight: 14, textAlign: "center", minWidth: 54 }}>
@@ -594,7 +596,7 @@ function SerialCard({ serial, herci, onEdit, onDelete, isAdmin }) {
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginLeft: 14, flexShrink: 0 }}>
         <Rating value={serial.hodnoceni} />
-        {isAdmin && !isMobile && <button onClick={() => onEdit(serial)} style={btnSecondary}>Upravit</button>}
+        {isAdmin && <button onClick={() => onEdit(serial)} style={btnSecondary}>Upravit</button>}
         {isAdmin && <button onClick={() => onDelete(serial.id)} style={btnDanger}>✕</button>}
       </div>
     </div>
