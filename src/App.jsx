@@ -1060,7 +1060,7 @@ function HerciTab({ herci, setHerci, filmy, serialy, isAdmin, userId }) {
       if (error) { alert("Chyba při ukládání: " + error.message); return; }
       setHerci(hs => hs.map(h => h.id === editing ? form : h));
     } else {
-      const { error } = await supabase.from("herci").insert({ ...form, user_id: userId });
+      const { error } = await supabase.from("herci").insert(form);
       if (error) { alert("Chyba při ukládání: " + error.message); return; }
       setHerci(hs => [...hs, form]);
     }
@@ -1130,7 +1130,7 @@ function ReziseriTab({ reziseri, setReziseri, filmy, isAdmin, userId }) {
       setReziseri(rs => rs.map(r => r.id === editing ? form : r));
     } else {
       const { neoblibeny: _, ...formReziser } = form;
-      const { error } = await supabase.from("reziseri").insert({ ...formReziser, user_id: userId });
+      const { error } = await supabase.from("reziseri").insert(formReziser);
       if (error) { alert("Chyba při ukládání: " + error.message); return; }
       setReziseri(rs => [...rs, form]);
     }
