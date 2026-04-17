@@ -1860,6 +1860,7 @@ function DashKV({ label, value, suffix }) {
 
 function DashboardTab({ filmy, serialy, herci, reziseri }) {
   const isMobile = useMobile();
+  const [detail, setDetail] = useState(null);
   const now = new Date();
   const dayNames = ["Neděle","Pondělí","Úterý","Středa","Čtvrtek","Pátek","Sobota"];
   const monthNames = ["ledna","února","března","dubna","května","června","července","srpna","září","října","listopadu","prosince"];
@@ -1958,7 +1959,7 @@ function DashboardTab({ filmy, serialy, herci, reziseri }) {
               <div style={{ fontFamily: F.mono, fontSize: 11, color: T.muted }}>{fmtDate(item._date).slice(0, 5)}</div>
               <div>
                 <div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap" }}>
-                  <span style={{ fontFamily: F.display, fontSize: 17, fontWeight: 500, color: T.text, letterSpacing: "-0.02em" }}>{item.nazev}</span>
+                  <span onClick={() => setDetail(item)} style={{ fontFamily: F.display, fontSize: 17, fontWeight: 500, color: T.text, letterSpacing: "-0.02em", cursor: "pointer" }} onMouseEnter={e => e.target.style.color=T.gold} onMouseLeave={e => e.target.style.color=T.text}>{item.nazev}</span>
                   {item.rok && <span style={{ fontFamily: F.mono, fontSize: 10, color: T.muted }}>{item.rok}</span>}
                   {item._type === "serial" && <span style={{ fontFamily: F.mono, fontSize: 9, color: T.muted, letterSpacing: "0.1em" }}>seriál</span>}
                   {item.rewatch && <span style={{ fontFamily: F.mono, fontSize: 9, color: T.muted, letterSpacing: "0.1em" }}>Rewatch</span>}
@@ -2058,6 +2059,8 @@ function DashboardTab({ filmy, serialy, herci, reziseri }) {
           )}
         </div>
       </div>
+      {detail && detail._type === "film" && <FilmDetailModal film={detail} filmy={filmy} herci={herci} reziseri={reziseri} onClose={() => setDetail(null)} onEdit={() => {}} isAdmin={false} />}
+      {detail && detail._type === "serial" && <SerialDetailModal serial={detail} serialy={serialy} herci={herci} onClose={() => setDetail(null)} onEdit={() => {}} isAdmin={false} />}
     </div>
   );
 }
