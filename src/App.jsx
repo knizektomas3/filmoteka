@@ -563,7 +563,7 @@ function FilmTableHeader() {
       letterSpacing: "0.14em", textTransform: "uppercase",
       background: T.surface,
     }}>
-      <div>datum</div><div>název</div><div>žánr</div><div>platforma</div><div style={{ textAlign: "right" }}>stopáž</div><div>hodnocení</div>
+      <div>datum</div><div>název</div><div>žánr</div><div>platforma</div><div>stopáž</div><div style={{ paddingLeft: 16 }}>hodnocení</div>
     </div>
   );
 }
@@ -629,7 +629,6 @@ function FilmCard({ film, herci, reziseri, onEdit, onDelete, isAdmin }) {
           {film.rok && <span style={{ fontFamily: F.mono, fontSize: 10, color: T.muted }}>{film.rok}</span>}
           {film.ceskyFilm && <span style={{ fontFamily: F.mono, fontSize: 9, color: T.gold, letterSpacing: "0.1em" }}>CZ</span>}
           {film.rewatch && <span style={{ fontFamily: F.mono, fontSize: 9, color: T.muted, letterSpacing: "0.1em" }}>Rewatch</span>}
-          {film.doporuceni && <span style={{ fontFamily: F.mono, fontSize: 9, color: T.green, letterSpacing: "0.1em" }}>Doporučení</span>}
         </div>
         {film.ceskyNazev && <div style={{ fontFamily: F.sans, fontSize: 11, color: T.muted, fontStyle: "italic", marginTop: 1 }}>({film.ceskyNazev})</div>}
         {(filmReziseri.length > 0 || filmHerci.length > 0) && (
@@ -649,10 +648,13 @@ function FilmCard({ film, herci, reziseri, onEdit, onDelete, isAdmin }) {
       {/* Platforma */}
       <div style={{ fontFamily: F.mono, fontSize: 11, color: T.muted }}>{film.platforma}</div>
       {/* Stopáž */}
-      <div style={{ fontFamily: F.mono, fontSize: 11, color: T.muted, textAlign: "right" }}>{film.stopaz || ""}</div>
+      <div style={{ fontFamily: F.mono, fontSize: 11, color: T.muted }}>{film.stopaz || ""}</div>
       {/* Hodnocení + admin */}
-      <div style={{ display: "flex", alignItems: "center", gap: 8, paddingLeft: 10 }}>
-        <Rating value={film.hodnoceni} />
+      <div style={{ display: "flex", alignItems: "center", gap: 8, paddingLeft: 16 }}>
+        <div>
+          <Rating value={film.hodnoceni} />
+          {film.doporuceni && <div style={{ fontFamily: F.mono, fontSize: 9, color: T.green, letterSpacing: "0.1em", marginTop: 3 }}>Doporučení</div>}
+        </div>
         {isAdmin && <div style={{ display: "flex", gap: 4, marginLeft: "auto" }}>
           <button onClick={() => onEdit(film)} style={{ ...btnSecondary, padding: "3px 8px", fontSize: 10 }}>upravit</button>
           <button onClick={() => onDelete(film.id)} style={{ ...btnDanger, padding: "3px 8px", fontSize: 10 }}>✕</button>
