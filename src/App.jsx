@@ -552,7 +552,7 @@ let cardStyle = {
   transition: "border-color 0.15s",
 };
 
-const FILM_COLS = "80px minmax(0,1fr) 130px 100px 44px 90px";
+const FILM_COLS = "80px minmax(0,1fr) 120px 100px 54px 160px";
 
 function FilmTableHeader() {
   return (
@@ -563,7 +563,7 @@ function FilmTableHeader() {
       letterSpacing: "0.14em", textTransform: "uppercase",
       background: T.surface,
     }}>
-      <div>datum</div><div>název</div><div>žánr</div><div>platforma</div><div style={{ textAlign: "right" }}>min</div><div>hodnocení</div>
+      <div>datum</div><div>název</div><div>žánr</div><div>platforma</div><div style={{ textAlign: "right" }}>stopáž</div><div>hodnocení</div>
     </div>
   );
 }
@@ -616,42 +616,42 @@ function FilmCard({ film, herci, reziseri, onEdit, onDelete, isAdmin }) {
     }}
       onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
       {/* Datum */}
-      <div>
-        <div style={{ fontFamily: F.mono, fontSize: 12, color: T.muted }}>
-          {film.datum ? fmtDate(film.datum).slice(0, 5) : "—"}
-          {film.datum && <span style={{ opacity: 0.5, fontSize: 10 }}> {fmtDate(film.datum).slice(6)}</span>}
-        </div>
+      <div style={{ fontFamily: F.mono, fontSize: 11, color: T.muted }}>
+        {film.datum ? fmtDate(film.datum) : "—"}
       </div>
       {/* Název */}
       <div>
         <div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap" }}>
           <a href={`https://www.imdb.com/find/?q=${encodeURIComponent(film.nazev)}${film.rok ? `+${film.rok}` : ''}`} target="_blank" rel="noopener noreferrer"
-            style={{ fontFamily: F.display, fontSize: 16, fontWeight: 500, color: T.text, textDecoration: "none", letterSpacing: "-0.02em" }}
+            style={{ fontFamily: F.display, fontSize: 15, fontWeight: 500, color: T.text, textDecoration: "none", letterSpacing: "-0.02em" }}
             onMouseEnter={e => e.target.style.color=T.gold} onMouseLeave={e => e.target.style.color=T.text}>{film.nazev}</a>
           {film.rok && <span style={{ fontFamily: F.mono, fontSize: 10, color: T.muted }}>{film.rok}</span>}
           {film.ceskyFilm && <span style={{ fontFamily: F.mono, fontSize: 9, color: T.gold, letterSpacing: "0.1em" }}>CZ</span>}
-          {film.rewatch && <span style={{ fontFamily: F.mono, fontSize: 9, color: T.muted, letterSpacing: "0.1em" }}>↺ RW</span>}
-          {film.doporuceni && <span style={{ fontFamily: F.mono, fontSize: 9, color: T.green, letterSpacing: "0.1em" }}>★ REC</span>}
+          {film.rewatch && <span style={{ fontFamily: F.mono, fontSize: 9, color: T.muted, letterSpacing: "0.1em" }}>Rewatch</span>}
+          {film.doporuceni && <span style={{ fontFamily: F.mono, fontSize: 9, color: T.green, letterSpacing: "0.1em" }}>Doporučení</span>}
         </div>
         {film.ceskyNazev && <div style={{ fontFamily: F.sans, fontSize: 11, color: T.muted, fontStyle: "italic", marginTop: 1 }}>({film.ceskyNazev})</div>}
         {(filmReziseri.length > 0 || filmHerci.length > 0) && (
-          <div style={{ fontFamily: F.mono, fontSize: 10, color: T.muted, marginTop: 3, letterSpacing: "0.02em" }}>
-            {filmReziseri.length > 0 && filmReziseri.map(r => r.jmeno).join(", ")}
-            {filmReziseri.length > 0 && filmHerci.length > 0 && " · "}
-            {filmHerci.length > 0 && filmHerci.map(h => h.jmeno).join(", ")}
+          <div style={{ fontFamily: F.mono, fontSize: 10, marginTop: 3, letterSpacing: "0.02em" }}>
+            {filmReziseri.length > 0 && (
+              <span style={{ color: T.gold }}>réž. {filmReziseri.map(r => r.jmeno).join(", ")}</span>
+            )}
+            {filmReziseri.length > 0 && filmHerci.length > 0 && <span style={{ color: T.muted }}> · </span>}
+            {filmHerci.length > 0 && (
+              <span style={{ color: T.muted }}>{filmHerci.map(h => h.jmeno).join(", ")}</span>
+            )}
           </div>
         )}
       </div>
       {/* Žánr */}
-      <div style={{ fontFamily: F.sans, fontSize: 12, color: T.muted }}>{(film.zanry ?? []).join(", ")}</div>
+      <div style={{ fontFamily: F.sans, fontSize: 11, color: T.muted }}>{(film.zanry ?? []).join(", ")}</div>
       {/* Platforma */}
       <div style={{ fontFamily: F.mono, fontSize: 11, color: T.muted }}>{film.platforma}</div>
-      {/* Délka */}
+      {/* Stopáž */}
       <div style={{ fontFamily: F.mono, fontSize: 11, color: T.muted, textAlign: "right" }}>{film.stopaz || ""}</div>
-      {/* Hodnocení */}
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+      {/* Hodnocení + admin */}
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
         <Rating value={film.hodnoceni} />
-        {film.hodnoceni && <span style={{ fontFamily: F.display, fontSize: 18, fontWeight: 500, color: ratingColor, letterSpacing: "-0.03em", lineHeight: 1 }}>{film.hodnoceni}</span>}
         {isAdmin && <div style={{ display: "flex", gap: 4, marginLeft: "auto" }}>
           <button onClick={() => onEdit(film)} style={{ ...btnSecondary, padding: "3px 8px", fontSize: 10 }}>upravit</button>
           <button onClick={() => onDelete(film.id)} style={{ ...btnDanger, padding: "3px 8px", fontSize: 10 }}>✕</button>
