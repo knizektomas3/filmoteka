@@ -142,7 +142,7 @@ function Modal({ open, title, onClose, onSave, children, wide }) {
           padding: "14px 20px", borderBottom: `1px solid ${T.border}`,
           display: "flex", justifyContent: "space-between", alignItems: "center",
         }}>
-          <span style={{ fontSize: 14, fontWeight: 600, color: T.text, fontFamily: "Cormorant Garamond, serif", letterSpacing: "0.04em" }}>{title}</span>
+          <span style={{ fontSize: 14, fontWeight: 600, color: T.text, fontFamily: "Playfair Display, serif", letterSpacing: "0.04em" }}>{title}</span>
           <button onClick={onClose} style={{ background: "none", border: "none", color: T.muted, cursor: "pointer", fontSize: 20, lineHeight: 1, padding: "0 4px" }}>×</button>
         </div>
         <div style={{ padding: "18px 20px", overflowY: "auto", flex: 1 }}>{children}</div>
@@ -483,7 +483,7 @@ function Rating({ value }) {
   if (!value) return <span style={{ color: T.muted, fontSize: 12 }}>—</span>;
   const color = value >= 8 ? T.green : value >= 6 ? T.gold : value >= 4 ? T.orange : T.danger;
   return (
-    <span style={{ fontSize: 16, fontWeight: 700, color, fontFamily: "Cormorant Garamond, serif" }}>
+    <span style={{ fontSize: 16, fontWeight: 700, color, fontFamily: "Playfair Display, serif" }}>
       {value}<span style={{ fontSize: 10, color: T.muted, fontFamily: "inherit" }}>/10</span>
     </span>
   );
@@ -519,13 +519,13 @@ function FilmCard({ film, herci, reziseri, onEdit, onDelete, isAdmin }) {
       onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
       {film.datum && (
         <div style={{ flexShrink: 0, marginRight: 14, textAlign: "center", minWidth: 44 }}>
-          <div style={{ fontSize: 18, fontWeight: 800, color: T.gold, lineHeight: 1, fontFamily: "Cormorant Garamond, serif" }}>{fmtDate(film.datum).slice(0, 5)}</div>
+          <div style={{ fontSize: 18, fontWeight: 800, color: T.gold, lineHeight: 1, fontFamily: "Playfair Display, serif" }}>{fmtDate(film.datum).slice(0, 5)}</div>
           <div style={{ fontSize: 10, color: T.muted, marginTop: 1 }}>{fmtDate(film.datum).slice(6)}</div>
         </div>
       )}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ marginBottom: 6 }}>
-          <a href={`https://www.imdb.com/find/?q=${encodeURIComponent(film.nazev)}${film.rok ? `+${film.rok}` : ''}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: 15, fontWeight: 600, color: T.text, fontFamily: "Cormorant Garamond, serif", textDecoration: "none" }} onMouseEnter={e => e.target.style.color=T.gold} onMouseLeave={e => e.target.style.color=T.text}>{film.nazev}</a>
+          <a href={`https://www.imdb.com/find/?q=${encodeURIComponent(film.nazev)}${film.rok ? `+${film.rok}` : ''}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: 15, fontWeight: 600, color: T.text, fontFamily: "Playfair Display, serif", textDecoration: "none" }} onMouseEnter={e => e.target.style.color=T.gold} onMouseLeave={e => e.target.style.color=T.text}>{film.nazev}</a>
           {film.ceskyNazev && <div style={{ fontSize: 12, color: T.muted, fontStyle: "italic" }}>({film.ceskyNazev})</div>}
           <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap", marginTop: film.ceskyNazev || isMobile ? 4 : 0 }}>
             {film.rok && <span style={{ color: T.muted, fontSize: 12 }}>{film.rok}</span>}
@@ -564,14 +564,14 @@ function SerialCard({ serial, herci, onEdit, onDelete, isAdmin }) {
         <div style={{ flexShrink: 0, marginRight: 14, textAlign: "center", minWidth: 54 }}>
           {serial.zacatekSledovani && (
             <>
-              <div style={{ fontSize: 15, fontWeight: 800, color: T.gold, lineHeight: 1, fontFamily: "Cormorant Garamond, serif" }}>{fmtDate(serial.zacatekSledovani).slice(0, 5)}</div>
+              <div style={{ fontSize: 15, fontWeight: 800, color: T.gold, lineHeight: 1, fontFamily: "Playfair Display, serif" }}>{fmtDate(serial.zacatekSledovani).slice(0, 5)}</div>
               <div style={{ fontSize: 10, color: T.muted, marginTop: 1 }}>{fmtDate(serial.zacatekSledovani).slice(6)}</div>
             </>
           )}
           {serial.konecSledovani && (
             <>
               <div style={{ fontSize: 10, color: T.dimmer, margin: "4px 0 2px" }}>—</div>
-              <div style={{ fontSize: 15, fontWeight: 800, color: T.gold, lineHeight: 1, fontFamily: "Cormorant Garamond, serif" }}>{fmtDate(serial.konecSledovani).slice(0, 5)}</div>
+              <div style={{ fontSize: 15, fontWeight: 800, color: T.gold, lineHeight: 1, fontFamily: "Playfair Display, serif" }}>{fmtDate(serial.konecSledovani).slice(0, 5)}</div>
               <div style={{ fontSize: 10, color: T.muted, marginTop: 1 }}>{fmtDate(serial.konecSledovani).slice(6)}</div>
             </>
           )}
@@ -579,7 +579,7 @@ function SerialCard({ serial, herci, onEdit, onDelete, isAdmin }) {
       )}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ marginBottom: 6 }}>
-          <a href={`https://www.imdb.com/find/?q=${encodeURIComponent(serial.nazev)}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: 15, fontWeight: 600, color: T.text, fontFamily: "Cormorant Garamond, serif", textDecoration: "none" }} onMouseEnter={e => e.target.style.color=T.gold} onMouseLeave={e => e.target.style.color=T.text}>{serial.nazev}</a>
+          <a href={`https://www.imdb.com/find/?q=${encodeURIComponent(serial.nazev)}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: 15, fontWeight: 600, color: T.text, fontFamily: "Playfair Display, serif", textDecoration: "none" }} onMouseEnter={e => e.target.style.color=T.gold} onMouseLeave={e => e.target.style.color=T.text}>{serial.nazev}</a>
           {serial.ceskyNazev && <div style={{ fontSize: 12, color: T.muted, fontStyle: "italic" }}>({serial.ceskyNazev})</div>}
           <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap", marginTop: serial.ceskyNazev || isMobile ? 4 : 0 }}>
             {serial.rok && <span style={{ color: T.muted, fontSize: 12 }}>{serial.rok}</span>}
@@ -635,7 +635,7 @@ function OsobaDetailModal({ osoba, filmy, serialy, onClose, onToggle, showNeobli
       <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: isMobile ? "12px 12px 0 0" : 8, width: isMobile ? "100%" : 600, maxWidth: "100%", maxHeight: "92vh", display: "flex", flexDirection: "column" }}>
         <div style={{ padding: "14px 20px", borderBottom: `1px solid ${T.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
-            <span style={{ fontSize: 16, fontWeight: 700, color: T.text, fontFamily: "Cormorant Garamond, serif" }}>{osoba.jmeno}</span>
+            <span style={{ fontSize: 16, fontWeight: 700, color: T.text, fontFamily: "Playfair Display, serif" }}>{osoba.jmeno}</span>
             <span style={{ fontSize: 12, color: T.muted, marginLeft: 10 }}>
               {osoba.narodnost}{osoba.rokNarozeni ? ` · *${osoba.rokNarozeni}` : ""}
               {osoba.zijici === "Ne" ? " · †" : ""}
@@ -659,7 +659,7 @@ function OsobaDetailModal({ osoba, filmy, serialy, onClose, onToggle, showNeobli
               {osobaFilmy.map(f => (
                 <div key={f.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "7px 0", borderBottom: `1px solid ${T.border}` }}>
                   <div>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: T.text, fontFamily: "Cormorant Garamond, serif" }}>{f.nazev}</span>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: T.text, fontFamily: "Playfair Display, serif" }}>{f.nazev}</span>
                     {f.zanry?.length > 0 && <span style={{ fontSize: 11, color: T.muted, marginLeft: 8 }}>{f.zanry.join(", ")}</span>}
                   </div>
                   <div style={{ display: "flex", gap: 10, alignItems: "center", flexShrink: 0, marginLeft: 12 }}>
@@ -677,7 +677,7 @@ function OsobaDetailModal({ osoba, filmy, serialy, onClose, onToggle, showNeobli
               {osobaSerialy.map(s => (
                 <div key={s.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "7px 0", borderBottom: `1px solid ${T.border}` }}>
                   <div>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: T.text, fontFamily: "Cormorant Garamond, serif" }}>{s.nazev}</span>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: T.text, fontFamily: "Playfair Display, serif" }}>{s.nazev}</span>
                     {s.zanry?.length > 0 && <span style={{ fontSize: 11, color: T.muted, marginLeft: 8 }}>{s.zanry.join(", ")}</span>}
                   </div>
                   <div style={{ display: "flex", gap: 10, alignItems: "center", flexShrink: 0, marginLeft: 12 }}>
@@ -704,7 +704,7 @@ function OsobaCard({ osoba, onEdit, onDelete, onDetail, filmCount, isAdmin }) {
       onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
       onClick={() => onDetail(osoba)}>
       <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", flex: 1 }}>
-        <span style={{ fontSize: 14, fontWeight: 600, color: T.text, fontFamily: "Cormorant Garamond, serif" }}>{osoba.jmeno}</span>
+        <span style={{ fontSize: 14, fontWeight: 600, color: T.text, fontFamily: "Playfair Display, serif" }}>{osoba.jmeno}</span>
         {osoba.narodnost && <span style={{ fontSize: 12, color: T.muted }}>{osoba.narodnost}</span>}
         {osoba.rokNarozeni && <span style={{ fontSize: 12, color: T.muted }}>*{osoba.rokNarozeni}</span>}
         {osoba.zijici === "Ne" && <Badge color={T.muted}>†</Badge>}
@@ -1216,7 +1216,7 @@ function BilStat({ label, value, sub, color = T.text }) {
   return (
     <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 8, padding: '16px 20px' }}>
       <div style={{ fontSize: 10, color: T.muted, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>{label}</div>
-      <div style={{ fontSize: 30, fontWeight: 800, color, fontFamily: 'Cormorant Garamond, serif', lineHeight: 1 }}>{value}</div>
+      <div style={{ fontSize: 30, fontWeight: 800, color, fontFamily: 'Playfair Display, serif', lineHeight: 1 }}>{value}</div>
       {sub && <div style={{ fontSize: 11, color: T.muted, marginTop: 5 }}>{sub}</div>}
     </div>
   );
@@ -1271,7 +1271,7 @@ function BilanceFilmyTab({ filmy }) {
 
   return (
     <div>
-      <div style={{ fontSize: 22, fontWeight: 700, color: T.text, fontFamily: 'Cormorant Garamond, serif', marginBottom: 4 }}>Bilance filmů</div>
+      <div style={{ fontSize: 22, fontWeight: 700, color: T.text, fontFamily: 'Playfair Display, serif', marginBottom: 4 }}>Bilance filmů</div>
       <div style={{ fontSize: 13, color: T.muted, marginBottom: 24 }}>Celkový přehled sledování</div>
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(3, 1fr)', gap: 12, marginBottom: 16 }}>
         <BilStat label="Filmů celkem" value={filmy.length} />
@@ -1323,7 +1323,7 @@ function BilanceSerialyTab({ serialy }) {
 
   return (
     <div>
-      <div style={{ fontSize: 22, fontWeight: 700, color: T.text, fontFamily: 'Cormorant Garamond, serif', marginBottom: 4 }}>Bilance seriálů</div>
+      <div style={{ fontSize: 22, fontWeight: 700, color: T.text, fontFamily: 'Playfair Display, serif', marginBottom: 4 }}>Bilance seriálů</div>
       <div style={{ fontSize: 13, color: T.muted, marginBottom: 24 }}>Celkový přehled sledování</div>
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(3, 1fr)', gap: 12, marginBottom: 16 }}>
         <BilStat label="Dosledováno celkem" value={finished.length} sub={`z ${serialy.length} v databázi`} />
@@ -1396,7 +1396,7 @@ function WatchlistTab({ watchlist, setWatchlist, isAdmin, userId }) {
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 24 }}>
           {Object.entries((() => { const m = {}; watchlist.forEach(x => { const k = x.platforma||"Bez platformy"; m[k]=(m[k]||0)+1; }); return m; })()).sort((a,b) => b[1]-a[1]).map(([plat, cnt]) => (
             <div key={plat} style={{ background: T.elevated, border: `1px solid ${T.border}`, borderRadius: 8, padding: "10px 16px", display: "flex", flexDirection: "column", alignItems: "center", minWidth: 80 }}>
-              <div style={{ fontSize: 22, fontWeight: 800, color: T.gold, fontFamily: "Cormorant Garamond, serif", lineHeight: 1 }}>{cnt}</div>
+              <div style={{ fontSize: 22, fontWeight: 800, color: T.gold, fontFamily: "Playfair Display, serif", lineHeight: 1 }}>{cnt}</div>
               <div style={{ fontSize: 11, color: T.muted, marginTop: 3, textAlign: "center" }}>{plat}</div>
             </div>
           ))}
@@ -1415,7 +1415,7 @@ function WatchlistTab({ watchlist, setWatchlist, isAdmin, userId }) {
             <div key={item.id} style={{ ...cardStyle, borderColor: T.border }}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 4, flexWrap: "wrap" }}>
-                  <span style={{ fontSize: 15, fontWeight: 600, color: T.text, fontFamily: "Cormorant Garamond, serif" }}>{item.nazev}</span>
+                  <span style={{ fontSize: 15, fontWeight: 600, color: T.text, fontFamily: "Playfair Display, serif" }}>{item.nazev}</span>
                   {item.rok && <span style={{ color: T.muted, fontSize: 12 }}>{item.rok}</span>}
                   <Badge color={item.typ === "serial" ? T.blue : T.purple}>{item.typ === "serial" ? "Seriál" : "Film"}</Badge>
                 </div>
@@ -1490,7 +1490,7 @@ function ResetPasswordModal({ open, onDone }) {
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2000 }}>
       <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 8, width: 340, padding: 28 }}>
-        <div style={{ fontSize: 16, fontWeight: 700, color: T.text, fontFamily: "Cormorant Garamond, serif", marginBottom: 20 }}>Nastavit nové heslo</div>
+        <div style={{ fontSize: 16, fontWeight: 700, color: T.text, fontFamily: "Playfair Display, serif", marginBottom: 20 }}>Nastavit nové heslo</div>
         {done ? (
           <div style={{ fontSize: 13, color: T.green, textAlign: "center", padding: "12px 0" }}>✓ Heslo bylo změněno.</div>
         ) : (
@@ -1530,7 +1530,7 @@ function LoginModal({ open, onClose }) {
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>
       <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 8, width: 340, padding: 28 }}>
-        <div style={{ fontSize: 16, fontWeight: 700, color: T.text, fontFamily: "Cormorant Garamond, serif", marginBottom: 20 }}>Přihlásit se</div>
+        <div style={{ fontSize: 16, fontWeight: 700, color: T.text, fontFamily: "Playfair Display, serif", marginBottom: 20 }}>Přihlásit se</div>
         <div style={{ marginBottom: 12 }}>
           <label style={{ fontSize: 10, color: T.muted, textTransform: "uppercase", letterSpacing: "0.1em", display: "block", marginBottom: 4 }}>E-mail</label>
           <input type="email" value={email} onChange={e => setEmail(e.target.value)} style={inp} onKeyDown={e => e.key === "Enter" && login()} />
@@ -1613,7 +1613,7 @@ export default function App() {
       <div style={{ borderBottom: `1px solid ${T.border}`, background: T.surface, position: "sticky", top: 0, zIndex: 100 }}>
         {/* Logo + akce */}
         <div style={{ padding: "0 16px", display: "flex", alignItems: "center", height: isMobile ? 46 : 52, gap: 4 }}>
-          <div style={{ fontFamily: "Cormorant Garamond, serif", fontSize: isMobile ? 16 : 19, fontWeight: 700, color: T.gold, letterSpacing: "0.12em", flexShrink: 0 }}>
+          <div style={{ fontFamily: "Playfair Display, serif", fontSize: isMobile ? 16 : 19, fontWeight: 700, color: T.gold, letterSpacing: "0.12em", flexShrink: 0 }}>
             FILMOTÉKA
           </div>
           <div style={{ flex: 1 }} />
