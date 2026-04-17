@@ -934,6 +934,7 @@ function FilmyTab({ filmy, setFilmy, herci, reziseri, isAdmin, userId }) {
     setModal(false);
   };
   const del = async id => {
+    if (!window.confirm("Opravdu chceš smazat tento záznam?")) return;
     await supabase.from("filmy").delete().eq("id", id);
     setFilmy(fs => fs.filter(f => f.id !== id));
   };
@@ -1008,6 +1009,7 @@ function SerialyTab({ serialy, setSerialy, herci, isAdmin, userId }) {
     setModal(false);
   };
   const del = async id => {
+    if (!window.confirm("Opravdu chceš smazat tento záznam?")) return;
     await supabase.from("serialy").delete().eq("id", id);
     setSerialy(ss => ss.filter(s => s.id !== id));
   };
@@ -1067,6 +1069,7 @@ function HerciTab({ herci, setHerci, filmy, serialy, isAdmin, userId }) {
     setModal(false);
   };
   const del = async id => {
+    if (!window.confirm("Opravdu chceš smazat tento záznam?")) return;
     await supabase.from("herci").delete().eq("id", id);
     setHerci(hs => hs.filter(h => h.id !== id));
   };
@@ -1137,6 +1140,7 @@ function ReziseriTab({ reziseri, setReziseri, filmy, isAdmin, userId }) {
     setModal(false);
   };
   const del = async id => {
+    if (!window.confirm("Opravdu chceš smazat tento záznam?")) return;
     await supabase.from("reziseri").delete().eq("id", id);
     setReziseri(rs => rs.filter(r => r.id !== id));
   };
@@ -1377,6 +1381,7 @@ function WatchlistTab({ watchlist, setWatchlist, isAdmin, userId }) {
     setModal(false);
   };
   const del = async id => {
+    if (!window.confirm("Opravdu chceš smazat tento záznam?")) return;
     await supabase.from("watchlist").delete().eq("id", id);
     setWatchlist(w => w.filter(x => x.id !== id));
   };
