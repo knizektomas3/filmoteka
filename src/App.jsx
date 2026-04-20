@@ -719,17 +719,17 @@ function FilmCard({ film, herci, reziseri, onEdit, onDelete, onDetail, isAdmin }
         onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
         <div style={{ flexShrink: 0, marginRight: 12, minWidth: 38 }}>
           <div style={{ fontSize: 13, fontWeight: 500, color: T.gold, lineHeight: 1, fontFamily: F.mono }}>{fmtDate(film.datum).slice(0, 5)}</div>
-          <div style={{ fontSize: 10, color: T.muted, marginTop: 2, fontFamily: F.mono }}>{fmtDate(film.datum).slice(6)}</div>
+          <div style={{ fontSize: 10, color: T.inkMuted, marginTop: 2, fontFamily: F.mono }}>{fmtDate(film.datum).slice(6)}</div>
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginBottom: 2 }}>
             <span onClick={() => onDetail && onDetail(film)} style={{ fontSize: 14, fontWeight: 500, color: T.text, fontFamily: F.display, cursor: "pointer" }} onMouseEnter={e => e.target.style.color=T.gold} onMouseLeave={e => e.target.style.color=T.text}>{film.nazev}</span>
-            {film.rok && <span style={{ color: T.muted, fontSize: 10, fontFamily: F.mono }}>{film.rok}</span>}
+            {film.rok && <span style={{ color: T.inkMuted, fontSize: 10, fontFamily: F.mono }}>{film.rok}</span>}
           </div>
-          {film.ceskyNazev && <div style={{ fontSize: 11, color: T.muted, fontStyle: "italic", marginBottom: 3 }}>({film.ceskyNazev})</div>}
+          {film.ceskyNazev && <div style={{ fontSize: 11, color: T.inkMuted, fontStyle: "italic", marginBottom: 3 }}>({film.ceskyNazev})</div>}
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
-            {film.platforma && <span style={{ fontFamily: F.mono, fontSize: 10, color: T.muted }}>{film.platforma}</span>}
-            {(film.zanry ?? []).length > 0 && <span style={{ fontSize: 11, color: T.muted }}>{film.zanry.join(", ")}</span>}
+            {film.platforma && <span style={{ fontFamily: F.mono, fontSize: 10, color: T.inkMuted }}>{film.platforma}</span>}
+            {(film.zanry ?? []).length > 0 && <span style={{ fontSize: 11, color: T.inkMuted }}>{film.zanry.join(", ")}</span>}
           </div>
         </div>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6, marginLeft: 10, flexShrink: 0 }}>
@@ -754,7 +754,7 @@ function FilmCard({ film, herci, reziseri, onEdit, onDelete, onDetail, isAdmin }
     }}
       onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
       {/* Datum */}
-      <div style={{ fontFamily: F.mono, fontSize: 11, color: T.muted }}>
+      <div style={{ fontFamily: F.mono, fontSize: 11, color: T.inkMuted }}>
         {film.datum ? fmtDate(film.datum) : "—"}
       </div>
       {/* Název */}
@@ -763,29 +763,29 @@ function FilmCard({ film, herci, reziseri, onEdit, onDelete, onDetail, isAdmin }
           <span onClick={() => onDetail && onDetail(film)}
             style={{ fontFamily: F.display, fontSize: 15, fontWeight: 500, color: T.text, letterSpacing: "-0.02em", cursor: "pointer" }}
             onMouseEnter={e => e.target.style.color=T.gold} onMouseLeave={e => e.target.style.color=T.text}>{film.nazev}</span>
-          {film.rok && <span style={{ fontFamily: F.mono, fontSize: 10, color: T.muted }}>{film.rok}</span>}
+          {film.rok && <span style={{ fontFamily: F.mono, fontSize: 10, color: T.inkMuted }}>{film.rok}</span>}
           {film.ceskyFilm && <span style={{ fontFamily: F.mono, fontSize: 9, color: T.gold, letterSpacing: "0.1em" }}>CZ</span>}
-          {film.rewatch && <span style={{ fontFamily: F.mono, fontSize: 9, color: T.muted, letterSpacing: "0.1em" }}>Rewatch</span>}
+          {film.rewatch && <span style={{ fontFamily: F.mono, fontSize: 9, color: T.inkMuted, letterSpacing: "0.1em" }}>Rewatch</span>}
         </div>
-        {film.ceskyNazev && <div style={{ fontFamily: F.sans, fontSize: 11, color: T.muted, fontStyle: "italic", marginTop: 1 }}>({film.ceskyNazev})</div>}
+        {film.ceskyNazev && <div style={{ fontFamily: F.sans, fontSize: 11, color: T.inkMuted, fontStyle: "italic", marginTop: 1 }}>({film.ceskyNazev})</div>}
         {(filmReziseri.length > 0 || filmHerci.length > 0) && (
           <div style={{ fontFamily: F.mono, fontSize: 10, marginTop: 3, letterSpacing: "0.02em" }}>
             {filmReziseri.length > 0 && (
               <span style={{ color: T.gold }}>rež. {filmReziseri.map(r => r.jmeno).join(", ")}</span>
             )}
-            {filmReziseri.length > 0 && filmHerci.length > 0 && <span style={{ color: T.muted }}> · </span>}
+            {filmReziseri.length > 0 && filmHerci.length > 0 && <span style={{ color: T.inkMuted }}> · </span>}
             {filmHerci.length > 0 && (
-              <span style={{ color: T.muted }}>{filmHerci.map(h => h.jmeno).join(", ")}</span>
+              <span style={{ color: T.inkMuted }}>{filmHerci.map(h => h.jmeno).join(", ")}</span>
             )}
           </div>
         )}
       </div>
       {/* Žánr */}
-      <div style={{ fontFamily: F.sans, fontSize: 11, color: T.muted }}>{(film.zanry ?? []).join(", ")}</div>
+      <div style={{ fontFamily: F.sans, fontSize: 11, color: T.inkMuted }}>{(film.zanry ?? []).join(", ")}</div>
       {/* Platforma */}
-      <div style={{ fontFamily: F.mono, fontSize: 11, color: T.muted }}>{film.platforma}</div>
+      <div style={{ fontFamily: F.mono, fontSize: 11, color: T.inkMuted }}>{film.platforma}</div>
       {/* Stopáž */}
-      <div style={{ fontFamily: F.mono, fontSize: 11, color: T.muted }}>{film.stopaz || ""}</div>
+      <div style={{ fontFamily: F.mono, fontSize: 11, color: T.inkMuted }}>{film.stopaz || ""}</div>
       {/* Hodnocení + admin */}
       <div style={{ display: "flex", alignItems: "center", gap: 8, paddingLeft: 16 }}>
         <div>
@@ -939,18 +939,18 @@ function SerialCard({ serial, herci, onEdit, onDelete, onDetail, isAdmin }) {
         onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
         <div style={{ flexShrink: 0, marginRight: 12, minWidth: 38 }}>
           {serial.zacatekSledovani && <div style={{ fontSize: 13, fontWeight: 500, color: T.gold, lineHeight: 1, fontFamily: F.mono }}>{fmtDate(serial.zacatekSledovani).slice(0, 5)}</div>}
-          {serial.zacatekSledovani && <div style={{ fontSize: 10, color: T.muted, marginTop: 2, fontFamily: F.mono }}>{fmtDate(serial.zacatekSledovani).slice(6)}</div>}
+          {serial.zacatekSledovani && <div style={{ fontSize: 10, color: T.inkMuted, marginTop: 2, fontFamily: F.mono }}>{fmtDate(serial.zacatekSledovani).slice(6)}</div>}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginBottom: 2 }}>
             <span onClick={() => onDetail && onDetail(serial)} style={{ fontSize: 14, fontWeight: 500, color: T.text, fontFamily: F.display, cursor: "pointer" }} onMouseEnter={e => e.target.style.color=T.gold} onMouseLeave={e => e.target.style.color=T.text}>{serial.nazev}</span>
-            {serial.rok && <span style={{ color: T.muted, fontSize: 10, fontFamily: F.mono }}>{serial.rok}</span>}
+            {serial.rok && <span style={{ color: T.inkMuted, fontSize: 10, fontFamily: F.mono }}>{serial.rok}</span>}
           </div>
-          {serial.ceskyNazev && <div style={{ fontSize: 11, color: T.muted, fontStyle: "italic", marginBottom: 3 }}>({serial.ceskyNazev})</div>}
+          {serial.ceskyNazev && <div style={{ fontSize: 11, color: T.inkMuted, fontStyle: "italic", marginBottom: 3 }}>({serial.ceskyNazev})</div>}
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
-            {serial.platforma && <span style={{ fontFamily: F.mono, fontSize: 10, color: T.muted }}>{serial.platforma}</span>}
-            {serial.stav && <span style={{ fontFamily: F.mono, fontSize: 10, color: stavColor[serial.stav] ?? T.muted }}>{serial.stav}</span>}
-            {(serial.zanry ?? []).length > 0 && <span style={{ fontSize: 11, color: T.muted }}>{serial.zanry.join(", ")}</span>}
+            {serial.platforma && <span style={{ fontFamily: F.mono, fontSize: 10, color: T.inkMuted }}>{serial.platforma}</span>}
+            {serial.stav && <span style={{ fontFamily: F.mono, fontSize: 10, color: stavColor[serial.stav] ?? T.inkMuted }}>{serial.stav}</span>}
+            {(serial.zanry ?? []).length > 0 && <span style={{ fontSize: 11, color: T.inkMuted }}>{serial.zanry.join(", ")}</span>}
           </div>
         </div>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6, marginLeft: 10, flexShrink: 0 }}>
@@ -975,7 +975,7 @@ function SerialCard({ serial, herci, onEdit, onDelete, onDetail, isAdmin }) {
     }}
       onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
       {/* Datum */}
-      <div style={{ fontFamily: F.mono, fontSize: 11, color: T.muted }}>
+      <div style={{ fontFamily: F.mono, fontSize: 11, color: T.inkMuted }}>
         {serial.zacatekSledovani ? fmtDate(serial.zacatekSledovani) : "—"}
         {serial.konecSledovani && serial.konecSledovani !== serial.zacatekSledovani && (
           <div>→ {fmtDate(serial.konecSledovani)}</div>
@@ -987,22 +987,22 @@ function SerialCard({ serial, herci, onEdit, onDelete, onDetail, isAdmin }) {
           <span onClick={() => onDetail && onDetail(serial)}
             style={{ fontFamily: F.display, fontSize: 15, fontWeight: 500, color: T.text, letterSpacing: "-0.02em", cursor: "pointer" }}
             onMouseEnter={e => e.target.style.color=T.gold} onMouseLeave={e => e.target.style.color=T.text}>{serial.nazev}</span>
-          {serial.rok && <span style={{ fontFamily: F.mono, fontSize: 10, color: T.muted }}>{serial.rok}</span>}
-          {serial.rewatch && <span style={{ fontFamily: F.mono, fontSize: 9, color: T.muted, letterSpacing: "0.1em" }}>Rewatch</span>}
+          {serial.rok && <span style={{ fontFamily: F.mono, fontSize: 10, color: T.inkMuted }}>{serial.rok}</span>}
+          {serial.rewatch && <span style={{ fontFamily: F.mono, fontSize: 9, color: T.inkMuted, letterSpacing: "0.1em" }}>Rewatch</span>}
         </div>
-        {serial.ceskyNazev && <div style={{ fontFamily: F.sans, fontSize: 11, color: T.muted, fontStyle: "italic", marginTop: 1 }}>({serial.ceskyNazev})</div>}
+        {serial.ceskyNazev && <div style={{ fontFamily: F.sans, fontSize: 11, color: T.inkMuted, fontStyle: "italic", marginTop: 1 }}>({serial.ceskyNazev})</div>}
         {serialHerci.length > 0 && (
-          <div style={{ fontFamily: F.mono, fontSize: 10, color: T.muted, marginTop: 3, letterSpacing: "0.02em" }}>
+          <div style={{ fontFamily: F.mono, fontSize: 10, color: T.inkMuted, marginTop: 3, letterSpacing: "0.02em" }}>
             {serialHerci.map(h => h.jmeno).join(", ")}
           </div>
         )}
       </div>
       {/* Žánr */}
-      <div style={{ fontFamily: F.sans, fontSize: 11, color: T.muted }}>{(serial.zanry ?? []).join(", ")}</div>
+      <div style={{ fontFamily: F.sans, fontSize: 11, color: T.inkMuted }}>{(serial.zanry ?? []).join(", ")}</div>
       {/* Platforma */}
-      <div style={{ fontFamily: F.mono, fontSize: 11, color: T.muted }}>{serial.platforma}</div>
+      <div style={{ fontFamily: F.mono, fontSize: 11, color: T.inkMuted }}>{serial.platforma}</div>
       {/* Série */}
-      <div style={{ fontFamily: F.mono, fontSize: 11, color: T.muted }}>
+      <div style={{ fontFamily: F.mono, fontSize: 11, color: T.inkMuted }}>
         {serial.serie && (Array.isArray(serial.serie) ? serial.serie.length > 0 : serial.serie)
           ? (Array.isArray(serial.serie) ? serial.serie.join(", ") : serial.serie)
           : ""}
