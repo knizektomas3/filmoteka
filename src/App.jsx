@@ -649,7 +649,7 @@ function FilmDetailModal({ film: initialFilm, filmy, herci, reziseri, onClose, o
                 ["délka", film.stopaz ? `${film.stopaz} min` : null],
                 ["platforma", film.platforma],
                 ["žánr", (film.zanry ?? []).join(", ") || null],
-                ["česky film", film.ceskyFilm ? "Ano" : null],
+                ["český film", film.ceskyFilm ? "Ano" : null],
                 ["rewatch", film.rewatch ? "Ano" : null],
               ].filter(([, v]) => v).map(([k, v]) => (
                 <div key={k} style={{ display: "grid", gridTemplateColumns: "80px 1fr", gap: 8, padding: "5px 0", borderBottom: `1px solid ${T.border}`, fontFamily: F.mono, fontSize: 11, alignItems: "baseline" }}>
