@@ -36,6 +36,9 @@ const NARODNOSTI = [
   "Švýcarsko","Rakousko","Indie","Nový Zéland","Izrael","Írán","Řecko",
 ];
 
+const SettingsCtx = createContext(null);
+const useSettings = () => useContext(SettingsCtx);
+
 // ─── HOOKS & UTILS ────────────────────────────────────────────────────────────
 function useLS(key, init) {
   const [v, setV] = useState(() => {
@@ -387,6 +390,7 @@ const emptyOsoba = () => ({
 });
 
 function FilmForm({ data, setData, herci, reziseri }) {
+  const { platformy } = useSettings();
   const u = (k, v) => setData(d => ({ ...d, [k]: v }));
   const [tmdbLoading, setTmdbLoading] = useState(false);
   const nacistZTmdb = async () => {
@@ -412,7 +416,7 @@ function FilmForm({ data, setData, herci, reziseri }) {
       </div>
       <TextInput label="Datum zhlédnutí" value={data.datum} onChange={v => u("datum", v)} type="date" />
       <TextInput label="Rok vydání" value={data.rok} onChange={v => u("rok", v)} type="number" placeholder="2024" />
-      <SelectInput label="Platforma" value={data.platforma} onChange={v => u("platforma", v)} options={PLATFORMY} />
+      <SelectInput label="Platforma" value={data.platforma} onChange={v => u("platforma", v)} options={platformy} />
       <TextInput label="Stopáž (min)" value={data.stopaz} onChange={v => u("stopaz", v)} type="number" placeholder="120" />
       <div style={{ gridColumn: "1/-1" }}>
         <GenreSelector value={data.zanry} onChange={v => u("zanry", v)} />
@@ -436,6 +440,7 @@ function FilmForm({ data, setData, herci, reziseri }) {
 }
 
 function SerialForm({ data, setData, herci }) {
+  const { platformy } = useSettings();
   const u = (k, v) => setData(d => ({ ...d, [k]: v }));
   const [tmdbLoading, setTmdbLoading] = useState(false);
   const nacistZTmdb = async () => {
@@ -460,7 +465,7 @@ function SerialForm({ data, setData, herci }) {
         </div>
       </div>
       <TextInput label="Rok vydání" value={data.rok} onChange={v => u("rok", v)} type="number" placeholder="2024" />
-      <SelectInput label="Platforma" value={data.platforma} onChange={v => u("platforma", v)} options={PLATFORMY} />
+      <SelectInput label="Platforma" value={data.platforma} onChange={v => u("platforma", v)} options={platformy} />
       <TextInput label="Začátek sledování" value={data.zacatekSledovani} onChange={v => u("zacatekSledovani", v)} type="date" />
       <TextInput label="Konec sledování" value={data.konecSledovani} onChange={v => u("konecSledovani", v)} type="date" />
       <Field label="Série">
@@ -492,12 +497,13 @@ function SerialForm({ data, setData, herci }) {
 
 function OsobaForm({ data, setData, showNeoblibeny = false }) {
   const u = (k, v) => setData(d => ({ ...d, [k]: v }));
+  const { narodnosti } = useSettings();
   return (
     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 20px" }}>
       <div style={{ gridColumn: "1/-1" }}>
         <TextInput label="Jméno *" value={data.jmeno} onChange={v => u("jmeno", v)} />
       </div>
-      <SelectInput label="Národnost" value={data.narodnost} onChange={v => u("narodnost", v)} options={NARODNOSTI} />
+      <SelectInput label="Národnost" value={data.narodnost} onChange={v => u("narodnost", v)} options={narodnosti} />
       <TextInput label="Rok narození" value={data.rokNarozeni} onChange={v => u("rokNarozeni", v)} type="number" placeholder="1970" />
       <SelectInput label="Žijící" value={data.zijici} onChange={v => u("zijici", v)} options={["Ano", "Ne"]} />
       <div style={{ gridColumn: "1/-1" }}>
@@ -2274,6 +2280,7 @@ function BilanceSerialyTab({ serialy }) {
 const emptyWatchItem = () => ({ id: uid(), typ: "film", nazev: "", platforma: "", rok: "", zanry: [], poznamka: "" });
 
 function WatchlistTab({ watchlist, setWatchlist, isAdmin, userId }) {
+  const { platformy } = useSettings();
   const [q, setQ] = useState("");
   const [modal, setModal] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -2374,7 +2381,7 @@ function WatchlistTab({ watchlist, setWatchlist, isAdmin, userId }) {
               ))}
             </div>
           </Field>
-          <SelectInput label="Platforma" value={form.platforma} onChange={v => u("platforma", v)} options={PLATFORMY} />
+          <SelectInput label="Platforma" value={form.platforma} onChange={v => u("platforma", v)} options={platformy} />
           <TextInput label="Rok" value={form.rok} onChange={v => u("rok", v)} placeholder="2024" />
           <GenreSelector value={form.zanry} onChange={v => u("zanry", v)} />
           <Field label="Poznámka">
@@ -2382,6 +2389,58 @@ function WatchlistTab({ watchlist, setWatchlist, isAdmin, userId }) {
           </Field>
         </div>
       </Modal>
+    </div>
+  );
+}
+
+// ─── SETTINGS MODAL ───────────────────────────────────────────────────────────
+function SettingsListEditor({ label, items, setItems }) {
+  const [newItem, setNewItem] = useState("");
+  const add = () => {
+    const v = newItem.trim();
+    if (!v || items.includes(v)) return;
+    setItems([...items].concat(v).sort((a, b) => a.localeCompare(b, "cs")));
+    setNewItem("");
+  };
+  const remove = item => setItems(items.filter(x => x !== item));
+  return (
+    <div style={{ marginBottom: 24 }}>
+      <div style={{ fontSize: 10, color: T.muted, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>{label}</div>
+      <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
+        <input
+          value={newItem}
+          onChange={e => setNewItem(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && add()}
+          placeholder="Nová položka..."
+          style={{ ...inp, flex: 1 }}
+        />
+        <button onClick={add} style={btnPrimary}>Přidat</button>
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+        {items.map(item => (
+          <span key={item} style={{ display: "flex", alignItems: "center", gap: 4, padding: "3px 8px", borderRadius: 20, fontSize: 12, border: `1px solid ${T.border}`, background: T.elevated, color: T.text }}>
+            {item}
+            <button onClick={() => remove(item)} style={{ background: "none", border: "none", cursor: "pointer", color: T.muted, fontSize: 13, padding: 0, lineHeight: 1 }}>×</button>
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SettingsModal({ open, onClose }) {
+  const { platformy, setPlatformy, narodnosti, setNarodnosti } = useSettings();
+  if (!open) return null;
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>
+      <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 8, width: 520, maxWidth: "95vw", padding: 28, maxHeight: "85vh", overflowY: "auto" }}>
+        <div style={{ fontSize: 16, fontWeight: 700, color: T.text, fontFamily: F.display, marginBottom: 20 }}>Nastavení dropdownů</div>
+        <SettingsListEditor label="Platformy" items={platformy} setItems={setPlatformy} />
+        <SettingsListEditor label="Národnosti" items={narodnosti} setItems={setNarodnosti} />
+        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
+          <button onClick={onClose} style={btnSecondary}>Zavřít</button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -2488,6 +2547,9 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState(null);
   const [loginModal, setLoginModal] = useState(false);
+  const [settingsModal, setSettingsModal] = useState(false);
+  const [platformy, setPlatformy] = useLS("filmoteka_platformy", PLATFORMY);
+  const [narodnosti, setNarodnosti] = useLS("filmoteka_narodnosti", NARODNOSTI);
   const [resetModal, setResetModal] = useState(() => {
     const h = window.location.hash;
     const q = window.location.search;
@@ -2533,6 +2595,7 @@ export default function App() {
   const counts = { filmy: filmy.length, serialy: serialy.length, herci: herci.length, reziseri: reziseri.length, watchlist: watchlist.length };
 
   return (
+    <SettingsCtx.Provider value={{ platformy, setPlatformy, narodnosti, setNarodnosti }}>
     <MobileCtx.Provider value={isMobile}>
     <div style={{ background: T.bg, minHeight: "100vh", color: T.text, fontFamily: F.sans, fontSize: 13 }}>
       {/* Navigace */}
@@ -2554,6 +2617,7 @@ export default function App() {
           {isAdmin
             ? <>
                 <button onClick={stahnoutZalohu} title="Stáhnout zálohu" style={{ background: "none", border: "none", cursor: "pointer", color: T.muted, fontSize: 14, padding: "0 4px", display: "flex", alignItems: "center" }}>💾</button>
+                <button onClick={() => setSettingsModal(true)} title="Nastavení dropdownů" style={{ background: "none", border: "none", cursor: "pointer", color: T.muted, fontSize: 15, padding: "0 4px", display: "flex", alignItems: "center" }}>⚙️</button>
                 <button onClick={() => supabase.auth.signOut()} style={{ background: "none", border: "none", cursor: "pointer", color: T.muted, fontFamily: F.mono, fontSize: 10, letterSpacing: "0.08em", padding: "0 8px" }}>odhlásit</button>
               </>
             : <button onClick={() => setLoginModal(true)} style={{ background: "none", border: "none", cursor: "pointer", color: T.muted, fontFamily: F.mono, fontSize: 10, letterSpacing: "0.08em", padding: "0 8px" }}>přihlásit</button>
@@ -2601,7 +2665,9 @@ export default function App() {
 
       <LoginModal open={loginModal} onClose={() => setLoginModal(false)} />
       <ResetPasswordModal open={resetModal} onDone={() => setResetModal(false)} />
+      <SettingsModal open={settingsModal} onClose={() => setSettingsModal(false)} />
     </div>
     </MobileCtx.Provider>
+    </SettingsCtx.Provider>
   );
 }
