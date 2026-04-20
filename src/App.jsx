@@ -2548,8 +2548,16 @@ export default function App() {
   const [session, setSession] = useState(null);
   const [loginModal, setLoginModal] = useState(false);
   const [settingsModal, setSettingsModal] = useState(false);
-  const [platformy, setPlatformy] = useLS("filmoteka_platformy", PLATFORMY);
-  const [narodnosti, setNarodnosti] = useLS("filmoteka_narodnosti", NARODNOSTI);
+  const [platformy, setPlatformyState] = useState(PLATFORMY);
+  const [narodnosti, setNarodnostiState] = useState(NARODNOSTI);
+  const setPlatformy = (vals) => {
+    setPlatformyState(vals);
+    supabase.from("nastaveni").upsert({ id: 1, platformy: vals }, { onConflict: "id" });
+  };
+  const setNarodnosti = (vals) => {
+    setNarodnostiState(vals);
+    supabase.from("nastaveni").upsert({ id: 1, narodnosti: vals }, { onConflict: "id" });
+  };
   const [resetModal, setResetModal] = useState(() => {
     const h = window.location.hash;
     const q = window.location.search;
@@ -2578,12 +2586,17 @@ export default function App() {
       supabase.from("filmy").select("*"),
       supabase.from("serialy").select("*"),
       supabase.from("watchlist").select("*"),
-    ]).then(([h, r, f, s, w]) => {
+      supabase.from("nastaveni").select("*").eq("id", 1).single(),
+    ]).then(([h, r, f, s, w, n]) => {
       setHerci(h.data ?? []);
       setReziseri(r.data ?? []);
       setFilmy(f.data ?? []);
       setSerialy(s.data ?? []);
       setWatchlist(w.data ?? []);
+      if (n.data) {
+        if (n.data.platformy?.length) setPlatformyState(n.data.platformy);
+        if (n.data.narodnosti?.length) setNarodnostiState(n.data.narodnosti);
+      }
       setLoading(false);
     });
 
