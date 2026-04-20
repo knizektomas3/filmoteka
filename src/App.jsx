@@ -1487,7 +1487,7 @@ function FilmyTab({ filmy, setFilmy, herci, reziseri, isAdmin, userId }) {
       if (error) { alert("Chyba při ukládání: " + error.message); return; }
       setFilmy(fs => fs.map(f => f.id === editing ? form : f));
     } else {
-      const { error } = await supabase.from("filmy").insert({ ...form, user_id: userId });
+      const { error } = await supabase.from("filmy").insert({ ...form });
       if (error) { alert("Chyba při ukládání: " + error.message); return; }
       setFilmy(fs => [form, ...fs]);
     }
@@ -1568,7 +1568,7 @@ function SerialyTab({ serialy, setSerialy, herci, isAdmin, userId }) {
       if (error) { alert("Chyba při ukládání: " + error.message); return; }
       setSerialy(ss => ss.map(s => s.id === editing ? form : s));
     } else {
-      const { error } = await supabase.from("serialy").insert({ ...form, user_id: userId });
+      const { error } = await supabase.from("serialy").insert({ ...form });
       if (error) { alert("Chyba při ukládání: " + error.message); return; }
       setSerialy(ss => [form, ...ss]);
     }
@@ -2303,7 +2303,7 @@ function WatchlistTab({ watchlist, setWatchlist, isAdmin, userId }) {
       if (error) { alert("Chyba při ukládání: " + error.message); return; }
       setWatchlist(w => w.map(x => x.id === editing ? form : x));
     } else {
-      const { error } = await supabase.from("watchlist").insert({ ...form, user_id: userId });
+      const { error } = await supabase.from("watchlist").insert({ ...form });
       if (error) { alert("Chyba při ukládání: " + error.message); return; }
       setWatchlist(w => [form, ...w]);
     }
