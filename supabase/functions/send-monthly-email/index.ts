@@ -18,6 +18,7 @@ const APP_URL = Deno.env.get("APP_URL") ?? "https://filmoteka-kojout.vercel.app"
 type Film = {
   id: string;
   nazev: string;
+  ceskyNazev?: string;
   rok?: string;
   zanry?: string[];
   platforma?: string;
@@ -38,6 +39,7 @@ function filmCard(f: Film, highlight = false) {
         <div style="font-weight:700;font-size:16px;color:${nameColor}">
           ${highlight ? "⭐ " : ""}<a href="${filmUrl}" style="color:${nameColor};text-decoration:none" target="_blank">${f.nazev}</a>
         </div>
+        ${f.ceskyNazev ? `<div style="font-size:13px;color:#9a8a75;margin-top:1px;font-style:italic">(${f.ceskyNazev})</div>` : ""}
         ${meta ? `<div style="font-size:13px;color:#7a6a55;margin-top:3px">${meta}</div>` : ""}
         ${f.platforma ? `<div style="font-size:12px;color:#9a8a75;margin-top:2px">${f.platforma}</div>` : ""}
         ${f.hodnoceni ? `<div style="font-size:14px;color:#c9a227;margin-top:4px;letter-spacing:2px">${hvezdicky(f.hodnoceni)} <span style="color:#9a8a75;font-size:12px">${f.hodnoceni}/10</span></div>` : ""}
