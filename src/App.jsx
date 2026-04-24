@@ -2564,6 +2564,8 @@ export default function App() {
     return h.includes("type=recovery") || q.includes("type=recovery");
   });
   const [tab, setTab] = useState("dashboard");
+  const [deepLinkFilmId] = useState(() => new URLSearchParams(window.location.search).get("film"));
+  const [deepLinkFilm, setDeepLinkFilm] = useState(null);
   const [darkMode, setDarkMode] = useLS("wl_theme_dark", true);
 
   applyTheme(darkMode);
@@ -2590,7 +2592,8 @@ export default function App() {
     ]).then(([h, r, f, s, w, n]) => {
       setHerci(h.data ?? []);
       setReziseri(r.data ?? []);
-      setFilmy(f.data ?? []);
+      const filmy = f.data ?? [];
+      setFilmy(filmy);
       setSerialy(s.data ?? []);
       setWatchlist(w.data ?? []);
       if (n.data) {
@@ -2598,6 +2601,10 @@ export default function App() {
         if (n.data.narodnosti?.length) setNarodnostiState(n.data.narodnosti);
       }
       setLoading(false);
+      if (deepLinkFilmId) {
+        const film = filmy.find(x => x.id === deepLinkFilmId);
+        if (film) { setTab("filmy"); setDeepLinkFilm(film); }
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -2676,6 +2683,7 @@ export default function App() {
         )}
       </div>
 
+      {deepLinkFilm && <FilmDetailModal film={deepLinkFilm} filmy={filmy} herci={herci} reziseri={reziseri} onClose={() => setDeepLinkFilm(null)} onEdit={() => {}} isAdmin={false} />}
       <LoginModal open={loginModal} onClose={() => setLoginModal(false)} />
       <ResetPasswordModal open={resetModal} onDone={() => setResetModal(false)} />
       <SettingsModal open={settingsModal} onClose={() => setSettingsModal(false)} />
