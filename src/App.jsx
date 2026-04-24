@@ -1867,6 +1867,7 @@ function DashKV({ label, value, suffix }) {
 function DashboardTab({ filmy, serialy, herci, reziseri }) {
   const isMobile = useMobile();
   const [detail, setDetail] = useState(null);
+  const [osobaModal, setOsobaModal] = useState(null);
   const now = new Date();
   const dayNames = ["Neděle","Pondělí","Úterý","Středa","Čtvrtek","Pátek","Sobota"];
   const monthNames = ["ledna","února","března","dubna","května","června","července","srpna","září","října","listopadu","prosince"];
@@ -2034,7 +2035,7 @@ function DashboardTab({ filmy, serialy, herci, reziseri }) {
                   gap: 10, padding: "7px 0", alignItems: "center",
                   borderBottom: i < topReziseri.length - 1 ? `1px solid ${T.border}` : "none",
                 }}>
-                  <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 500, color: T.text, letterSpacing: "-0.01em" }}>{r.jmeno}</span>
+                  <span onClick={() => setOsobaModal({ osoba: r, showNeoblibeny: false })} style={{ fontFamily: F.display, fontSize: 14, fontWeight: 500, color: T.text, letterSpacing: "-0.01em", cursor: "pointer" }} onMouseEnter={e => e.target.style.color=T.gold} onMouseLeave={e => e.target.style.color=T.text}>{r.jmeno}</span>
                   <div style={{ height: 3, background: T.border, position: "relative" }}>
                     <div style={{ position: "absolute", inset: 0, width: `${(r.count / maxReziser) * 100}%`, background: i === 0 ? T.gold : T.text }} />
                   </div>
@@ -2054,7 +2055,7 @@ function DashboardTab({ filmy, serialy, herci, reziseri }) {
                   gap: 10, padding: "7px 0", alignItems: "center",
                   borderBottom: i < topHerci.length - 1 ? `1px solid ${T.border}` : "none",
                 }}>
-                  <span style={{ fontFamily: F.display, fontSize: 14, fontWeight: 500, color: T.text, letterSpacing: "-0.01em" }}>{h.jmeno}</span>
+                  <span onClick={() => setOsobaModal({ osoba: h, showNeoblibeny: true })} style={{ fontFamily: F.display, fontSize: 14, fontWeight: 500, color: T.text, letterSpacing: "-0.01em", cursor: "pointer" }} onMouseEnter={e => e.target.style.color=T.gold} onMouseLeave={e => e.target.style.color=T.text}>{h.jmeno}</span>
                   <div style={{ height: 3, background: T.border, position: "relative" }}>
                     <div style={{ position: "absolute", inset: 0, width: `${(h.count / maxHerec) * 100}%`, background: i === 0 ? T.gold : T.text }} />
                   </div>
@@ -2067,6 +2068,7 @@ function DashboardTab({ filmy, serialy, herci, reziseri }) {
       </div>
       {detail && detail._type === "film" && <FilmDetailModal film={detail} filmy={filmy} herci={herci} reziseri={reziseri} onClose={() => setDetail(null)} onEdit={() => {}} isAdmin={false} />}
       {detail && detail._type === "serial" && <SerialDetailModal serial={detail} serialy={serialy} herci={herci} onClose={() => setDetail(null)} onEdit={() => {}} isAdmin={false} />}
+      {osobaModal && <OsobaDetailModal osoba={osobaModal.osoba} filmy={filmy} serialy={serialy} herci={herci} reziseri={reziseri} onClose={() => setOsobaModal(null)} onToggle={() => {}} showNeoblibeny={osobaModal.showNeoblibeny} />}
     </div>
   );
 }
