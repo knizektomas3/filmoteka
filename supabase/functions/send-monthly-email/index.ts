@@ -61,15 +61,24 @@ function plural(n: number) {
   return "filmů";
 }
 
-Deno.serve(async (_req) => {
+Deno.serve(async (req) => {
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   );
 
+  const url = new URL(req.url);
+  const monthParam = url.searchParams.get("month"); // např. "2026-04"
+
   const now = new Date();
-  const year = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear();
-  const month = now.getMonth() === 0 ? 12 : now.getMonth();
+  let year: number, month: number;
+  if (monthParam && /^\d{4}-\d{2}$/.test(monthParam)) {
+    year = parseInt(monthParam.slice(0, 4));
+    month = parseInt(monthParam.slice(5, 7));
+  } else {
+    year = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear();
+    month = now.getMonth() === 0 ? 12 : now.getMonth();
+  }
   const startDate = `${year}-${String(month).padStart(2, "0")}-01`;
   const lastDay = new Date(year, month, 0).getDate();
   const endDate = `${year}-${String(month).padStart(2, "0")}-${lastDay}`;
