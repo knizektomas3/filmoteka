@@ -228,14 +228,37 @@ function Modal({ open, title, onClose, onSave, children, wide }) {
 
 function ConfirmDialog({ message, detail, confirmLabel = "Potvrdit", danger = false, alert = false, onConfirm, onCancel }) {
   useEscClose(alert ? onConfirm : onCancel);
+  const accentColor = (danger || alert) ? T.danger : T.gold;
+  const IconSvg = danger ? (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+      <path d="M9 7h2v5H9V7zm0 6h2v2H9v-2z" fill={accentColor}/>
+      <path d="M10 2L1 17h18L10 2z" stroke={accentColor} strokeWidth="1.5" strokeLinejoin="round" fill="none"/>
+    </svg>
+  ) : alert ? (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+      <circle cx="10" cy="10" r="8.5" stroke={accentColor} strokeWidth="1.5"/>
+      <path d="M7 7l6 6M13 7l-6 6" stroke={accentColor} strokeWidth="1.5" strokeLinecap="round"/>
+    </svg>
+  ) : (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+      <circle cx="10" cy="10" r="8.5" stroke={accentColor} strokeWidth="1.5"/>
+      <path d="M10 9v5" stroke={accentColor} strokeWidth="1.5" strokeLinecap="round"/>
+      <circle cx="10" cy="6.5" r="1" fill={accentColor}/>
+    </svg>
+  );
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2000, padding: 20 }}>
-      <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 8, width: 360, maxWidth: "100%" }}>
-        <div style={{ padding: "20px 24px" }}>
-          <div style={{ fontSize: 15, fontWeight: 600, color: T.text, fontFamily: F.display }}>{message}</div>
-          {detail && <div style={{ fontSize: 13, color: T.muted, marginTop: 8, lineHeight: 1.5 }}>{detail}</div>}
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2000, padding: 20 }}>
+      <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 10, width: 400, maxWidth: "100%", boxShadow: "0 32px 80px rgba(0,0,0,0.6)" }}>
+        <div style={{ padding: "28px 28px 24px", display: "flex", gap: 18, alignItems: "flex-start" }}>
+          <div style={{ flexShrink: 0, width: 40, height: 40, borderRadius: "50%", background: accentColor + "18", display: "flex", alignItems: "center", justifyContent: "center", marginTop: 1 }}>
+            {IconSvg}
+          </div>
+          <div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: T.text, fontFamily: F.display, letterSpacing: "-0.01em", lineHeight: 1.35 }}>{message}</div>
+            {detail && <div style={{ fontSize: 13, color: T.muted, marginTop: 7, lineHeight: 1.6 }}>{detail}</div>}
+          </div>
         </div>
-        <div style={{ padding: "12px 24px", borderTop: `1px solid ${T.border}`, display: "flex", justifyContent: "flex-end", gap: 8 }}>
+        <div style={{ padding: "14px 28px", borderTop: `1px solid ${T.border}`, display: "flex", justifyContent: "flex-end", gap: 8 }}>
           {!alert && <button onClick={onCancel} style={btnSecondary}>Zrušit</button>}
           <button onClick={onConfirm} style={danger ? { ...btnPrimary, background: T.danger, borderColor: T.danger } : btnPrimary}>{confirmLabel}</button>
         </div>
