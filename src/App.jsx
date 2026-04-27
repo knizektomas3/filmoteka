@@ -1143,22 +1143,22 @@ function OsobaDetailModal({ osoba, filmy, serialy, herci, reziseri, onClose, onT
             <div style={{ marginTop: osobaFilmy.length > 0 || osobaSerialy.length > 0 ? 24 : 0 }}>
               {topDirs.length > 0 && (
                 <>
-                  <div style={{ fontSize: 10, color: T.muted, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10 }}>Nejčastější režiséři</div>
+                  <div style={{ fontSize: 10, color: T.muted, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10 }}>Nejčastěji ho obsazuje</div>
                   {topDirs.map(({ osoba: r, count }) => (
                     <div key={r.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 0", borderBottom: `1px solid ${T.border}` }}>
                       <span style={{ fontSize: 13, color: T.text, fontFamily: F.display }}>{r.jmeno}</span>
-                      <span style={{ fontSize: 11, color: T.muted, fontFamily: F.mono }}>{count}× společně</span>
+                      <span style={{ fontSize: 11, color: T.muted, fontFamily: F.mono }}>{count}×</span>
                     </div>
                   ))}
                 </>
               )}
               {topActs.length > 0 && (
                 <>
-                  <div style={{ fontSize: 10, color: T.muted, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10, marginTop: topDirs.length > 0 ? 20 : 0 }}>Nejčastější herci</div>
+                  <div style={{ fontSize: 10, color: T.muted, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10, marginTop: topDirs.length > 0 ? 20 : 0 }}>Nejčastěji obsazovaní herci</div>
                   {topActs.map(({ osoba: h, count }) => (
                     <div key={h.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 0", borderBottom: `1px solid ${T.border}` }}>
                       <span style={{ fontSize: 13, color: T.text, fontFamily: F.display }}>{h.jmeno}</span>
-                      <span style={{ fontSize: 11, color: T.muted, fontFamily: F.mono }}>{count}× společně</span>
+                      <span style={{ fontSize: 11, color: T.muted, fontFamily: F.mono }}>{count}×</span>
                     </div>
                   ))}
                 </>
