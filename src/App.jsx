@@ -1580,7 +1580,7 @@ function FilmyTab({ filmy, setFilmy, herci, reziseri, isAdmin, userId }) {
       setFilmy(fs => fs.map(f => f.id === editing ? form : f));
     } else {
       const dup = filmy.find(f => f.nazev?.toLowerCase() === form.nazev.toLowerCase() && String(f.rok) === String(form.rok));
-      if (dup && !await confirm("Film už existuje", { detail: `"${dup.nazev}"${dup.rok ? ` (${dup.rok})` : ""} už je ve sbírce. Přidat přesto?`, confirmLabel: "Přidat přesto" })) return;
+      if (dup && !await confirm(`${dup.nazev}${dup.rok ? ` (${dup.rok})` : ""} už je v databázi. Pokračovat?`, { confirmLabel: "Pokračovat" })) return;
       const { error } = await supabase.from("filmy").insert({ ...form });
       if (error) { await confirm("Chyba při ukládání: " + error.message, { alert: true, confirmLabel: "OK" }); return; }
       setFilmy(fs => [form, ...fs]);
@@ -1665,7 +1665,7 @@ function SerialyTab({ serialy, setSerialy, herci, isAdmin, userId }) {
       setSerialy(ss => ss.map(s => s.id === editing ? form : s));
     } else {
       const dup = serialy.find(s => s.nazev?.toLowerCase() === form.nazev.toLowerCase() && String(s.rok) === String(form.rok));
-      if (dup && !await confirm("Seriál už existuje", { detail: `"${dup.nazev}"${dup.rok ? ` (${dup.rok})` : ""} už je ve sbírce. Přidat přesto?`, confirmLabel: "Přidat přesto" })) return;
+      if (dup && !await confirm(`${dup.nazev}${dup.rok ? ` (${dup.rok})` : ""} už je v databázi. Pokračovat?`, { confirmLabel: "Pokračovat" })) return;
       const { error } = await supabase.from("serialy").insert({ ...form });
       if (error) { await confirm("Chyba při ukládání: " + error.message, { alert: true, confirmLabel: "OK" }); return; }
       setSerialy(ss => [form, ...ss]);
@@ -1733,6 +1733,8 @@ function HerciTab({ herci, setHerci, filmy, serialy, reziseri, isAdmin, userId }
       if (error) { await confirm("Chyba při ukládání: " + error.message, { alert: true, confirmLabel: "OK" }); return; }
       setHerci(hs => hs.map(h => h.id === editing ? form : h));
     } else {
+      const dup = herci.find(h => h.jmeno?.toLowerCase() === form.jmeno.toLowerCase() && String(h.rokNarozeni) === String(form.rokNarozeni));
+      if (dup && !await confirm(`${dup.jmeno}${dup.rokNarozeni ? ` (${dup.rokNarozeni})` : ""} už je v databázi. Pokračovat?`, { confirmLabel: "Pokračovat" })) return;
       const { error } = await supabase.from("herci").insert(form);
       if (error) { await confirm("Chyba při ukládání: " + error.message, { alert: true, confirmLabel: "OK" }); return; }
       setHerci(hs => [...hs, form]);
@@ -1809,6 +1811,8 @@ function ReziseriTab({ reziseri, setReziseri, filmy, herci, isAdmin, userId }) {
       if (error) { await confirm("Chyba při ukládání: " + error.message, { alert: true, confirmLabel: "OK" }); return; }
       setReziseri(rs => rs.map(r => r.id === editing ? form : r));
     } else {
+      const dup = reziseri.find(r => r.jmeno?.toLowerCase() === form.jmeno.toLowerCase() && String(r.rokNarozeni) === String(form.rokNarozeni));
+      if (dup && !await confirm(`${dup.jmeno}${dup.rokNarozeni ? ` (${dup.rokNarozeni})` : ""} už je v databázi. Pokračovat?`, { confirmLabel: "Pokračovat" })) return;
       const { neoblibeny: _, ...formReziser } = form;
       const { error } = await supabase.from("reziseri").insert(formReziser);
       if (error) { await confirm("Chyba při ukládání: " + error.message, { alert: true, confirmLabel: "OK" }); return; }
