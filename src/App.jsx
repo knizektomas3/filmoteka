@@ -2524,26 +2524,34 @@ function WatchlistTab({ watchlist, setWatchlist, isAdmin, userId }) {
 // ─── SETTINGS MODAL ───────────────────────────────────────────────────────────
 function SettingsListEditor({ label, items, setItems }) {
   const [newItem, setNewItem] = useState("");
+  const [dupError, setDupError] = useState(false);
   const add = () => {
     const v = newItem.trim();
-    if (!v || items.includes(v)) return;
+    if (!v) return;
+    if (items.some(x => x.toLowerCase() === v.toLowerCase())) {
+      setDupError(true);
+      setTimeout(() => setDupError(false), 2500);
+      return;
+    }
     setItems([...items].concat(v).sort((a, b) => a.localeCompare(b, "cs")));
     setNewItem("");
+    setDupError(false);
   };
   const remove = item => setItems(items.filter(x => x !== item));
   return (
     <div style={{ marginBottom: 24 }}>
       <div style={{ fontSize: 10, color: T.muted, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>{label}</div>
-      <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
+      <div style={{ display: "flex", gap: 6, marginBottom: dupError ? 6 : 10 }}>
         <input
           value={newItem}
-          onChange={e => setNewItem(e.target.value)}
+          onChange={e => { setNewItem(e.target.value); setDupError(false); }}
           onKeyDown={e => e.key === "Enter" && add()}
           placeholder="Nová položka..."
-          style={{ ...inp, flex: 1 }}
+          style={{ ...inp, flex: 1, borderColor: dupError ? T.danger : undefined }}
         />
         <button onClick={add} style={btnPrimary}>Přidat</button>
       </div>
+      {dupError && <div style={{ fontSize: 11, color: T.danger, marginBottom: 8 }}>Tato položka už existuje.</div>}
       <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
         {items.map(item => (
           <span key={item} style={{ display: "flex", alignItems: "center", gap: 4, padding: "3px 8px", borderRadius: 20, fontSize: 12, border: `1px solid ${T.border}`, background: T.elevated, color: T.text }}>
@@ -2558,6 +2566,7 @@ function SettingsListEditor({ label, items, setItems }) {
 
 function SettingsModal({ open, onClose }) {
   const { platformy, setPlatformy, narodnosti, setNarodnosti } = useSettings();
+  useEscClose(onClose);
   if (!open) return null;
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>
