@@ -13,6 +13,13 @@ function useIsMobile() {
   }, []);
   return m;
 }
+function useEscClose(onClose) {
+  useEffect(() => {
+    const handler = e => { if (e.key === "Escape") onClose(); };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [onClose]);
+}
 
 // ─── KONSTANTY ────────────────────────────────────────────────────────────────
 const ZANRY = [
@@ -171,6 +178,7 @@ function applyTheme(dark) {
 // ─── PRIMITIVA ────────────────────────────────────────────────────────────────
 function Modal({ open, title, onClose, onSave, children, wide }) {
   const isMobile = useMobile();
+  useEscClose(onClose);
   if (!open) return null;
   return (
     <div style={{
@@ -579,6 +587,7 @@ function FilmTableHeader() {
 function FilmDetailModal({ film: initialFilm, filmy, herci, reziseri, onClose, onEdit, isAdmin }) {
   const [film, setFilm] = useState(initialFilm);
   const isMobile = useMobile();
+  useEscClose(onClose);
   const filmReziseri = reziseri.filter(r => (film.reziserIds ?? []).includes(r.id));
   const filmHerci = herci.filter(h => (film.herciIds ?? []).includes(h.id));
   const ratingColor = film.hodnoceni >= 9 ? T.green : film.hodnoceni <= 4 && film.hodnoceni > 0 ? T.danger : T.text;
@@ -822,6 +831,7 @@ function SerialTableHeader() {
 function SerialDetailModal({ serial: initialSerial, serialy, herci, onClose, onEdit, isAdmin }) {
   const [serial, setSerial] = useState(initialSerial);
   const isMobile = useMobile();
+  useEscClose(onClose);
   const serialHerci = herci.filter(h => (serial.herciIds ?? []).includes(h.id));
   const ratingColor = serial.hodnoceni >= 9 ? T.green : serial.hodnoceni <= 4 && serial.hodnoceni > 0 ? T.danger : T.text;
   const stavColor = { Dokoukáno: T.green, Sleduji: T.gold, Nedokončeno: T.orange, Plánuji: T.muted };
@@ -1026,6 +1036,7 @@ function SerialCard({ serial, herci, onEdit, onDelete, onDetail, isAdmin }) {
 function OsobaDetailModal({ osoba, filmy, serialy, herci, reziseri, onClose, onToggle, showNeoblibeny = false }) {
   const [filmDetail, setFilmDetail] = useState(null);
   const [serialDetail, setSerialDetail] = useState(null);
+  useEscClose(onClose);
   const osobaFilmy = filmy.filter(f =>
     !f.rewatch && ((f.herciIds ?? []).includes(osoba.id) || (f.reziserIds ?? []).includes(osoba.id))
   ).sort((a, b) => (b.rok || 0) - (a.rok || 0));
@@ -1034,6 +1045,20 @@ function OsobaDetailModal({ osoba, filmy, serialy, herci, reziseri, onClose, onT
   ).sort((a, b) => (b.rok || 0) - (a.rok || 0));
 
   const total = osobaFilmy.length + osobaSerialy.length;
+
+  // Spolupráce — filmy kde je hercem → najdi režiséry; filmy kde je režisérem → najdi herce
+  const asActor = filmy.filter(f => !f.rewatch && (f.herciIds ?? []).includes(osoba.id));
+  const asDirector = filmy.filter(f => !f.rewatch && (f.reziserIds ?? []).includes(osoba.id));
+  const dirCollab = {};
+  asActor.forEach(f => (f.reziserIds ?? []).forEach(rid => { dirCollab[rid] = (dirCollab[rid] || 0) + 1; }));
+  const topDirs = Object.entries(dirCollab)
+    .map(([id, count]) => ({ osoba: (reziseri ?? []).find(r => r.id === id), count }))
+    .filter(x => x.osoba).sort((a, b) => b.count - a.count).slice(0, 5);
+  const actCollab = {};
+  asDirector.forEach(f => (f.herciIds ?? []).forEach(hid => { actCollab[hid] = (actCollab[hid] || 0) + 1; }));
+  const topActs = Object.entries(actCollab)
+    .map(([id, count]) => ({ osoba: (herci ?? []).find(h => h.id === id), count }))
+    .filter(x => x.osoba).sort((a, b) => b.count - a.count).slice(0, 5);
 
   const isMobile = useMobile();
 
@@ -1113,6 +1138,32 @@ function OsobaDetailModal({ osoba, filmy, serialy, herci, reziseri, onClose, onT
                 </div>
               ))}
             </>
+          )}
+          {(topDirs.length > 0 || topActs.length > 0) && (
+            <div style={{ marginTop: osobaFilmy.length > 0 || osobaSerialy.length > 0 ? 24 : 0 }}>
+              {topDirs.length > 0 && (
+                <>
+                  <div style={{ fontSize: 10, color: T.muted, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10 }}>Nejčastější režiséři</div>
+                  {topDirs.map(({ osoba: r, count }) => (
+                    <div key={r.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 0", borderBottom: `1px solid ${T.border}` }}>
+                      <span style={{ fontSize: 13, color: T.text, fontFamily: F.display }}>{r.jmeno}</span>
+                      <span style={{ fontSize: 11, color: T.muted, fontFamily: F.mono }}>{count}× společně</span>
+                    </div>
+                  ))}
+                </>
+              )}
+              {topActs.length > 0 && (
+                <>
+                  <div style={{ fontSize: 10, color: T.muted, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10, marginTop: topDirs.length > 0 ? 20 : 0 }}>Nejčastější herci</div>
+                  {topActs.map(({ osoba: h, count }) => (
+                    <div key={h.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 0", borderBottom: `1px solid ${T.border}` }}>
+                      <span style={{ fontSize: 13, color: T.text, fontFamily: F.display }}>{h.jmeno}</span>
+                      <span style={{ fontSize: 11, color: T.muted, fontFamily: F.mono }}>{count}× společně</span>
+                    </div>
+                  ))}
+                </>
+              )}
+            </div>
           )}
         </div>
         <div style={{ padding: "10px 20px", borderTop: `1px solid ${T.border}`, display: "flex", justifyContent: "flex-end" }}>
@@ -1493,6 +1544,8 @@ function FilmyTab({ filmy, setFilmy, herci, reziseri, isAdmin, userId }) {
       if (error) { alert("Chyba při ukládání: " + error.message); return; }
       setFilmy(fs => fs.map(f => f.id === editing ? form : f));
     } else {
+      const dup = filmy.find(f => f.nazev?.toLowerCase() === form.nazev.toLowerCase() && String(f.rok) === String(form.rok));
+      if (dup && !window.confirm(`Film "${dup.nazev}"${dup.rok ? ` (${dup.rok})` : ""} už existuje. Přidat přesto?`)) return;
       const { error } = await supabase.from("filmy").insert({ ...form });
       if (error) { alert("Chyba při ukládání: " + error.message); return; }
       setFilmy(fs => [form, ...fs]);
@@ -1574,6 +1627,8 @@ function SerialyTab({ serialy, setSerialy, herci, isAdmin, userId }) {
       if (error) { alert("Chyba při ukládání: " + error.message); return; }
       setSerialy(ss => ss.map(s => s.id === editing ? form : s));
     } else {
+      const dup = serialy.find(s => s.nazev?.toLowerCase() === form.nazev.toLowerCase() && String(s.rok) === String(form.rok));
+      if (dup && !window.confirm(`Seriál "${dup.nazev}"${dup.rok ? ` (${dup.rok})` : ""} už existuje. Přidat přesto?`)) return;
       const { error } = await supabase.from("serialy").insert({ ...form });
       if (error) { alert("Chyba při ukládání: " + error.message); return; }
       setSerialy(ss => [form, ...ss]);
