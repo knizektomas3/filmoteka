@@ -20,6 +20,22 @@ function useEscClose(onClose) {
     return () => document.removeEventListener("keydown", handler);
   }, [onClose]);
 }
+function useConfirm() {
+  const [state, setState] = useState(null);
+  const confirm = useCallback((message, opts = {}) => new Promise(resolve => setState({ message, opts, resolve })), []);
+  const dialog = state ? (
+    <ConfirmDialog
+      message={state.message}
+      detail={state.opts.detail}
+      confirmLabel={state.opts.confirmLabel || "Potvrdit"}
+      danger={state.opts.danger}
+      alert={state.opts.alert}
+      onConfirm={() => { state.resolve(true); setState(null); }}
+      onCancel={() => { state.resolve(false); setState(null); }}
+    />
+  ) : null;
+  return [confirm, dialog];
+}
 
 // ─── KONSTANTY ────────────────────────────────────────────────────────────────
 const ZANRY = [
@@ -204,6 +220,24 @@ function Modal({ open, title, onClose, onSave, children, wide }) {
         <div style={{ padding: "12px 20px", borderTop: `1px solid ${T.border}`, display: "flex", justifyContent: "flex-end", gap: 8 }}>
           <button onClick={onClose} style={btnSecondary}>Zrušit</button>
           <button onClick={onSave} style={btnPrimary}>Uložit</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ConfirmDialog({ message, detail, confirmLabel = "Potvrdit", danger = false, alert = false, onConfirm, onCancel }) {
+  useEscClose(alert ? onConfirm : onCancel);
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2000, padding: 20 }}>
+      <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 8, width: 360, maxWidth: "100%" }}>
+        <div style={{ padding: "20px 24px" }}>
+          <div style={{ fontSize: 15, fontWeight: 600, color: T.text, fontFamily: F.display }}>{message}</div>
+          {detail && <div style={{ fontSize: 13, color: T.muted, marginTop: 8, lineHeight: 1.5 }}>{detail}</div>}
+        </div>
+        <div style={{ padding: "12px 24px", borderTop: `1px solid ${T.border}`, display: "flex", justifyContent: "flex-end", gap: 8 }}>
+          {!alert && <button onClick={onCancel} style={btnSecondary}>Zrušit</button>}
+          <button onClick={onConfirm} style={danger ? { ...btnPrimary, background: T.danger, borderColor: T.danger } : btnPrimary}>{confirmLabel}</button>
         </div>
       </div>
     </div>
@@ -1535,25 +1569,26 @@ function FilmyTab({ filmy, setFilmy, herci, reziseri, isAdmin, userId }) {
     return list;
   }, [filmy, q, filters, sort]);
 
+  const [confirm, confirmDialog] = useConfirm();
   const openAdd = () => { setEditing(null); setForm(emptyFilm()); setModal(true); };
   const openEdit = f => { setEditing(f.id); setForm({ ...f }); setModal(true); };
   const save = async () => {
     if (!form.nazev?.trim()) return;
     if (editing) {
       const { error } = await supabase.from("filmy").update(form).eq("id", form.id);
-      if (error) { alert("Chyba při ukládání: " + error.message); return; }
+      if (error) { await confirm("Chyba při ukládání: " + error.message, { alert: true, confirmLabel: "OK" }); return; }
       setFilmy(fs => fs.map(f => f.id === editing ? form : f));
     } else {
       const dup = filmy.find(f => f.nazev?.toLowerCase() === form.nazev.toLowerCase() && String(f.rok) === String(form.rok));
-      if (dup && !window.confirm(`Film "${dup.nazev}"${dup.rok ? ` (${dup.rok})` : ""} už existuje. Přidat přesto?`)) return;
+      if (dup && !await confirm("Film už existuje", { detail: `"${dup.nazev}"${dup.rok ? ` (${dup.rok})` : ""} už je ve sbírce. Přidat přesto?`, confirmLabel: "Přidat přesto" })) return;
       const { error } = await supabase.from("filmy").insert({ ...form });
-      if (error) { alert("Chyba při ukládání: " + error.message); return; }
+      if (error) { await confirm("Chyba při ukládání: " + error.message, { alert: true, confirmLabel: "OK" }); return; }
       setFilmy(fs => [form, ...fs]);
     }
     setModal(false);
   };
   const del = async id => {
-    if (!window.confirm("Opravdu chceš smazat tento záznam?")) return;
+    if (!await confirm("Smazat záznam?", { detail: "Tato akce je nevratná.", danger: true, confirmLabel: "Smazat" })) return;
     await supabase.from("filmy").delete().eq("id", id);
     setFilmy(fs => fs.filter(f => f.id !== id));
   };
@@ -1574,6 +1609,7 @@ function FilmyTab({ filmy, setFilmy, herci, reziseri, isAdmin, userId }) {
       <Modal open={modal} title={editing ? "Upravit film" : "Přidat film"} onClose={() => setModal(false)} onSave={save} wide>
         <FilmForm data={form} setData={setForm} herci={herci} reziseri={reziseri} />
       </Modal>
+      {confirmDialog}
     </div>
   );
 }
@@ -1618,25 +1654,26 @@ function SerialyTab({ serialy, setSerialy, herci, isAdmin, userId }) {
     return list;
   }, [serialy, q, filters, sort]);
 
+  const [confirm, confirmDialog] = useConfirm();
   const openAdd = () => { setEditing(null); setForm(emptySerial()); setModal(true); };
   const openEdit = s => { setEditing(s.id); setForm({ ...s }); setModal(true); };
   const save = async () => {
     if (!form.nazev?.trim()) return;
     if (editing) {
       const { error } = await supabase.from("serialy").update(form).eq("id", form.id);
-      if (error) { alert("Chyba při ukládání: " + error.message); return; }
+      if (error) { await confirm("Chyba při ukládání: " + error.message, { alert: true, confirmLabel: "OK" }); return; }
       setSerialy(ss => ss.map(s => s.id === editing ? form : s));
     } else {
       const dup = serialy.find(s => s.nazev?.toLowerCase() === form.nazev.toLowerCase() && String(s.rok) === String(form.rok));
-      if (dup && !window.confirm(`Seriál "${dup.nazev}"${dup.rok ? ` (${dup.rok})` : ""} už existuje. Přidat přesto?`)) return;
+      if (dup && !await confirm("Seriál už existuje", { detail: `"${dup.nazev}"${dup.rok ? ` (${dup.rok})` : ""} už je ve sbírce. Přidat přesto?`, confirmLabel: "Přidat přesto" })) return;
       const { error } = await supabase.from("serialy").insert({ ...form });
-      if (error) { alert("Chyba při ukládání: " + error.message); return; }
+      if (error) { await confirm("Chyba při ukládání: " + error.message, { alert: true, confirmLabel: "OK" }); return; }
       setSerialy(ss => [form, ...ss]);
     }
     setModal(false);
   };
   const del = async id => {
-    if (!window.confirm("Opravdu chceš smazat tento záznam?")) return;
+    if (!await confirm("Smazat záznam?", { detail: "Tato akce je nevratná.", danger: true, confirmLabel: "Smazat" })) return;
     await supabase.from("serialy").delete().eq("id", id);
     setSerialy(ss => ss.filter(s => s.id !== id));
   };
@@ -1657,6 +1694,7 @@ function SerialyTab({ serialy, setSerialy, herci, isAdmin, userId }) {
         <SerialForm data={form} setData={setForm} herci={herci} />
       </Modal>
       {detail && <SerialDetailModal serial={detail} serialy={serialy} herci={herci} onClose={() => setDetail(null)} onEdit={s => { setDetail(null); openEdit(s); }} isAdmin={isAdmin} />}
+      {confirmDialog}
     </div>
   );
 }
@@ -1685,23 +1723,24 @@ function HerciTab({ herci, setHerci, filmy, serialy, reziseri, isAdmin, userId }
     [herci, q, osobaFilter]
   );
 
+  const [confirm, confirmDialog] = useConfirm();
   const openAdd = () => { setEditing(null); setForm(emptyOsoba()); setModal(true); };
   const openEdit = h => { setEditing(h.id); setForm({ ...h }); setModal(true); };
   const save = async () => {
     if (!form.jmeno?.trim()) return;
     if (editing) {
       const { error } = await supabase.from("herci").update(form).eq("id", form.id);
-      if (error) { alert("Chyba při ukládání: " + error.message); return; }
+      if (error) { await confirm("Chyba při ukládání: " + error.message, { alert: true, confirmLabel: "OK" }); return; }
       setHerci(hs => hs.map(h => h.id === editing ? form : h));
     } else {
       const { error } = await supabase.from("herci").insert(form);
-      if (error) { alert("Chyba při ukládání: " + error.message); return; }
+      if (error) { await confirm("Chyba při ukládání: " + error.message, { alert: true, confirmLabel: "OK" }); return; }
       setHerci(hs => [...hs, form]);
     }
     setModal(false);
   };
   const del = async id => {
-    if (!window.confirm("Opravdu chceš smazat tento záznam?")) return;
+    if (!await confirm("Smazat herce?", { detail: "Tato akce je nevratná.", danger: true, confirmLabel: "Smazat" })) return;
     await supabase.from("herci").delete().eq("id", id);
     setHerci(hs => hs.filter(h => h.id !== id));
   };
@@ -1731,6 +1770,7 @@ function HerciTab({ herci, setHerci, filmy, serialy, reziseri, isAdmin, userId }
         <OsobaForm data={form} setData={setForm} showNeoblibeny />
       </Modal>
       {detail && <OsobaDetailModal osoba={detail} filmy={filmy} serialy={serialy} herci={herci} reziseri={reziseri} onClose={() => setDetail(null)} onToggle={handleToggle} showNeoblibeny />}
+      {confirmDialog}
     </div>
   );
 }
@@ -1758,6 +1798,7 @@ function ReziseriTab({ reziseri, setReziseri, filmy, herci, isAdmin, userId }) {
     [reziseri, q, osobaFilter]
   );
 
+  const [confirm, confirmDialog] = useConfirm();
   const openAdd = () => { setEditing(null); setForm(emptyOsoba()); setModal(true); };
   const openEdit = r => { setEditing(r.id); setForm({ ...r }); setModal(true); };
   const save = async () => {
@@ -1765,18 +1806,18 @@ function ReziseriTab({ reziseri, setReziseri, filmy, herci, isAdmin, userId }) {
     if (editing) {
       const { neoblibeny: _, ...formReziser } = form;
       const { error } = await supabase.from("reziseri").update(formReziser).eq("id", form.id);
-      if (error) { alert("Chyba při ukládání: " + error.message); return; }
+      if (error) { await confirm("Chyba při ukládání: " + error.message, { alert: true, confirmLabel: "OK" }); return; }
       setReziseri(rs => rs.map(r => r.id === editing ? form : r));
     } else {
       const { neoblibeny: _, ...formReziser } = form;
       const { error } = await supabase.from("reziseri").insert(formReziser);
-      if (error) { alert("Chyba při ukládání: " + error.message); return; }
+      if (error) { await confirm("Chyba při ukládání: " + error.message, { alert: true, confirmLabel: "OK" }); return; }
       setReziseri(rs => [...rs, form]);
     }
     setModal(false);
   };
   const del = async id => {
-    if (!window.confirm("Opravdu chceš smazat tento záznam?")) return;
+    if (!await confirm("Smazat režiséra?", { detail: "Tato akce je nevratná.", danger: true, confirmLabel: "Smazat" })) return;
     await supabase.from("reziseri").delete().eq("id", id);
     setReziseri(rs => rs.filter(r => r.id !== id));
   };
@@ -1806,6 +1847,7 @@ function ReziseriTab({ reziseri, setReziseri, filmy, herci, isAdmin, userId }) {
         <OsobaForm data={form} setData={setForm} />
       </Modal>
       {detail && <OsobaDetailModal osoba={detail} filmy={filmy} herci={herci} reziseri={reziseri} onClose={() => setDetail(null)} onToggle={handleToggle} />}
+      {confirmDialog}
     </div>
   );
 }
@@ -2358,23 +2400,24 @@ function WatchlistTab({ watchlist, setWatchlist, isAdmin, userId }) {
     return Object.entries(groups).sort((a, b) => b[1].length - a[1].length);
   }, [filtered]);
 
+  const [confirm, confirmDialog] = useConfirm();
   const openAdd = () => { setEditing(null); setForm(emptyWatchItem()); setModal(true); };
   const openEdit = item => { setEditing(item.id); setForm({ ...item }); setModal(true); };
   const save = async () => {
     if (!form.nazev?.trim()) return;
     if (editing) {
       const { error } = await supabase.from("watchlist").update(form).eq("id", form.id);
-      if (error) { alert("Chyba při ukládání: " + error.message); return; }
+      if (error) { await confirm("Chyba při ukládání: " + error.message, { alert: true, confirmLabel: "OK" }); return; }
       setWatchlist(w => w.map(x => x.id === editing ? form : x));
     } else {
       const { error } = await supabase.from("watchlist").insert({ ...form });
-      if (error) { alert("Chyba při ukládání: " + error.message); return; }
+      if (error) { await confirm("Chyba při ukládání: " + error.message, { alert: true, confirmLabel: "OK" }); return; }
       setWatchlist(w => [form, ...w]);
     }
     setModal(false);
   };
   const del = async id => {
-    if (!window.confirm("Opravdu chceš smazat tento záznam?")) return;
+    if (!await confirm("Smazat ze watchlistu?", { detail: "Tato akce je nevratná.", danger: true, confirmLabel: "Smazat" })) return;
     await supabase.from("watchlist").delete().eq("id", id);
     setWatchlist(w => w.filter(x => x.id !== id));
   };
@@ -2446,6 +2489,7 @@ function WatchlistTab({ watchlist, setWatchlist, isAdmin, userId }) {
           </Field>
         </div>
       </Modal>
+      {confirmDialog}
     </div>
   );
 }
