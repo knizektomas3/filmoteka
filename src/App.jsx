@@ -1873,7 +1873,7 @@ function DashboardTab({ filmy, serialy, herci, reziseri }) {
   const monthNames = ["ledna","února","března","dubna","května","června","července","srpna","září","října","listopadu","prosince"];
   const dateStr = `${dayNames[now.getDay()]} ${now.getDate()}. ${monthNames[now.getMonth()]} ${now.getFullYear()}`;
 
-  const currentMonth = now.toISOString().slice(0, 7);
+  const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
   const currentYear = now.getFullYear().toString();
   const totalThisMonth = filmy.filter(f => f.datum?.startsWith(currentMonth)).length
     + serialy.filter(s => (s.konecSledovani || s.zacatekSledovani)?.startsWith(currentMonth)).length;
@@ -1893,7 +1893,7 @@ function DashboardTab({ filmy, serialy, herci, reziseri }) {
   // Monthly activity — last 12 months
   const months = Array.from({ length: 12 }, (_, i) => {
     const d = new Date(now.getFullYear(), now.getMonth() - 11 + i, 1);
-    const key = d.toISOString().slice(0, 7);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
     const label = d.toLocaleString("cs", { month: "short" }).slice(0, 2);
     const count = filmy.filter(f => f.datum?.startsWith(key)).length
       + serialy.filter(s => (s.konecSledovani || s.zacatekSledovani)?.startsWith(key)).length;
