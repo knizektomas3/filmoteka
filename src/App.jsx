@@ -122,10 +122,16 @@ async function fetchTmdbCeskyNazev(nazev, rok, typ = "movie") {
     const yearParam = withYear && rok
       ? (typ === "tv" ? `&first_air_date_year=${rok}` : `&year=${rok}`)
       : "";
-    const res = await fetch(`https://api.themoviedb.org/3/${endpoint}?api_key=${TMDB_KEY}&query=${encodeURIComponent(nazev)}${yearParam}&language=cs`);
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.results?.[0] ?? null;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+    try {
+      const res = await fetch(`https://api.themoviedb.org/3/${endpoint}?api_key=${TMDB_KEY}&query=${encodeURIComponent(nazev)}${yearParam}&language=cs`, { signal: controller.signal });
+      if (!res.ok) return null;
+      const data = await res.json();
+      return data.results?.[0] ?? null;
+    } finally {
+      clearTimeout(timeout);
+    }
   };
   try {
     let item = await search(true);
@@ -1593,6 +1599,7 @@ function FilmyTab({ filmy, setFilmy, herci, reziseri, isAdmin, userId }) {
   }, [filmy, q, filters, sort]);
 
   const [confirm, confirmDialog] = useConfirm();
+  const closeModal = () => { setModal(false); setForm(emptyFilm()); setEditing(null); };
   const openAdd = () => { setEditing(null); setForm(emptyFilm()); setModal(true); };
   const openEdit = f => { setEditing(f.id); setForm({ ...f }); setModal(true); };
   const save = async () => {
@@ -1608,7 +1615,7 @@ function FilmyTab({ filmy, setFilmy, herci, reziseri, isAdmin, userId }) {
       if (error) { await confirm("Chyba při ukládání: " + error.message, { alert: true, confirmLabel: "OK" }); return; }
       setFilmy(fs => [form, ...fs]);
     }
-    setModal(false);
+    closeModal();
   };
   const del = async id => {
     if (!await confirm("Smazat záznam?", { detail: "Tato akce je nevratná.", danger: true, confirmLabel: "Smazat" })) return;
@@ -1630,7 +1637,7 @@ function FilmyTab({ filmy, setFilmy, herci, reziseri, isAdmin, userId }) {
         </div>
       ) : <Empty />}
       {detail && <FilmDetailModal film={detail} filmy={filmy} herci={herci} reziseri={reziseri} onClose={() => setDetail(null)} onEdit={f => { setDetail(null); openEdit(f); }} isAdmin={isAdmin} />}
-      <Modal open={modal} title={editing ? "Upravit film" : "Přidat film"} onClose={() => setModal(false)} onSave={save} wide>
+      <Modal open={modal} title={editing ? "Upravit film" : "Přidat film"} onClose={closeModal} onSave={save} wide>
         <FilmForm data={form} setData={setForm} herci={herci} reziseri={reziseri} />
       </Modal>
       {confirmDialog}
@@ -1679,6 +1686,7 @@ function SerialyTab({ serialy, setSerialy, herci, isAdmin, userId }) {
   }, [serialy, q, filters, sort]);
 
   const [confirm, confirmDialog] = useConfirm();
+  const closeModal = () => { setModal(false); setForm(emptySerial()); setEditing(null); };
   const openAdd = () => { setEditing(null); setForm(emptySerial()); setModal(true); };
   const openEdit = s => { setEditing(s.id); setForm({ ...s }); setModal(true); };
   const save = async () => {
@@ -1694,7 +1702,7 @@ function SerialyTab({ serialy, setSerialy, herci, isAdmin, userId }) {
       if (error) { await confirm("Chyba při ukládání: " + error.message, { alert: true, confirmLabel: "OK" }); return; }
       setSerialy(ss => [form, ...ss]);
     }
-    setModal(false);
+    closeModal();
   };
   const del = async id => {
     if (!await confirm("Smazat záznam?", { detail: "Tato akce je nevratná.", danger: true, confirmLabel: "Smazat" })) return;
@@ -1715,7 +1723,7 @@ function SerialyTab({ serialy, setSerialy, herci, isAdmin, userId }) {
           {filtered.map(s => <SerialCard key={s.id} serial={s} herci={herci} onEdit={openEdit} onDelete={del} onDetail={setDetail} isAdmin={isAdmin} />)}
         </div>
       ) : <Empty />}
-      <Modal open={modal} title={editing ? "Upravit seriál" : "Přidat seriál"} onClose={() => setModal(false)} onSave={save} wide>
+      <Modal open={modal} title={editing ? "Upravit seriál" : "Přidat seriál"} onClose={closeModal} onSave={save} wide>
         <SerialForm data={form} setData={setForm} herci={herci} />
       </Modal>
       {detail && <SerialDetailModal serial={detail} serialy={serialy} herci={herci} onClose={() => setDetail(null)} onEdit={s => { setDetail(null); openEdit(s); }} isAdmin={isAdmin} />}
@@ -1749,6 +1757,7 @@ function HerciTab({ herci, setHerci, filmy, serialy, reziseri, isAdmin, userId }
   );
 
   const [confirm, confirmDialog] = useConfirm();
+  const closeModal = () => { setModal(false); setForm(emptyOsoba()); setEditing(null); };
   const openAdd = () => { setEditing(null); setForm(emptyOsoba()); setModal(true); };
   const openEdit = h => { setEditing(h.id); setForm({ ...h }); setModal(true); };
   const save = async () => {
@@ -1764,7 +1773,7 @@ function HerciTab({ herci, setHerci, filmy, serialy, reziseri, isAdmin, userId }
       if (error) { await confirm("Chyba při ukládání: " + error.message, { alert: true, confirmLabel: "OK" }); return; }
       setHerci(hs => [...hs, form]);
     }
-    setModal(false);
+    closeModal();
   };
   const del = async id => {
     if (!await confirm("Smazat herce?", { detail: "Tato akce je nevratná.", danger: true, confirmLabel: "Smazat" })) return;
@@ -1794,7 +1803,7 @@ function HerciTab({ herci, setHerci, filmy, serialy, reziseri, isAdmin, userId }
           {filtered.map(h => <OsobaCard key={h.id} osoba={h} onEdit={openEdit} onDelete={del} onDetail={setDetail} filmCount={countMap[h.id] ?? 0} isAdmin={isAdmin} />)}
         </div>
       ) : <Empty />}
-      <Modal open={modal} title={editing ? "Upravit herce" : "Přidat herce"} onClose={() => setModal(false)} onSave={save}>
+      <Modal open={modal} title={editing ? "Upravit herce" : "Přidat herce"} onClose={closeModal} onSave={save}>
         <OsobaForm data={form} setData={setForm} showNeoblibeny />
       </Modal>
       {detail && <OsobaDetailModal osoba={detail} filmy={filmy} serialy={serialy} herci={herci} reziseri={reziseri} onClose={() => setDetail(null)} onToggle={handleToggle} showNeoblibeny />}
@@ -1827,6 +1836,7 @@ function ReziseriTab({ reziseri, setReziseri, filmy, herci, isAdmin, userId }) {
   );
 
   const [confirm, confirmDialog] = useConfirm();
+  const closeModal = () => { setModal(false); setForm(emptyOsoba()); setEditing(null); };
   const openAdd = () => { setEditing(null); setForm(emptyOsoba()); setModal(true); };
   const openEdit = r => { setEditing(r.id); setForm({ ...r }); setModal(true); };
   const save = async () => {
@@ -1844,7 +1854,7 @@ function ReziseriTab({ reziseri, setReziseri, filmy, herci, isAdmin, userId }) {
       if (error) { await confirm("Chyba při ukládání: " + error.message, { alert: true, confirmLabel: "OK" }); return; }
       setReziseri(rs => [...rs, form]);
     }
-    setModal(false);
+    closeModal();
   };
   const del = async id => {
     if (!await confirm("Smazat režiséra?", { detail: "Tato akce je nevratná.", danger: true, confirmLabel: "Smazat" })) return;
@@ -1874,7 +1884,7 @@ function ReziseriTab({ reziseri, setReziseri, filmy, herci, isAdmin, userId }) {
           {filtered.map(r => <OsobaCard key={r.id} osoba={r} onEdit={openEdit} onDelete={del} onDetail={setDetail} filmCount={countMap[r.id] ?? 0} isAdmin={isAdmin} />)}
         </div>
       ) : <Empty />}
-      <Modal open={modal} title={editing ? "Upravit režiséra" : "Přidat režiséra"} onClose={() => setModal(false)} onSave={save}>
+      <Modal open={modal} title={editing ? "Upravit režiséra" : "Přidat režiséra"} onClose={closeModal} onSave={save}>
         <OsobaForm data={form} setData={setForm} />
       </Modal>
       {detail && <OsobaDetailModal osoba={detail} filmy={filmy} herci={herci} reziseri={reziseri} onClose={() => setDetail(null)} onToggle={handleToggle} />}
@@ -2432,6 +2442,7 @@ function WatchlistTab({ watchlist, setWatchlist, isAdmin, userId }) {
   }, [filtered]);
 
   const [confirm, confirmDialog] = useConfirm();
+  const closeModal = () => { setModal(false); setForm(emptyWatchItem()); setEditing(null); };
   const openAdd = () => { setEditing(null); setForm(emptyWatchItem()); setModal(true); };
   const openEdit = item => { setEditing(item.id); setForm({ ...item }); setModal(true); };
   const save = async () => {
@@ -2445,7 +2456,7 @@ function WatchlistTab({ watchlist, setWatchlist, isAdmin, userId }) {
       if (error) { await confirm("Chyba při ukládání: " + error.message, { alert: true, confirmLabel: "OK" }); return; }
       setWatchlist(w => [form, ...w]);
     }
-    setModal(false);
+    closeModal();
   };
   const del = async id => {
     if (!await confirm("Smazat ze watchlistu?", { detail: "Tato akce je nevratná.", danger: true, confirmLabel: "Smazat" })) return;
@@ -2501,7 +2512,7 @@ function WatchlistTab({ watchlist, setWatchlist, isAdmin, userId }) {
         </div>
       ))}
 
-      <Modal open={modal} title={editing ? "Upravit položku" : "Přidat do watchlistu"} onClose={() => setModal(false)} onSave={save}>
+      <Modal open={modal} title={editing ? "Upravit položku" : "Přidat do watchlistu"} onClose={closeModal} onSave={save}>
         <div style={{ display: "grid", gap: "0 20px" }}>
           <TextInput label="Název" value={form.nazev} onChange={v => u("nazev", v)} placeholder="Název filmu / seriálu" />
           <Field label="Typ">
