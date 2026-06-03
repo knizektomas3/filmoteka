@@ -1612,7 +1612,8 @@ function FilmyTab({ filmy, setFilmy, herci, reziseri, isAdmin, userId }) {
   };
   const del = async id => {
     if (!await confirm("Smazat záznam?", { detail: "Tato akce je nevratná.", danger: true, confirmLabel: "Smazat" })) return;
-    await supabase.from("filmy").delete().eq("id", id);
+    const { error } = await supabase.from("filmy").delete().eq("id", id);
+    if (error) { await confirm("Chyba při mazání: " + error.message, { alert: true, confirmLabel: "OK" }); return; }
     setFilmy(fs => fs.filter(f => f.id !== id));
   };
   const activeFilterCount = countActiveFilters(filters);
@@ -1697,7 +1698,8 @@ function SerialyTab({ serialy, setSerialy, herci, isAdmin, userId }) {
   };
   const del = async id => {
     if (!await confirm("Smazat záznam?", { detail: "Tato akce je nevratná.", danger: true, confirmLabel: "Smazat" })) return;
-    await supabase.from("serialy").delete().eq("id", id);
+    const { error } = await supabase.from("serialy").delete().eq("id", id);
+    if (error) { await confirm("Chyba při mazání: " + error.message, { alert: true, confirmLabel: "OK" }); return; }
     setSerialy(ss => ss.filter(s => s.id !== id));
   };
   const activeFilterCount = countActiveFilters(filters);
@@ -1766,7 +1768,8 @@ function HerciTab({ herci, setHerci, filmy, serialy, reziseri, isAdmin, userId }
   };
   const del = async id => {
     if (!await confirm("Smazat herce?", { detail: "Tato akce je nevratná.", danger: true, confirmLabel: "Smazat" })) return;
-    await supabase.from("herci").delete().eq("id", id);
+    const { error } = await supabase.from("herci").delete().eq("id", id);
+    if (error) { await confirm("Chyba při mazání: " + error.message, { alert: true, confirmLabel: "OK" }); return; }
     setHerci(hs => hs.filter(h => h.id !== id));
   };
 
@@ -1845,7 +1848,8 @@ function ReziseriTab({ reziseri, setReziseri, filmy, herci, isAdmin, userId }) {
   };
   const del = async id => {
     if (!await confirm("Smazat režiséra?", { detail: "Tato akce je nevratná.", danger: true, confirmLabel: "Smazat" })) return;
-    await supabase.from("reziseri").delete().eq("id", id);
+    const { error } = await supabase.from("reziseri").delete().eq("id", id);
+    if (error) { await confirm("Chyba při mazání: " + error.message, { alert: true, confirmLabel: "OK" }); return; }
     setReziseri(rs => rs.filter(r => r.id !== id));
   };
 
@@ -2445,7 +2449,8 @@ function WatchlistTab({ watchlist, setWatchlist, isAdmin, userId }) {
   };
   const del = async id => {
     if (!await confirm("Smazat ze watchlistu?", { detail: "Tato akce je nevratná.", danger: true, confirmLabel: "Smazat" })) return;
-    await supabase.from("watchlist").delete().eq("id", id);
+    const { error } = await supabase.from("watchlist").delete().eq("id", id);
+    if (error) { await confirm("Chyba při mazání: " + error.message, { alert: true, confirmLabel: "OK" }); return; }
     setWatchlist(w => w.filter(x => x.id !== id));
   };
   const u = (k, v) => setForm(d => ({ ...d, [k]: v }));
@@ -2748,27 +2753,27 @@ export default function App() {
     const realtimeChannel = supabase
       .channel("db-changes")
       .on("postgres_changes", { event: "*", schema: "public", table: "filmy" }, payload => {
-        if (payload.eventType === "INSERT") setFilmy(fs => [payload.new, ...fs]);
+        if (payload.eventType === "INSERT") setFilmy(fs => fs.some(f => f.id === payload.new.id) ? fs : [payload.new, ...fs]);
         else if (payload.eventType === "UPDATE") setFilmy(fs => fs.map(f => f.id === payload.new.id ? payload.new : f));
         else if (payload.eventType === "DELETE") setFilmy(fs => fs.filter(f => f.id !== payload.old.id));
       })
       .on("postgres_changes", { event: "*", schema: "public", table: "serialy" }, payload => {
-        if (payload.eventType === "INSERT") setSerialy(ss => [payload.new, ...ss]);
+        if (payload.eventType === "INSERT") setSerialy(ss => ss.some(s => s.id === payload.new.id) ? ss : [payload.new, ...ss]);
         else if (payload.eventType === "UPDATE") setSerialy(ss => ss.map(s => s.id === payload.new.id ? payload.new : s));
         else if (payload.eventType === "DELETE") setSerialy(ss => ss.filter(s => s.id !== payload.old.id));
       })
       .on("postgres_changes", { event: "*", schema: "public", table: "herci" }, payload => {
-        if (payload.eventType === "INSERT") setHerci(hs => [payload.new, ...hs]);
+        if (payload.eventType === "INSERT") setHerci(hs => hs.some(h => h.id === payload.new.id) ? hs : [payload.new, ...hs]);
         else if (payload.eventType === "UPDATE") setHerci(hs => hs.map(h => h.id === payload.new.id ? payload.new : h));
         else if (payload.eventType === "DELETE") setHerci(hs => hs.filter(h => h.id !== payload.old.id));
       })
       .on("postgres_changes", { event: "*", schema: "public", table: "reziseri" }, payload => {
-        if (payload.eventType === "INSERT") setReziseri(rs => [payload.new, ...rs]);
+        if (payload.eventType === "INSERT") setReziseri(rs => rs.some(r => r.id === payload.new.id) ? rs : [payload.new, ...rs]);
         else if (payload.eventType === "UPDATE") setReziseri(rs => rs.map(r => r.id === payload.new.id ? payload.new : r));
         else if (payload.eventType === "DELETE") setReziseri(rs => rs.filter(r => r.id !== payload.old.id));
       })
       .on("postgres_changes", { event: "*", schema: "public", table: "watchlist" }, payload => {
-        if (payload.eventType === "INSERT") setWatchlist(ws => [payload.new, ...ws]);
+        if (payload.eventType === "INSERT") setWatchlist(ws => ws.some(w => w.id === payload.new.id) ? ws : [payload.new, ...ws]);
         else if (payload.eventType === "UPDATE") setWatchlist(ws => ws.map(w => w.id === payload.new.id ? payload.new : w));
         else if (payload.eventType === "DELETE") setWatchlist(ws => ws.filter(w => w.id !== payload.old.id));
       })
