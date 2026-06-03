@@ -2541,12 +2541,15 @@ function WatchlistTab({ watchlist, setWatchlist, isAdmin, userId }) {
 function SettingsListEditor({ label, items, setItems }) {
   const [newItem, setNewItem] = useState("");
   const [dupError, setDupError] = useState(false);
+  const dupTimeout = useRef(null);
+  useEffect(() => () => clearTimeout(dupTimeout.current), []);
   const add = () => {
     const v = newItem.trim();
     if (!v) return;
     if (items.some(x => x.toLowerCase() === v.toLowerCase())) {
       setDupError(true);
-      setTimeout(() => setDupError(false), 2500);
+      clearTimeout(dupTimeout.current);
+      dupTimeout.current = setTimeout(() => setDupError(false), 2500);
       return;
     }
     setItems([...items].concat(v).sort((a, b) => a.localeCompare(b, "cs")));
