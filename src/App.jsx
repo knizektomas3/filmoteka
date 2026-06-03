@@ -2744,7 +2744,40 @@ export default function App() {
       }
     });
 
-    return () => subscription.unsubscribe();
+    // Realtime subscriptions
+    const realtimeChannel = supabase
+      .channel("db-changes")
+      .on("postgres_changes", { event: "*", schema: "public", table: "filmy" }, payload => {
+        if (payload.eventType === "INSERT") setFilmy(fs => [payload.new, ...fs]);
+        else if (payload.eventType === "UPDATE") setFilmy(fs => fs.map(f => f.id === payload.new.id ? payload.new : f));
+        else if (payload.eventType === "DELETE") setFilmy(fs => fs.filter(f => f.id !== payload.old.id));
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "serialy" }, payload => {
+        if (payload.eventType === "INSERT") setSerialy(ss => [payload.new, ...ss]);
+        else if (payload.eventType === "UPDATE") setSerialy(ss => ss.map(s => s.id === payload.new.id ? payload.new : s));
+        else if (payload.eventType === "DELETE") setSerialy(ss => ss.filter(s => s.id !== payload.old.id));
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "herci" }, payload => {
+        if (payload.eventType === "INSERT") setHerci(hs => [payload.new, ...hs]);
+        else if (payload.eventType === "UPDATE") setHerci(hs => hs.map(h => h.id === payload.new.id ? payload.new : h));
+        else if (payload.eventType === "DELETE") setHerci(hs => hs.filter(h => h.id !== payload.old.id));
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "reziseri" }, payload => {
+        if (payload.eventType === "INSERT") setReziseri(rs => [payload.new, ...rs]);
+        else if (payload.eventType === "UPDATE") setReziseri(rs => rs.map(r => r.id === payload.new.id ? payload.new : r));
+        else if (payload.eventType === "DELETE") setReziseri(rs => rs.filter(r => r.id !== payload.old.id));
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "watchlist" }, payload => {
+        if (payload.eventType === "INSERT") setWatchlist(ws => [payload.new, ...ws]);
+        else if (payload.eventType === "UPDATE") setWatchlist(ws => ws.map(w => w.id === payload.new.id ? payload.new : w));
+        else if (payload.eventType === "DELETE") setWatchlist(ws => ws.filter(w => w.id !== payload.old.id));
+      })
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+      supabase.removeChannel(realtimeChannel);
+    };
   }, []);
 
   const isMobile = useIsMobile();
