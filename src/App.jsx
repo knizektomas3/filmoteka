@@ -1599,7 +1599,6 @@ function FilmyTab({ filmy, setFilmy, herci, reziseri, isAdmin, userId }) {
   }, [filmy, q, filters, sort]);
 
   const [page, setPage] = useState(1);
-  useEffect(() => { setPage(1); }, [filtered]);
 
   const [confirm, confirmDialog] = useConfirm();
   const closeModal = () => { setModal(false); setForm(emptyFilm()); setEditing(null); };
@@ -1630,9 +1629,9 @@ function FilmyTab({ filmy, setFilmy, herci, reziseri, isAdmin, userId }) {
 
   return (
     <div>
-      <TabHeader count={filtered.length} onAdd={isAdmin ? openAdd : null} q={q} setQ={setQ} addLabel="Přidat film" onToggleFilters={() => setShowFilters(v => !v)} activeFilterCount={activeFilterCount} sortOptions={FILM_SORT_OPTS} sort={sort} setSort={setSort} />
-      {showFilters && <FilmyFilters filters={filters} setFilters={setFilters} filmy={filmy} />}
-      {activeFilterCount > 0 && <button onClick={() => setFilters(emptyFilmFilters())} style={{ ...btnSecondary, fontSize: 11, marginBottom: 12, color: T.danger, borderColor: T.danger }}>× Zrušit filtry</button>}
+      <TabHeader count={filtered.length} onAdd={isAdmin ? openAdd : null} q={q} setQ={v => { setQ(v); setPage(1); }} addLabel="Přidat film" onToggleFilters={() => setShowFilters(v => !v)} activeFilterCount={activeFilterCount} sortOptions={FILM_SORT_OPTS} sort={sort} setSort={v => { setSort(v); setPage(1); }} />
+      {showFilters && <FilmyFilters filters={filters} setFilters={v => { setFilters(v); setPage(1); }} filmy={filmy} />}
+      {activeFilterCount > 0 && <button onClick={() => { setFilters(emptyFilmFilters()); setPage(1); }} style={{ ...btnSecondary, fontSize: 11, marginBottom: 12, color: T.danger, borderColor: T.danger }}>× Zrušit filtry</button>}
       {filtered.length > 0 ? (
         <>
           <div style={{ border: `1px solid ${T.border}`, overflow: "hidden" }}>
@@ -1692,7 +1691,6 @@ function SerialyTab({ serialy, setSerialy, herci, isAdmin, userId }) {
   }, [serialy, q, filters, sort]);
 
   const [page, setPage] = useState(1);
-  useEffect(() => { setPage(1); }, [filtered]);
 
   const [confirm, confirmDialog] = useConfirm();
   const closeModal = () => { setModal(false); setForm(emptySerial()); setEditing(null); };
@@ -1723,9 +1721,9 @@ function SerialyTab({ serialy, setSerialy, herci, isAdmin, userId }) {
 
   return (
     <div>
-      <TabHeader count={filtered.length} onAdd={isAdmin ? openAdd : null} q={q} setQ={setQ} addLabel="Přidat seriál" onToggleFilters={() => setShowFilters(v => !v)} activeFilterCount={activeFilterCount} sortOptions={SERIAL_SORT_OPTS} sort={sort} setSort={setSort} />
-      {showFilters && <SerialyFilters filters={filters} setFilters={setFilters} serialy={serialy} />}
-      {activeFilterCount > 0 && <button onClick={() => setFilters(emptySerialFilters())} style={{ ...btnSecondary, fontSize: 11, marginBottom: 12, color: T.danger, borderColor: T.danger }}>× Zrušit filtry</button>}
+      <TabHeader count={filtered.length} onAdd={isAdmin ? openAdd : null} q={q} setQ={v => { setQ(v); setPage(1); }} addLabel="Přidat seriál" onToggleFilters={() => setShowFilters(v => !v)} activeFilterCount={activeFilterCount} sortOptions={SERIAL_SORT_OPTS} sort={sort} setSort={v => { setSort(v); setPage(1); }} />
+      {showFilters && <SerialyFilters filters={filters} setFilters={v => { setFilters(v); setPage(1); }} serialy={serialy} />}
+      {activeFilterCount > 0 && <button onClick={() => { setFilters(emptySerialFilters()); setPage(1); }} style={{ ...btnSecondary, fontSize: 11, marginBottom: 12, color: T.danger, borderColor: T.danger }}>× Zrušit filtry</button>}
       {filtered.length > 0 ? (
         <>
           <div style={{ border: `1px solid ${T.border}`, overflow: "hidden" }}>
@@ -1769,7 +1767,6 @@ function HerciTab({ herci, setHerci, filmy, serialy, reziseri, isAdmin, userId }
   );
 
   const [page, setPage] = useState(1);
-  useEffect(() => { setPage(1); }, [filtered]);
 
   const [confirm, confirmDialog] = useConfirm();
   const closeModal = () => { setModal(false); setForm(emptyOsoba()); setEditing(null); };
@@ -1806,10 +1803,10 @@ function HerciTab({ herci, setHerci, filmy, serialy, reziseri, isAdmin, userId }
 
   return (
     <div>
-      <TabHeader count={filtered.length} onAdd={isAdmin ? openAdd : null} q={q} setQ={setQ} addLabel="Přidat herce" />
+      <TabHeader count={filtered.length} onAdd={isAdmin ? openAdd : null} q={q} setQ={v => { setQ(v); setPage(1); }} addLabel="Přidat herce" />
       <div style={{ display: "flex", gap: 6, marginBottom: 14 }}>
         {[{k: null, l: "Všichni"}, {k: "oblibeny", l: "★ Oblíbení"}, {k: "neoblibeny", l: "✕ Neoblíbení"}, {k: "mrtvy", l: "† Po smrti"}].map(({ k, l }) => (
-          <FilterPill key={l} label={l} active={osobaFilter === k} onClick={() => setOsobaFilter(k)} />
+          <FilterPill key={l} label={l} active={osobaFilter === k} onClick={() => { setOsobaFilter(k); setPage(1); }} />
         ))}
       </div>
       {filtered.length > 0 ? (
@@ -1854,7 +1851,6 @@ function ReziseriTab({ reziseri, setReziseri, filmy, herci, isAdmin, userId }) {
   );
 
   const [page, setPage] = useState(1);
-  useEffect(() => { setPage(1); }, [filtered]);
 
   const [confirm, confirmDialog] = useConfirm();
   const closeModal = () => { setModal(false); setForm(emptyOsoba()); setEditing(null); };
@@ -1893,10 +1889,10 @@ function ReziseriTab({ reziseri, setReziseri, filmy, herci, isAdmin, userId }) {
 
   return (
     <div>
-      <TabHeader count={filtered.length} onAdd={isAdmin ? openAdd : null} q={q} setQ={setQ} addLabel="Přidat režiséra" />
+      <TabHeader count={filtered.length} onAdd={isAdmin ? openAdd : null} q={q} setQ={v => { setQ(v); setPage(1); }} addLabel="Přidat režiséra" />
       <div style={{ display: "flex", gap: 6, marginBottom: 14 }}>
         {[{k: null, l: "Všichni"}, {k: "oblibeny", l: "★ Oblíbení"}, {k: "mrtvy", l: "† Po smrti"}].map(({ k, l }) => (
-          <FilterPill key={l} label={l} active={osobaFilter === k} onClick={() => setOsobaFilter(k)} />
+          <FilterPill key={l} label={l} active={osobaFilter === k} onClick={() => { setOsobaFilter(k); setPage(1); }} />
         ))}
       </div>
       {filtered.length > 0 ? (
