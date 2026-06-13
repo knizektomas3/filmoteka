@@ -2812,33 +2812,10 @@ export default function App() {
       if (event === "PASSWORD_RECOVERY") setResetModal(true);
     });
 
-    // Fetch data
-    Promise.all([
-      supabase.from("herci").select("*"),
-      supabase.from("reziseri").select("*"),
-      supabase.from("filmy").select("*"),
-      supabase.from("serialy").select("*"),
-      supabase.from("watchlist").select("*"),
-      supabase.from("nastaveni").select("*").eq("id", 1).single(),
-    ]).then(([h, r, f, s, w, n]) => {
-      setHerci(h.data ?? []);
-      setReziseri(r.data ?? []);
-      const filmy = f.data ?? [];
-      setFilmy(filmy);
-      setSerialy(s.data ?? []);
-      setWatchlist(w.data ?? []);
-      if (n.data) {
-        if (n.data.platformy?.length) setPlatformyState(n.data.platformy);
-        if (n.data.narodnosti?.length) setNarodnostiState(n.data.narodnosti);
-      }
-      setLoading(false);
-      if (deepLinkFilmId) {
-        const film = filmy.find(x => x.id === deepLinkFilmId);
-        if (film) { setTab("filmy"); setDeepLinkFilm(film); }
-      }
-    });
-
-    // Realtime subscriptions
+    // Realtime subscriptions + initial fetch
+    // Subscription se nastaví PRVNÍ, fetch proběhne až po potvrzení aktivního spojení.
+    // Tím se eliminuje race condition kde by subscription mohla přijmout buffered eventy
+    // ze Supabase WAL po skončení fetche a narušit stav.
     const realtimeChannel = supabase
       .channel("db-changes")
       .on("postgres_changes", { event: "*", schema: "public", table: "filmy" }, payload => {
@@ -2866,7 +2843,34 @@ export default function App() {
         else if (payload.eventType === "UPDATE") setWatchlist(ws => ws.map(w => w.id === payload.new.id ? payload.new : w));
         else if (payload.eventType === "DELETE") setWatchlist(ws => ws.filter(w => w.id !== payload.old.id));
       })
-      .subscribe();
+      .subscribe((status) => {
+        if (status === "SUBSCRIBED") {
+          Promise.all([
+            supabase.from("herci").select("*"),
+            supabase.from("reziseri").select("*"),
+            supabase.from("filmy").select("*"),
+            supabase.from("serialy").select("*"),
+            supabase.from("watchlist").select("*"),
+            supabase.from("nastaveni").select("*").eq("id", 1).single(),
+          ]).then(([h, r, f, s, w, n]) => {
+            setHerci(h.data ?? []);
+            setReziseri(r.data ?? []);
+            const filmy = f.data ?? [];
+            setFilmy(filmy);
+            setSerialy(s.data ?? []);
+            setWatchlist(w.data ?? []);
+            if (n.data) {
+              if (n.data.platformy?.length) setPlatformyState(n.data.platformy);
+              if (n.data.narodnosti?.length) setNarodnostiState(n.data.narodnosti);
+            }
+            setLoading(false);
+            if (deepLinkFilmId) {
+              const film = filmy.find(x => x.id === deepLinkFilmId);
+              if (film) { setTab("filmy"); setDeepLinkFilm(film); }
+            }
+          });
+        }
+      });
 
     return () => {
       subscription.unsubscribe();
