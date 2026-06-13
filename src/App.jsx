@@ -1598,6 +1598,9 @@ function FilmyTab({ filmy, setFilmy, herci, reziseri, isAdmin, userId }) {
     return list;
   }, [filmy, q, filters, sort]);
 
+  const [page, setPage] = useState(1);
+  useEffect(() => { setPage(1); }, [filtered]);
+
   const [confirm, confirmDialog] = useConfirm();
   const closeModal = () => { setModal(false); setForm(emptyFilm()); setEditing(null); };
   const openAdd = () => { setEditing(null); setForm(emptyFilm()); setModal(true); };
@@ -1631,10 +1634,13 @@ function FilmyTab({ filmy, setFilmy, herci, reziseri, isAdmin, userId }) {
       {showFilters && <FilmyFilters filters={filters} setFilters={setFilters} filmy={filmy} />}
       {activeFilterCount > 0 && <button onClick={() => setFilters(emptyFilmFilters())} style={{ ...btnSecondary, fontSize: 11, marginBottom: 12, color: T.danger, borderColor: T.danger }}>× Zrušit filtry</button>}
       {filtered.length > 0 ? (
-        <div style={{ border: `1px solid ${T.border}`, overflow: "hidden" }}>
-          <FilmTableHeader />
-          {filtered.map(f => <FilmCard key={f.id} film={f} herci={herci} reziseri={reziseri} onEdit={openEdit} onDelete={del} onDetail={setDetail} isAdmin={isAdmin} />)}
-        </div>
+        <>
+          <div style={{ border: `1px solid ${T.border}`, overflow: "hidden" }}>
+            <FilmTableHeader />
+            {filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map(f => <FilmCard key={f.id} film={f} herci={herci} reziseri={reziseri} onEdit={openEdit} onDelete={del} onDetail={setDetail} isAdmin={isAdmin} />)}
+          </div>
+          <Pagination page={page} total={filtered.length} onChange={setPage} />
+        </>
       ) : <Empty />}
       {detail && <FilmDetailModal film={detail} filmy={filmy} herci={herci} reziseri={reziseri} onClose={() => setDetail(null)} onEdit={f => { setDetail(null); openEdit(f); }} isAdmin={isAdmin} />}
       <Modal open={modal} title={editing ? "Upravit film" : "Přidat film"} onClose={closeModal} onSave={save} wide>
@@ -1685,6 +1691,9 @@ function SerialyTab({ serialy, setSerialy, herci, isAdmin, userId }) {
     return list;
   }, [serialy, q, filters, sort]);
 
+  const [page, setPage] = useState(1);
+  useEffect(() => { setPage(1); }, [filtered]);
+
   const [confirm, confirmDialog] = useConfirm();
   const closeModal = () => { setModal(false); setForm(emptySerial()); setEditing(null); };
   const openAdd = () => { setEditing(null); setForm(emptySerial()); setModal(true); };
@@ -1718,10 +1727,13 @@ function SerialyTab({ serialy, setSerialy, herci, isAdmin, userId }) {
       {showFilters && <SerialyFilters filters={filters} setFilters={setFilters} serialy={serialy} />}
       {activeFilterCount > 0 && <button onClick={() => setFilters(emptySerialFilters())} style={{ ...btnSecondary, fontSize: 11, marginBottom: 12, color: T.danger, borderColor: T.danger }}>× Zrušit filtry</button>}
       {filtered.length > 0 ? (
-        <div style={{ border: `1px solid ${T.border}`, overflow: "hidden" }}>
-          <SerialTableHeader />
-          {filtered.map(s => <SerialCard key={s.id} serial={s} herci={herci} onEdit={openEdit} onDelete={del} onDetail={setDetail} isAdmin={isAdmin} />)}
-        </div>
+        <>
+          <div style={{ border: `1px solid ${T.border}`, overflow: "hidden" }}>
+            <SerialTableHeader />
+            {filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map(s => <SerialCard key={s.id} serial={s} herci={herci} onEdit={openEdit} onDelete={del} onDetail={setDetail} isAdmin={isAdmin} />)}
+          </div>
+          <Pagination page={page} total={filtered.length} onChange={setPage} />
+        </>
       ) : <Empty />}
       <Modal open={modal} title={editing ? "Upravit seriál" : "Přidat seriál"} onClose={closeModal} onSave={save} wide>
         <SerialForm data={form} setData={setForm} herci={herci} />
@@ -1755,6 +1767,9 @@ function HerciTab({ herci, setHerci, filmy, serialy, reziseri, isAdmin, userId }
       .sort((a, b) => a.jmeno.localeCompare(b.jmeno, "cs")),
     [herci, q, osobaFilter]
   );
+
+  const [page, setPage] = useState(1);
+  useEffect(() => { setPage(1); }, [filtered]);
 
   const [confirm, confirmDialog] = useConfirm();
   const closeModal = () => { setModal(false); setForm(emptyOsoba()); setEditing(null); };
@@ -1798,10 +1813,13 @@ function HerciTab({ herci, setHerci, filmy, serialy, reziseri, isAdmin, userId }
         ))}
       </div>
       {filtered.length > 0 ? (
-        <div style={{ border: `1px solid ${T.border}`, overflow: "hidden" }}>
-          <OsobaTableHeader />
-          {filtered.map(h => <OsobaCard key={h.id} osoba={h} onEdit={openEdit} onDelete={del} onDetail={setDetail} filmCount={countMap[h.id] ?? 0} isAdmin={isAdmin} />)}
-        </div>
+        <>
+          <div style={{ border: `1px solid ${T.border}`, overflow: "hidden" }}>
+            <OsobaTableHeader />
+            {filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map(h => <OsobaCard key={h.id} osoba={h} onEdit={openEdit} onDelete={del} onDetail={setDetail} filmCount={countMap[h.id] ?? 0} isAdmin={isAdmin} />)}
+          </div>
+          <Pagination page={page} total={filtered.length} onChange={setPage} />
+        </>
       ) : <Empty />}
       <Modal open={modal} title={editing ? "Upravit herce" : "Přidat herce"} onClose={closeModal} onSave={save}>
         <OsobaForm data={form} setData={setForm} showNeoblibeny />
@@ -1834,6 +1852,9 @@ function ReziseriTab({ reziseri, setReziseri, filmy, herci, isAdmin, userId }) {
       .sort((a, b) => a.jmeno.localeCompare(b.jmeno, "cs")),
     [reziseri, q, osobaFilter]
   );
+
+  const [page, setPage] = useState(1);
+  useEffect(() => { setPage(1); }, [filtered]);
 
   const [confirm, confirmDialog] = useConfirm();
   const closeModal = () => { setModal(false); setForm(emptyOsoba()); setEditing(null); };
@@ -1879,16 +1900,74 @@ function ReziseriTab({ reziseri, setReziseri, filmy, herci, isAdmin, userId }) {
         ))}
       </div>
       {filtered.length > 0 ? (
-        <div style={{ border: `1px solid ${T.border}`, overflow: "hidden" }}>
-          <OsobaTableHeader />
-          {filtered.map(r => <OsobaCard key={r.id} osoba={r} onEdit={openEdit} onDelete={del} onDetail={setDetail} filmCount={countMap[r.id] ?? 0} isAdmin={isAdmin} />)}
-        </div>
+        <>
+          <div style={{ border: `1px solid ${T.border}`, overflow: "hidden" }}>
+            <OsobaTableHeader />
+            {filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map(r => <OsobaCard key={r.id} osoba={r} onEdit={openEdit} onDelete={del} onDetail={setDetail} filmCount={countMap[r.id] ?? 0} isAdmin={isAdmin} />)}
+          </div>
+          <Pagination page={page} total={filtered.length} onChange={setPage} />
+        </>
       ) : <Empty />}
       <Modal open={modal} title={editing ? "Upravit režiséra" : "Přidat režiséra"} onClose={closeModal} onSave={save}>
         <OsobaForm data={form} setData={setForm} />
       </Modal>
       {detail && <OsobaDetailModal osoba={detail} filmy={filmy} herci={herci} reziseri={reziseri} onClose={() => setDetail(null)} onToggle={handleToggle} />}
       {confirmDialog}
+    </div>
+  );
+}
+
+const PAGE_SIZE = 20;
+
+function Pagination({ page, total, onChange }) {
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+  const isMobile = useMobile();
+  if (totalPages <= 1) return null;
+
+  const getPages = () => {
+    if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1);
+    if (page <= 4) return [1, 2, 3, 4, 5, "…", totalPages];
+    if (page >= totalPages - 3) return [1, "…", totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+    return [1, "…", page - 1, page, page + 1, "…", totalPages];
+  };
+
+  const go = (p) => { onChange(p); window.scrollTo({ top: 0, behavior: "smooth" }); };
+
+  const base = {
+    display: "flex", alignItems: "center", justifyContent: "center",
+    borderRadius: 4, border: `1px solid ${T.border}`,
+    background: "transparent", color: T.muted, cursor: "pointer",
+    fontSize: 12, fontWeight: 500, userSelect: "none",
+    transition: "background 0.12s, color 0.12s, border-color 0.12s",
+    minWidth: isMobile ? 34 : 36, height: isMobile ? 34 : 36, padding: "0 6px",
+  };
+  const activeStyle = { ...base, background: T.gold, color: "#0f0e0c", border: `1px solid ${T.gold}`, fontWeight: 700, cursor: "default" };
+  const disabledStyle = { ...base, opacity: 0.28, cursor: "default" };
+  const arrowStyle = (disabled) => ({ ...base, padding: "0 10px", ...(disabled ? { opacity: 0.28, cursor: "default" } : {}) });
+
+  if (isMobile) {
+    return (
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 16 }}>
+        <button style={arrowStyle(page === 1)} onClick={() => { if (page > 1) go(page - 1); }} disabled={page === 1}>←</button>
+        <span style={{ fontSize: 12, color: T.muted, minWidth: 72, textAlign: "center" }}>
+          strana <strong style={{ color: T.text }}>{page}</strong> / {totalPages}
+        </span>
+        <button style={arrowStyle(page === totalPages)} onClick={() => { if (page < totalPages) go(page + 1); }} disabled={page === totalPages}>→</button>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 4, marginTop: 16, flexWrap: "wrap" }}>
+      <button style={arrowStyle(page === 1)} onClick={() => { if (page > 1) go(page - 1); }} disabled={page === 1}>← Předchozí</button>
+      {getPages().map((p, i) =>
+        p === "…" ? (
+          <span key={`el-${i}`} style={{ color: T.muted, padding: "0 2px", lineHeight: "36px" }}>…</span>
+        ) : (
+          <button key={p} style={p === page ? activeStyle : base} onClick={() => { if (p !== page) go(p); }}>{p}</button>
+        )
+      )}
+      <button style={arrowStyle(page === totalPages)} onClick={() => { if (page < totalPages) go(page + 1); }} disabled={page === totalPages}>Další →</button>
     </div>
   );
 }
