@@ -50,7 +50,7 @@ const PLATFORMY = [
   "Netflix","Oneplay","Prime Video","SkyShowtime",
 ];
 const STAV_SERIALU = ["Sleduji","Dokoukáno","Nedokončeno","Plánuji"];
-const SERIE = ["První","Druhá","Třetí","Čtvrtá","Pátá","Šestá","Sedmá","Osmá"];
+const SERIE = ["První","Druhá","Třetí","Čtvrtá","Pátá","Šestá","Sedmá","Osmá","Devátá","Desátá"];
 const NARODNOSTI = [
   "USA","Velká Británie","Francie","Německo","Itálie","Španělsko",
   "Česká republika","Slovensko","Japonsko","Jižní Korea","Austrálie",
