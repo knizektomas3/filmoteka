@@ -144,29 +144,31 @@ async function fetchTmdbCeskyNazev(nazev, rok, typ = "movie") {
 
 // ─── FONTY ────────────────────────────────────────────────────────────────────
 const F = {
-  display: '"Fraunces", "Georgia", serif',
+  display: '"Inter", system-ui, sans-serif',
   sans:    '"Inter", system-ui, sans-serif',
   mono:    '"JetBrains Mono", "Menlo", monospace',
 };
 
 // ─── TÉMA ─────────────────────────────────────────────────────────────────────
 const TDark = {
-  bg: "#0f0e0c", surface: "#16150f", elevated: "#1a1813",
-  border: "#2a271f", borderHover: "#3a3628", hairSoft: "#1f1d17",
-  gold: "#e85a44", goldBg: "#3a1a14",
-  text: "#f1ece0", muted: "#5f594c", dimmer: "#2a271f",
-  inkSoft: "#cfc9b8", inkMuted: "#8a8370",
-  tintMd: "rgba(241,236,224,0.08)", tintHi: "rgba(241,236,224,0.05)",
-  danger: "#e85a44", blue: "#4a9eca", purple: "#9b6ec8", green: "#4caf7d", orange: "#e67e22",
+  bg: "#09090b", surface: "#18181b", elevated: "#27272a",
+  border: "#3f3f46", borderHover: "#52525b", hairSoft: "#27272a",
+  gold: "#6366f1",   // accent = indigo
+  goldBg: "#1e1b4b",
+  text: "#fafafa", muted: "#71717a", dimmer: "#3f3f46",
+  inkSoft: "#d4d4d8", inkMuted: "#a1a1aa",
+  tintMd: "rgba(255,255,255,0.07)", tintHi: "rgba(255,255,255,0.04)",
+  danger: "#ef4444", blue: "#3b82f6", purple: "#a78bfa", green: "#34d399", orange: "#fb923c",
 };
 const TLight = {
-  bg: "#f5f1e8", surface: "#fbf8f0", elevated: "#efeadd",
-  border: "#e2dccc", borderHover: "#c8c0ac", hairSoft: "#ece6d6",
-  gold: "#c43a2a", goldBg: "#f1dcd6",
-  text: "#141311", muted: "#8f877a", dimmer: "#e2dccc",
-  inkSoft: "#3a3632", inkMuted: "#6b645a",
-  tintMd: "rgba(20,19,17,0.07)", tintHi: "rgba(20,19,17,0.04)",
-  danger: "#c43a2a", blue: "#2563a8", purple: "#7c3aad", green: "#1e7e4a", orange: "#b45309",
+  bg: "#ffffff", surface: "#f4f4f5", elevated: "#e4e4e7",
+  border: "#e4e4e7", borderHover: "#d4d4d8", hairSoft: "#f4f4f5",
+  gold: "#4f46e5",   // accent = indigo
+  goldBg: "#eef2ff",
+  text: "#18181b", muted: "#71717a", dimmer: "#e4e4e7",
+  inkSoft: "#3f3f46", inkMuted: "#52525b",
+  tintMd: "rgba(0,0,0,0.05)", tintHi: "rgba(0,0,0,0.03)",
+  danger: "#dc2626", blue: "#2563eb", purple: "#7c3aed", green: "#16a34a", orange: "#ea580c",
 };
 let T = { ...TDark };
 
@@ -212,7 +214,7 @@ function Modal({ open, title, onClose, onSave, children, wide }) {
     }}>
       <div style={{
         background: T.surface, border: `1px solid ${T.border}`,
-        borderRadius: isMobile ? "12px 12px 0 0" : 8,
+        borderRadius: isMobile ? "12px 12px 0 0" : 12,
         width: isMobile ? "100%" : (wide ? 740 : 520),
         maxWidth: "100%", maxHeight: isMobile ? "92vh" : "92vh",
         display: "flex", flexDirection: "column",
@@ -626,7 +628,7 @@ function TagList({ items }) {
 // ─── KARTY ────────────────────────────────────────────────────────────────────
 let cardStyle = {
   background: T.surface, border: `1px solid ${T.border}`,
-  borderRadius: 6, padding: "13px 16px", marginBottom: 8,
+  borderRadius: 8, padding: "13px 16px", marginBottom: 8,
   display: "flex", justifyContent: "space-between", alignItems: "flex-start",
   transition: "border-color 0.15s",
 };
@@ -698,11 +700,11 @@ function FilmDetailModal({ film: initialFilm, filmy, herci, reziseri, onClose, o
       onClick={e => e.target === e.currentTarget && onClose()}>
       <div style={{ background: T.bg, width: "100%", maxWidth: 960, height: isMobile ? "92vh" : "auto", maxHeight: "92vh", display: "flex", flexDirection: "column" }}>
         {/* Masthead */}
-        <div style={{ padding: isMobile ? "16px 16px 12px" : "28px 36px 20px", borderBottom: `1px solid ${T.text}`, flexShrink: 0 }}>
+        <div style={{ padding: isMobile ? "16px 16px 12px" : "28px 36px 20px", borderBottom: `1px solid ${T.border}`, flexShrink: 0 }}>
           <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr auto", gap: 24, alignItems: "flex-end" }}>
             <div>
-              <h2 style={{ margin: 0, fontFamily: F.display, fontSize: isMobile ? 32 : 60, fontWeight: 500, color: T.text, letterSpacing: "-0.04em", lineHeight: 0.95 }}>
-                {film.nazev}<span style={{ color: T.gold, fontWeight: 600 }}>.</span>
+              <h2 style={{ margin: 0, fontFamily: F.sans, fontSize: isMobile ? 24 : 42, fontWeight: 700, color: T.text, letterSpacing: "-0.025em", lineHeight: 1.1 }}>
+                {film.nazev}
               </h2>
               {film.ceskyNazev && <div style={{ fontFamily: F.sans, fontSize: 14, color: T.muted, fontStyle: "italic", marginTop: 6 }}>({film.ceskyNazev})</div>}
             </div>
@@ -845,7 +847,7 @@ function FilmCard({ film, herci, reziseri, onEdit, onDelete, onDetail, isAdmin }
         {(filmReziseri.length > 0 || filmHerci.length > 0) && (
           <div style={{ fontFamily: F.mono, fontSize: 10, marginTop: 3, letterSpacing: "0.02em" }}>
             {filmReziseri.length > 0 && (
-              <span style={{ color: T.gold }}>rež. {filmReziseri.map(r => r.jmeno).join(", ")}</span>
+              <span style={{ color: T.inkMuted }}>rež. {filmReziseri.map(r => r.jmeno).join(", ")}</span>
             )}
             {filmReziseri.length > 0 && filmHerci.length > 0 && <span style={{ color: T.inkMuted }}> · </span>}
             {filmHerci.length > 0 && (
@@ -916,11 +918,11 @@ function SerialDetailModal({ serial: initialSerial, serialy, herci, onClose, onE
       onClick={e => e.target === e.currentTarget && onClose()}>
       <div style={{ background: T.bg, width: "100%", maxWidth: 820, height: isMobile ? "92vh" : "auto", maxHeight: "92vh", display: "flex", flexDirection: "column" }}>
         {/* Masthead */}
-        <div style={{ padding: isMobile ? "16px 16px 12px" : "28px 36px 20px", borderBottom: `1px solid ${T.text}`, flexShrink: 0 }}>
+        <div style={{ padding: isMobile ? "16px 16px 12px" : "28px 36px 20px", borderBottom: `1px solid ${T.border}`, flexShrink: 0 }}>
           <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr auto", gap: 24, alignItems: "flex-end" }}>
             <div>
-              <h2 style={{ margin: 0, fontFamily: F.display, fontSize: isMobile ? 32 : 60, fontWeight: 500, color: T.text, letterSpacing: "-0.04em", lineHeight: 0.95 }}>
-                {serial.nazev}<span style={{ color: T.gold, fontWeight: 600 }}>.</span>
+              <h2 style={{ margin: 0, fontFamily: F.sans, fontSize: isMobile ? 24 : 42, fontWeight: 700, color: T.text, letterSpacing: "-0.025em", lineHeight: 1.1 }}>
+                {serial.nazev}
               </h2>
               {serial.ceskyNazev && <div style={{ fontFamily: F.sans, fontSize: 14, color: T.muted, fontStyle: "italic", marginTop: 6 }}>({serial.ceskyNazev})</div>}
             </div>
@@ -1638,12 +1640,12 @@ function FilmyTab({ filmy, setFilmy, herci, reziseri, isAdmin, userId }) {
           display: "grid", gridTemplateColumns: "1fr auto",
           alignItems: "flex-end", gap: 40,
           paddingBottom: 20, marginBottom: 20,
-          borderBottom: `1px solid ${T.text}`,
+          borderBottom: `1px solid ${T.border}`,
         }}>
           <div>
             <div style={{ fontFamily: F.mono, fontSize: 11, color: T.muted, letterSpacing: "0.18em", textTransform: "uppercase", marginBottom: 10 }}>Katalog · Filmy</div>
-            <h1 style={{ margin: 0, fontFamily: F.display, fontSize: 64, fontWeight: 500, color: T.text, letterSpacing: "-0.045em", lineHeight: 0.9 }}>
-              Filmy<span style={{ color: T.gold, fontWeight: 600 }}>.</span>
+            <h1 style={{ margin: 0, fontFamily: F.sans, fontSize: 32, fontWeight: 700, color: T.text, letterSpacing: "-0.025em", lineHeight: 1 }}>
+              Filmy
             </h1>
           </div>
           <div style={{ display: "flex", gap: 32 }}>
@@ -1752,12 +1754,12 @@ function SerialyTab({ serialy, setSerialy, herci, isAdmin, userId }) {
           display: "grid", gridTemplateColumns: "1fr auto",
           alignItems: "flex-end", gap: 40,
           paddingBottom: 20, marginBottom: 20,
-          borderBottom: `1px solid ${T.text}`,
+          borderBottom: `1px solid ${T.border}`,
         }}>
           <div>
             <div style={{ fontFamily: F.mono, fontSize: 11, color: T.muted, letterSpacing: "0.18em", textTransform: "uppercase", marginBottom: 10 }}>Katalog · Seriály</div>
-            <h1 style={{ margin: 0, fontFamily: F.display, fontSize: 64, fontWeight: 500, color: T.text, letterSpacing: "-0.045em", lineHeight: 0.9 }}>
-              Seriály<span style={{ color: T.gold, fontWeight: 600 }}>.</span>
+            <h1 style={{ margin: 0, fontFamily: F.sans, fontSize: 32, fontWeight: 700, color: T.text, letterSpacing: "-0.025em", lineHeight: 1 }}>
+              Seriály
             </h1>
           </div>
           <div style={{ display: "flex", gap: 32 }}>
@@ -2102,10 +2104,10 @@ function DashSectionHead({ title, meta, tight = false }) {
     <div style={{
       display: "flex", justifyContent: "space-between", alignItems: "baseline",
       paddingBottom: tight ? 6 : 9,
-      borderBottom: `1px solid ${T.text}`,
+      borderBottom: `1px solid ${T.border}`,
       marginBottom: tight ? 12 : 16,
     }}>
-      <div style={{ fontFamily: F.display, fontSize: tight ? 17 : 20, fontWeight: 500, color: T.text, letterSpacing: "-0.025em" }}>{title}</div>
+      <div style={{ fontFamily: F.sans, fontSize: tight ? 17 : 20, fontWeight: 500, color: T.text, letterSpacing: "-0.025em" }}>{title}</div>
       {meta && <div style={{ fontFamily: F.mono, fontSize: 10, color: T.muted, letterSpacing: "0.1em", textTransform: "uppercase" }}>{meta}</div>}
     </div>
   );
@@ -2190,14 +2192,14 @@ function DashboardTab({ filmy, serialy, herci, reziseri }) {
         display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr auto",
         alignItems: "flex-end", gap: 32,
         paddingBottom: 24, marginBottom: 32,
-        borderBottom: `1px solid ${T.text}`,
+        borderBottom: `1px solid ${T.border}`,
       }}>
         <div>
           <div style={{ fontFamily: F.mono, fontSize: 11, color: T.muted, letterSpacing: "0.18em", textTransform: "uppercase", marginBottom: 10 }}>
             {dateStr}
           </div>
-          <h1 style={{ margin: "0 0 12px", fontFamily: F.display, fontSize: isMobile ? 44 : 76, fontWeight: 500, color: T.text, letterSpacing: "-0.045em", lineHeight: 0.9 }}>
-            Dobré ráno<span style={{ color: T.gold, fontWeight: 600 }}>.</span>
+          <h1 style={{ margin: "0 0 10px", fontFamily: F.sans, fontSize: isMobile ? 26 : 36, fontWeight: 700, color: T.text, letterSpacing: "-0.025em", lineHeight: 1.1 }}>
+            Dobré ráno
           </h1>
           <div style={{ maxWidth: 500, fontSize: 15, color: T.inkSoft, lineHeight: 1.55 }}>
             Ve sbírce je <strong style={{ color: T.text }}>{filmy.length} filmů</strong> a <strong style={{ color: T.text }}>{serialy.length} seriálů</strong>. Průměrné hodnocení <strong style={{ color: T.text }}>{avgRating}</strong>.
@@ -2382,14 +2384,14 @@ function BilanceFilmyTab({ filmy }) {
         display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr auto',
         alignItems: 'flex-end', gap: 32,
         paddingBottom: 24, marginBottom: 32,
-        borderBottom: `1px solid ${T.text}`,
+        borderBottom: `1px solid ${T.border}`,
       }}>
         <div>
           <div style={{ fontFamily: F.mono, fontSize: 11, color: T.muted, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 8 }}>
             Bilance · Filmy
           </div>
-          <h1 style={{ margin: 0, fontFamily: F.display, fontSize: isMobile ? 40 : 64, fontWeight: 500, color: T.text, letterSpacing: '-0.04em', lineHeight: 0.92 }}>
-            Filmy<span style={{ color: T.gold, fontWeight: 600 }}>.</span>
+          <h1 style={{ margin: 0, fontFamily: F.sans, fontSize: isMobile ? 26 : 32, fontWeight: 700, color: T.text, letterSpacing: '-0.025em', lineHeight: 1.1 }}>
+            Filmy
           </h1>
         </div>
         <div style={{ display: 'flex', gap: isMobile ? 24 : 40, flexWrap: 'wrap' }}>
@@ -2488,14 +2490,14 @@ function BilanceSerialyTab({ serialy }) {
         display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr auto',
         alignItems: 'flex-end', gap: 32,
         paddingBottom: 24, marginBottom: 32,
-        borderBottom: `1px solid ${T.text}`,
+        borderBottom: `1px solid ${T.border}`,
       }}>
         <div>
           <div style={{ fontFamily: F.mono, fontSize: 11, color: T.muted, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 8 }}>
             Bilance · Seriály
           </div>
-          <h1 style={{ margin: 0, fontFamily: F.display, fontSize: isMobile ? 40 : 64, fontWeight: 500, color: T.text, letterSpacing: '-0.04em', lineHeight: 0.92 }}>
-            Seriály<span style={{ color: T.gold, fontWeight: 600 }}>.</span>
+          <h1 style={{ margin: 0, fontFamily: F.sans, fontSize: isMobile ? 26 : 32, fontWeight: 700, color: T.text, letterSpacing: '-0.025em', lineHeight: 1.1 }}>
+            Seriály
           </h1>
         </div>
         <div style={{ display: 'flex', gap: isMobile ? 24 : 40, flexWrap: 'wrap' }}>
@@ -2964,17 +2966,19 @@ export default function App() {
           }
         </div>
         {/* Taby */}
-        <div style={{ display: "flex", overflowX: "auto", scrollbarWidth: "none", borderTop: `1px solid ${T.border}`, padding: isMobile ? "0 6px" : "0 20px" }}>
+        <div style={{ display: "flex", overflowX: "auto", scrollbarWidth: "none", borderTop: "none", padding: isMobile ? "4px 6px" : "4px 20px", gap: 2 }}>
           {TABS.map(t => (
             <button key={t.id} onClick={() => setTab(t.id)} style={{
-              background: tab === t.id ? T.tintMd : "none", border: "none", cursor: "pointer", flexShrink: 0,
-              padding: isMobile ? "0 10px" : "0 12px",
+              background: tab === t.id ? T.gold : "transparent",
+              border: "none", cursor: "pointer", flexShrink: 0,
+              padding: isMobile ? "5px 10px" : "6px 14px",
+              borderRadius: 6,
               fontFamily: F.sans, fontSize: isMobile ? 12 : 13, fontWeight: tab === t.id ? 600 : 500,
-              color: tab === t.id ? T.text : T.inkMuted,
-              borderBottom: "none",
+              color: tab === t.id ? "#fff" : T.muted,
               display: "flex", alignItems: "center", gap: 5,
               height: isMobile ? 36 : 42, whiteSpace: "nowrap",
               letterSpacing: "-0.005em",
+              transition: "background 0.15s",
             }}>
               {t.label}
               {counts[t.id] != null && counts[t.id] > 0 && (
