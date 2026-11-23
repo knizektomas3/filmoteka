@@ -1656,7 +1656,7 @@ function FilmyTab({ filmy, setFilmy, herci, reziseri, isAdmin, userId }) {
           </div>
           <div style={{ display: "flex", gap: 32 }}>
             <DashKV label="Celkem" value={filmy.length} />
-            <DashKV label="Hodnoceno" value={filmy.filter(f => f.hodnoceni).length} />
+
             <DashKV label="Průměr" value={filmy.filter(f => f.hodnoceni).length ? (filmy.filter(f=>f.hodnoceni).reduce((s,f)=>s+f.hodnoceni,0)/filmy.filter(f=>f.hodnoceni).length).toFixed(1) : "—"} />
           </div>
         </div>
