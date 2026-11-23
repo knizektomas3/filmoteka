@@ -2198,9 +2198,7 @@ function DashboardTab({ filmy, serialy, herci, reziseri }) {
           <div style={{ fontFamily: F.mono, fontSize: 11, color: T.muted, letterSpacing: "0.18em", textTransform: "uppercase", marginBottom: 10 }}>
             {dateStr}
           </div>
-          <h1 style={{ margin: "0 0 10px", fontFamily: F.sans, fontSize: isMobile ? 26 : 36, fontWeight: 700, color: T.text, letterSpacing: "-0.025em", lineHeight: 1.1 }}>
-            Dobré ráno
-          </h1>
+
           <div style={{ maxWidth: 500, fontSize: 15, color: T.inkSoft, lineHeight: 1.55 }}>
             Ve sbírce je <strong style={{ color: T.text }}>{filmy.length} filmů</strong> a <strong style={{ color: T.text }}>{serialy.length} seriálů</strong>. Průměrné hodnocení <strong style={{ color: T.text }}>{avgRating}</strong>.
           </div>
