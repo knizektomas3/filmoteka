@@ -1656,8 +1656,8 @@ function FilmyTab({ filmy, setFilmy, herci, reziseri, isAdmin, userId }) {
           </div>
           <div style={{ display: "flex", gap: 32 }}>
             <DashKV label="Celkem" value={filmy.length} />
-
             <DashKV label="Průměr" value={filmy.filter(f => f.hodnoceni).length ? (filmy.filter(f=>f.hodnoceni).reduce((s,f)=>s+f.hodnoceni,0)/filmy.filter(f=>f.hodnoceni).length).toFixed(1) : "—"} />
+            <DashKV label="Ø délka" value={(() => { const s = filmy.filter(f => f.stopaz && parseInt(f.stopaz)); return s.length ? Math.round(s.reduce((a,f)=>a+parseInt(f.stopaz),0)/s.length) : "—"; })()} suffix="min" />
           </div>
         </div>
       )}
