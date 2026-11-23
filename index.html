@@ -10,6 +10,13 @@
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>" />
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#0f0f0f" />
+    <style>
+      *, *::before, *::after { box-sizing: border-box; }
+      body { margin: 0; }
+      button { outline: none !important; }
+      button:focus-visible { outline: 2px solid #71717a !important; outline-offset: 2px; }
+      * { -webkit-tap-highlight-color: transparent; }
+    </style>
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {

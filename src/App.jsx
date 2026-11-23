@@ -180,12 +180,12 @@ let inp = {
 let btnPrimary = {
   padding: "7px 18px", borderRadius: 4, border: "none", cursor: "pointer",
   fontSize: 12, fontWeight: 700, background: T.gold, color: "#0b0b0d",
-  letterSpacing: "0.05em", textTransform: "uppercase",
+  letterSpacing: "0.05em", textTransform: "uppercase", outline: "none",
 };
 let btnSecondary = {
   padding: "6px 12px", borderRadius: 4, cursor: "pointer",
   fontSize: 11, fontWeight: 500, background: "transparent",
-  border: `1px solid ${T.border}`, color: T.muted,
+  border: `1px solid ${T.border}`, color: T.muted, outline: "none",
 };
 let btnDanger = { ...btnSecondary, color: T.danger + "bb", borderColor: T.danger + "44" };
 
@@ -606,7 +606,7 @@ function Badge({ children, color }) {
 
 function Rating({ value }) {
   if (!value) return <span style={{ color: T.muted, fontSize: 12 }}>—</span>;
-  const color = value >= 8 ? T.green : value >= 6 ? T.gold : value >= 4 ? T.orange : T.danger;
+  const color = value >= 8 ? T.green : value >= 6 ? T.inkSoft : value >= 4 ? T.orange : T.danger;
   return (
     <span style={{ fontSize: 16, fontWeight: 700, color, fontFamily: F.display }}>
       {value}<span style={{ fontSize: 10, color: T.muted, fontFamily: "inherit" }}>/10</span>
@@ -786,8 +786,8 @@ function FilmCard({ film, herci, reziseri, onEdit, onDelete, onDetail, isAdmin }
   const [hover, setHover] = useState(false);
   const filmReziseri = reziseri.filter(r => (film.reziserIds ?? []).includes(r.id));
   const filmHerci = herci.filter(h => (film.herciIds ?? []).includes(h.id));
-  const ratingColor = film.hodnoceni >= 9 ? T.green : film.hodnoceni <= 4 && film.hodnoceni > 0 ? T.danger : T.text;
-  const rowHighlight = film.hodnoceni >= 9 ? T.green + "18" : film.hodnoceni <= 4 && film.hodnoceni > 0 ? T.danger + "18" : null;
+  const ratingColor = film.hodnoceni >= 8 ? T.green : film.hodnoceni <= 4 && film.hodnoceni > 0 ? T.danger : T.text;
+  const rowHighlight = film.hodnoceni >= 8 ? T.green + "18" : film.hodnoceni <= 4 && film.hodnoceni > 0 ? T.danger + "18" : null;
 
   if (isMobile) {
     return (
@@ -1007,8 +1007,8 @@ function SerialCard({ serial, herci, onEdit, onDelete, onDetail, isAdmin }) {
   const [hover, setHover] = useState(false);
   const stavColor = { Dokoukáno: T.green, Sleduji: T.gold, Nedokončeno: T.orange, Plánuji: "#95a5a6" };
   const serialHerci = herci.filter(h => (serial.herciIds ?? []).includes(h.id));
-  const ratingColor = serial.hodnoceni >= 9 ? T.green : serial.hodnoceni <= 4 && serial.hodnoceni > 0 ? T.danger : T.text;
-  const rowHighlight = serial.hodnoceni >= 9 ? T.green + "18" : serial.hodnoceni <= 4 && serial.hodnoceni > 0 ? T.danger + "18" : null;
+  const ratingColor = serial.hodnoceni >= 8 ? T.green : serial.hodnoceni <= 4 && serial.hodnoceni > 0 ? T.danger : T.text;
+  const rowHighlight = serial.hodnoceni >= 8 ? T.green + "18" : serial.hodnoceni <= 4 && serial.hodnoceni > 0 ? T.danger + "18" : null;
 
   if (isMobile) {
     return (
