@@ -151,22 +151,22 @@ const F = {
 
 // ─── TÉMA ─────────────────────────────────────────────────────────────────────
 const TDark = {
-  bg: "#09090b", surface: "#18181b", elevated: "#27272a",
-  border: "#3f3f46", borderHover: "#52525b", hairSoft: "#27272a",
-  gold: "#d4d4d8",   // neutral zinc-300 — žádná barva
-  goldBg: "#27272a",
-  text: "#fafafa", muted: "#71717a", dimmer: "#3f3f46",
-  inkSoft: "#d4d4d8", inkMuted: "#a1a1aa",
-  tintMd: "rgba(255,255,255,0.07)", tintHi: "rgba(255,255,255,0.04)",
-  danger: "#ef4444", blue: "#3b82f6", purple: "#a78bfa", green: "#34d399", orange: "#fb923c",
+  bg: "#111111", surface: "#1e1e1e", elevated: "#2a2a2a",
+  border: "#3a3a3a", borderHover: "#4d4d4d", hairSoft: "#242424",
+  gold: "#d4d4d4",   // světle šedá — viditelná na tmavém pozadí
+  goldBg: "#2a2a2a",
+  text: "#f2f2f2", muted: "#6b6b6b", dimmer: "#3a3a3a",
+  inkSoft: "#c8c8c8", inkMuted: "#999999",
+  tintMd: "rgba(255,255,255,0.08)", tintHi: "rgba(255,255,255,0.04)",
+  danger: "#f87171", blue: "#60a5fa", purple: "#c084fc", green: "#4ade80", orange: "#fb923c",
 };
 const TLight = {
-  bg: "#ffffff", surface: "#f4f4f5", elevated: "#e4e4e7",
-  border: "#e4e4e7", borderHover: "#d4d4d8", hairSoft: "#f4f4f5",
-  gold: "#52525b",   // neutral zinc-600 — žádná barva
-  goldBg: "#f4f4f5",
-  text: "#18181b", muted: "#71717a", dimmer: "#e4e4e7",
-  inkSoft: "#3f3f46", inkMuted: "#52525b",
+  bg: "#ffffff", surface: "#f7f7f7", elevated: "#eeeeee",
+  border: "#e2e2e2", borderHover: "#c8c8c8", hairSoft: "#f0f0f0",
+  gold: "#1a1a1a",   // téměř černá — vysoký kontrast na světlém pozadí
+  goldBg: "#f0f0f0",
+  text: "#111111", muted: "#888888", dimmer: "#e2e2e2",
+  inkSoft: "#333333", inkMuted: "#555555",
   tintMd: "rgba(0,0,0,0.05)", tintHi: "rgba(0,0,0,0.03)",
   danger: "#dc2626", blue: "#2563eb", purple: "#7c3aed", green: "#16a34a", orange: "#ea580c",
 };
@@ -195,7 +195,7 @@ function applyTheme(dark) {
   Object.assign(btnPrimary, { background: T.text, color: T.bg });
   Object.assign(btnSecondary, { border: `1px solid ${T.border}`, color: T.muted });
   Object.assign(btnDanger, { ...btnSecondary, color: T.danger + "bb", borderColor: T.danger + "44" });
-  Object.assign(cardStyle, { background: T.surface, border: `1px solid ${T.border}` });
+  Object.assign(cardStyle, { background: T.surface, border: `1px solid ${T.border}`, boxShadow: dark ? "none" : "0 1px 3px rgba(0,0,0,0.06)" });
   document.body.style.background = T.bg;
   document.body.style.fontFamily = F.sans;
   document.body.style.color = T.text;
@@ -2941,7 +2941,7 @@ export default function App() {
     <MobileCtx.Provider value={isMobile}>
     <div style={{ background: T.bg, minHeight: "100vh", color: T.text, fontFamily: F.sans, fontSize: 13 }}>
       {/* Navigace */}
-      <div style={{ borderBottom: `1px solid ${T.border}`, background: T.surface, position: "sticky", top: 0, zIndex: 100 }}>
+      <div style={{ borderBottom: `1px solid ${T.border}`, background: T.surface, position: "sticky", top: 0, zIndex: 100, boxShadow: "0 1px 8px rgba(0,0,0,0.12)" }}>
         {/* Horní lišta: wordmark + akce */}
         <div style={{ padding: isMobile ? "0 14px" : "0 28px", display: "flex", alignItems: "center", height: isMobile ? 46 : 54, gap: 8 }}>
           {/* Wordmark */}
