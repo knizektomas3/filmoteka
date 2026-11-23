@@ -153,8 +153,8 @@ const F = {
 const TDark = {
   bg: "#09090b", surface: "#18181b", elevated: "#27272a",
   border: "#3f3f46", borderHover: "#52525b", hairSoft: "#27272a",
-  gold: "#6366f1",   // accent = indigo
-  goldBg: "#1e1b4b",
+  gold: "#d4d4d8",   // neutral zinc-300 — žádná barva
+  goldBg: "#27272a",
   text: "#fafafa", muted: "#71717a", dimmer: "#3f3f46",
   inkSoft: "#d4d4d8", inkMuted: "#a1a1aa",
   tintMd: "rgba(255,255,255,0.07)", tintHi: "rgba(255,255,255,0.04)",
@@ -163,8 +163,8 @@ const TDark = {
 const TLight = {
   bg: "#ffffff", surface: "#f4f4f5", elevated: "#e4e4e7",
   border: "#e4e4e7", borderHover: "#d4d4d8", hairSoft: "#f4f4f5",
-  gold: "#4f46e5",   // accent = indigo
-  goldBg: "#eef2ff",
+  gold: "#52525b",   // neutral zinc-600 — žádná barva
+  goldBg: "#f4f4f5",
   text: "#18181b", muted: "#71717a", dimmer: "#e4e4e7",
   inkSoft: "#3f3f46", inkMuted: "#52525b",
   tintMd: "rgba(0,0,0,0.05)", tintHi: "rgba(0,0,0,0.03)",
@@ -192,7 +192,7 @@ let btnDanger = { ...btnSecondary, color: T.danger + "bb", borderColor: T.danger
 function applyTheme(dark) {
   Object.assign(T, dark ? TDark : TLight);
   Object.assign(inp, { background: T.elevated, border: `1px solid ${T.border}`, color: T.text, fontFamily: F.sans });
-  Object.assign(btnPrimary, { background: T.gold, color: dark ? "#0f0e0c" : "#fff8f0" });
+  Object.assign(btnPrimary, { background: T.text, color: T.bg });
   Object.assign(btnSecondary, { border: `1px solid ${T.border}`, color: T.muted });
   Object.assign(btnDanger, { ...btnSecondary, color: T.danger + "bb", borderColor: T.danger + "44" });
   Object.assign(cardStyle, { background: T.surface, border: `1px solid ${T.border}` });
@@ -2948,7 +2948,7 @@ export default function App() {
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
             <div style={{ width: 8, height: 8, background: T.text, borderRadius: "50%" }} />
             <div style={{ fontFamily: F.display, fontSize: isMobile ? 15 : 17, fontWeight: 500, color: T.text, letterSpacing: "-0.025em", lineHeight: 1 }}>
-              Filmotéka<span style={{ color: T.gold, fontWeight: 600 }}>.</span>
+              Filmotéka
             </div>
           </div>
 
@@ -2969,12 +2969,12 @@ export default function App() {
         <div style={{ display: "flex", overflowX: "auto", scrollbarWidth: "none", borderTop: "none", padding: isMobile ? "4px 6px" : "4px 20px", gap: 2 }}>
           {TABS.map(t => (
             <button key={t.id} onClick={() => setTab(t.id)} style={{
-              background: tab === t.id ? T.gold : "transparent",
+              background: tab === t.id ? T.text : "transparent",
               border: "none", cursor: "pointer", flexShrink: 0,
               padding: isMobile ? "5px 10px" : "6px 14px",
               borderRadius: 6,
               fontFamily: F.sans, fontSize: isMobile ? 12 : 13, fontWeight: tab === t.id ? 600 : 500,
-              color: tab === t.id ? "#fff" : T.muted,
+              color: tab === t.id ? T.bg : T.muted,
               display: "flex", alignItems: "center", gap: 5,
               height: isMobile ? 36 : 42, whiteSpace: "nowrap",
               letterSpacing: "-0.005em",
@@ -2982,7 +2982,7 @@ export default function App() {
             }}>
               {t.label}
               {counts[t.id] != null && counts[t.id] > 0 && (
-                <span style={{ fontFamily: F.mono, fontSize: 9, color: T.muted, opacity: 0.8 }}>{counts[t.id]}</span>
+                <span style={{ fontFamily: F.mono, fontSize: 9, color: "inherit", opacity: 0.6 }}>{counts[t.id]}</span>
               )}
             </button>
           ))}
