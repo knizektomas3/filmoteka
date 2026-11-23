@@ -146,7 +146,7 @@ async function fetchTmdbCeskyNazev(nazev, rok, typ = "movie") {
 const F = {
   display: '"Inter", system-ui, sans-serif',
   sans:    '"Inter", system-ui, sans-serif',
-  mono:    '"JetBrains Mono", "Menlo", monospace',
+  mono:    '"Inter", system-ui, sans-serif',
 };
 
 // ─── TÉMA ─────────────────────────────────────────────────────────────────────
