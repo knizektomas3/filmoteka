@@ -787,7 +787,7 @@ function FilmCard({ film, herci, reziseri, onEdit, onDelete, onDetail, isAdmin }
   const filmReziseri = reziseri.filter(r => (film.reziserIds ?? []).includes(r.id));
   const filmHerci = herci.filter(h => (film.herciIds ?? []).includes(h.id));
   const ratingColor = film.hodnoceni >= 8 ? T.green : film.hodnoceni <= 4 && film.hodnoceni > 0 ? T.danger : T.text;
-  const rowHighlight = film.hodnoceni >= 8 ? T.green + "18" : film.hodnoceni <= 4 && film.hodnoceni > 0 ? T.danger + "18" : null;
+  const rowHighlight = film.hodnoceni >= 8 ? T.green + "22" : film.hodnoceni <= 4 && film.hodnoceni > 0 ? T.danger + "22" : null;
 
   if (isMobile) {
     return (
@@ -819,11 +819,14 @@ function FilmCard({ film, herci, reziseri, onEdit, onDelete, onDetail, isAdmin }
     );
   }
 
+  const accentBorder = film.hodnoceni >= 8 ? T.green : film.hodnoceni <= 4 && film.hodnoceni > 0 ? T.danger : "transparent";
+
   return (
     <div style={{
       display: "grid", gridTemplateColumns: FILM_COLS, gap: 12,
-      padding: "12px 16px", alignItems: "center",
+      padding: "12px 16px 12px 13px", alignItems: "center",
       borderBottom: `1px solid ${T.border}`,
+      borderLeft: `3px solid ${accentBorder}`,
       background: hover ? T.elevated : rowHighlight ?? T.surface,
       transition: "background 0.1s",
       cursor: "default",
@@ -1008,7 +1011,7 @@ function SerialCard({ serial, herci, onEdit, onDelete, onDetail, isAdmin }) {
   const stavColor = { Dokoukáno: T.green, Sleduji: T.gold, Nedokončeno: T.orange, Plánuji: "#95a5a6" };
   const serialHerci = herci.filter(h => (serial.herciIds ?? []).includes(h.id));
   const ratingColor = serial.hodnoceni >= 8 ? T.green : serial.hodnoceni <= 4 && serial.hodnoceni > 0 ? T.danger : T.text;
-  const rowHighlight = serial.hodnoceni >= 8 ? T.green + "18" : serial.hodnoceni <= 4 && serial.hodnoceni > 0 ? T.danger + "18" : null;
+  const rowHighlight = serial.hodnoceni >= 8 ? T.green + "22" : serial.hodnoceni <= 4 && serial.hodnoceni > 0 ? T.danger + "22" : null;
 
   if (isMobile) {
     return (
@@ -1041,11 +1044,14 @@ function SerialCard({ serial, herci, onEdit, onDelete, onDetail, isAdmin }) {
     );
   }
 
+  const accentBorderS = serial.hodnoceni >= 8 ? T.green : serial.hodnoceni <= 4 && serial.hodnoceni > 0 ? T.danger : "transparent";
+
   return (
     <div style={{
       display: "grid", gridTemplateColumns: SERIAL_COLS, gap: 12,
-      padding: "12px 16px", alignItems: "center",
+      padding: "12px 16px 12px 13px", alignItems: "center",
       borderBottom: `1px solid ${T.border}`,
+      borderLeft: `3px solid ${accentBorderS}`,
       background: hover ? T.elevated : rowHighlight ?? T.surface,
       transition: "background 0.1s",
       cursor: "default",
